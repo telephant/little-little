@@ -1,0 +1,11 @@
+[package]
+name = "sqlcipher-vec-spike"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rusqlite = { version = "0.31", features = ["bundled-sqlcipher-vendored-openssl"] }
+sqlite-vec = "0.1"
+
+[dev-dependencies]
+tempfile = "3"

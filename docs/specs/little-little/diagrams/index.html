@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>little-little — design diagrams</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1f27; --muted: #5b6470;
+    --card: #f6f8fa; --border: #d8dee5; --accent: #2563eb;
+    --check-bg: #fff7e6; --check-border: #e8c15a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151a; --fg: #e6e9ee; --muted: #9aa4b1;
+      --card: #1a2029; --border: #2c3542; --accent: #7aa2ff;
+      --check-bg: #2a2412; --check-border: #8a6d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  header h1 { font-size: 17px; margin: 0 0 6px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; }
+  section { margin-top: 36px; }
+  h2 {
+    font-size: 20px; margin: 0 0 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  p { margin: 10px 0; color: var(--muted); }
+  .diagram {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; overflow: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .diagram pre.plain {
+    margin: 0; overflow-x: auto; color: var(--fg);
+    font: 15px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .diagram:fullscreen {
+    background: var(--bg); border: none; border-radius: 0; padding: 40px;
+  }
+  .dtools {
+    position: sticky; top: 0; z-index: 5;
+    float: right; display: flex; gap: 6px;
+  }
+  .dtools button {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .dtools button:hover { border-color: var(--accent); color: var(--accent); }
+  .check {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--check-bg); border: 1px solid var(--check-border);
+    border-radius: 8px; font-size: 14.5px;
+  }
+  .check strong { display: block; margin-bottom: 4px; }
+  .check ul { margin: 0; padding-left: 20px; }
+  .check li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>little-little — design diagrams</h1>
+  <nav><a href="#product-flow">Product flow</a>
+<a href="#components">Components</a>
+<a href="#save-embed-reflect-primary-sequence">Save → embed → reflect (primary sequence)</a>
+<a href="#data-model">Data model</a>
+<a href="#lifecycles">Lifecycles</a>
+<a href="#m2-additions-components">M2 additions (components)</a>
+<a href="#search-sequence-m2">Search sequence (M2)</a>
+<a href="#mood-lifecycle-m2">Mood lifecycle (M2)</a></nav>
+</header>
+<main>
+<section id="product-flow">
+<h2>Product flow</h2>
+<div class="diagram"><pre class="plain">1  --&gt; First launch: choose a passphrase
+1b --&gt; Pick your models in settings (nothing is pre-selected); AI features wait until you do
+2  --&gt; Write today&#x27;s entry; it saves itself as you type
+3  --&gt; A moment after you stop, the side panel shows past entries that relate to what you wrote
+4  --&gt; Below them, a short caring reflection, citing the entries it drew on
+5  --&gt; Regenerate it, dismiss it, or just keep writing
+6  --&gt; Settings: switch between On-device (Ollama) and Cloud (Claude); first switch to Cloud asks you to confirm; the badge in the corner always shows which is active
+7  --&gt; Mark any entry &quot;never send to cloud&quot;; it stays out of anything sent to Claude</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Does the reflection appearing *after* save-settle (not live while typing) match the calm, non-intrusive feel?</li><li>Is a corner badge enough of a privacy indicator, or should switching to Cloud require an extra confirmation?</li><li>First entry ever: panel says &quot;nothing to relate yet&quot; — good enough for the empty state?</li></ul></div>
+</section>
+<section id="components">
+<h2>Components</h2>
+<div class="diagram"><pre class="mermaid">flowchart TB
+  subgraph Frontend [React frontend]
+    C1[C-1 Editor UI]
+    C2[C-2 AI panel]
+    C3[C-3 Shell: unlock, settings, indicator]
+  end
+  C4[C-4 Tauri IPC commands + events]
+  subgraph Backend [Rust backend]
+    C5[C-5 Storage: SQLCipher + rusqlite]
+    C6[C-6 Memory engine: chunk, embed, retrieve]
+    C8[C-8 Prompt and context layer]
+    C7[C-7 Providers: OllamaEmbed, OllamaChat, ClaudeCli]
+  end
+  DB[(Encrypted SQLite + vec_chunks)]
+  OL[Ollama localhost]
+  CC[claude -p subprocess]
+  C1 &amp; C2 &amp; C3 --- C4
+  C4 --&gt; C5 &amp; C6
+  C6 --&gt; C5
+  C6 --&gt; C8 --&gt; C7
+  C5 --&gt; DB
+  C7 --&gt; OL
+  C7 --&gt; CC</pre></div>
+<div class="check"><strong>Check</strong><ul><li>All AI/DB state lives behind C-4; the frontend holds no journal data beyond what&#x27;s displayed — acceptable?</li><li>C-8 sits between memory engine and providers so personas can swap without touching retrieval — clear?</li></ul></div>
+</section>
+<section id="save-embed-reflect-primary-sequence">
+<h2>Save → embed → reflect (primary sequence)</h2>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+  participant U as User
+  participant ED as Editor (C-1)
+  participant IPC as IPC (C-4)
+  participant ST as Storage (C-5)
+  participant ME as Memory engine (C-6)
+  participant PR as Prompt layer (C-8)
+  participant CP as Chat provider (C-7)
+  U-&gt;&gt;ED: types, then pauses
+  ED-&gt;&gt;IPC: save_entry (debounced)
+  IPC-&gt;&gt;ST: write body, embed_status=pending
+  ST--&gt;&gt;ME: notify worker
+  ME-&gt;&gt;CP: embed chunks (OllamaEmbed)
+  ME-&gt;&gt;ST: vectors into vec_chunks, status=ok
+  ED-&gt;&gt;IPC: save-settle → get_ai_panel
+  ME-&gt;&gt;ST: retrieve top-K chunks (filters: not self, no-cloud if cloud)
+  ME-&gt;&gt;PR: entry + retrieved context
+  PR-&gt;&gt;CP: ChatRequest (reflection template)
+  CP--&gt;&gt;IPC: reflection + source entry ids
+  IPC--&gt;&gt;ED: ai_panel_ready → related memories + reflection</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Reflection waits for the new entry&#x27;s own embedding only to build the query vector — is mean-of-chunks as the query acceptable for M1?</li><li>If embedding is still running at save-settle, panel shows &quot;thinking…&quot; and fills when ready — OK?</li></ul></div>
+</section>
+<section id="data-model">
+<h2>Data model</h2>
+<div class="diagram"><pre class="mermaid">erDiagram
+  ENTRIES ||--o{ ENTRY_TAGS : has
+  ENTRIES ||--o{ CHUNKS : &quot;split into&quot;
+  CHUNKS ||--|| VEC_CHUNKS : &quot;embedded as&quot;
+  ENTRIES ||--o{ AI_RESPONSES : &quot;reflected by&quot;
+  ENTRIES {
+    text id PK
+    text body
+    int no_cloud
+    text embed_status
+  }
+  CHUNKS {
+    text id PK
+    text entry_id FK
+    int seq
+    text text
+  }
+  VEC_CHUNKS {
+    text chunk_id PK
+    floatN embedding
+  }
+  AI_RESPONSES {
+    text id PK
+    text entry_id FK
+    text kind
+    text context_entry_ids
+    text provider
+    int dismissed
+  }</pre></div>
+<div class="check"><strong>Check</strong><ul><li>`context_entry_ids` as JSON on the response row is the whole &quot;honest AI&quot; audit trail — sufficient?</li><li>Cascade deletes cover AC-8&#x27;s delete path — any orphan risk in vec_chunks (no FK support in vec0 virtual tables)?</li></ul></div>
+</section>
+<section id="lifecycles">
+<h2>Lifecycles</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+  state App {
+    [*] --&gt; FirstRun: no DB file
+    [*] --&gt; Locked: DB exists
+    FirstRun --&gt; Unlocked: set passphrase
+    Locked --&gt; Unlocked: correct passphrase
+    Locked --&gt; Locked: wrong passphrase
+  }
+  state EntryEmbedding {
+    [*] --&gt; pending: saved or edited
+    pending --&gt; ok: worker embeds
+    pending --&gt; failed: permanent error
+    failed --&gt; pending: retry / model installed
+    ok --&gt; pending: entry edited
+  }</pre></div>
+<div class="check"><strong>Check</strong><ul><li>`ok → pending` on every edit means frequent small edits re-embed the whole entry — fine at journal scale?</li><li>`failed` is only for permanent errors (missing model); transient Ollama outages stay `pending` — clear enough for debugging?</li></ul></div>
+</section>
+<section id="m2-additions-components">
+<h2>M2 additions (components)</h2>
+<div class="diagram"><pre class="mermaid">flowchart TB
+  subgraph Existing [M1 core]
+    C5[C-5 Storage]
+    C6[C-6 Memory engine]
+    C7[C-7 Providers]
+  end
+  C9[C-9 Mood engine] --&gt;|active provider; no-cloud stays local| C7
+  C9 --&gt; C5
+  C6 -. same worker .- C9
+  C10[C-10 Calendar view] --&gt; C5
+  C11[C-11 Search] --&gt; C6
+  C11 --&gt; C7
+  C12[C-12 Export / restore] --&gt; C5
+  C13[C-13 Onboarding + pull] --&gt; OL[Ollama /api/pull]
+  C14[C-14 Activity surface] --&gt; C5</pre></div>
+<p>One worker loop handles embeddings then moods; search reuses retrieval; onboarding is a guided path over existing settings commands plus the pull manager.</p>
+<div class="check"><strong>Check</strong><ul><li>Mood engine uses the active provider, but no-cloud entries never reach ClaudeCli (local fallback/unset) — matches ADR-0004 as accepted?</li><li>Calendar reads storage directly (no AI) — fast and offline, right?</li><li>Is a per-call progress channel (pull) consistent enough with the otherwise pull-based IPC?</li></ul></div>
+</section>
+<section id="search-sequence-m2">
+<h2>Search sequence (M2)</h2>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+  participant U as User
+  participant UI as Search UI (C-11)
+  participant ME as Memory engine (C-6)
+  participant CP as Chat provider (C-7)
+  U-&gt;&gt;UI: &quot;anxious about work?&quot;
+  UI-&gt;&gt;ME: search(query)
+  ME--&gt;&gt;UI: ranked entries (instant, no LLM)
+  UI-&gt;&gt;CP: search_answer(query, top ids)
+  CP--&gt;&gt;UI: 1-line answer + cited dates</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Results render before any model call — does the UI make the answer clearly optional/late?</li><li>When the provider is cloud, the no-cloud entries were already filtered at KNN — acceptable that on-device search finds MORE than cloud-mode search?</li></ul></div>
+</section>
+<section id="mood-lifecycle-m2">
+<h2>Mood lifecycle (M2)</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+  [*] --&gt; unset: entry created
+  unset --&gt; ai: worker classifies (local model)
+  unset --&gt; manual: user picks
+  ai --&gt; manual: user overrides
+  manual --&gt; manual: edits never reset it
+  ai --&gt; ai: edit re-queues, AI may update
+  ai --&gt; failed_kept: classification error (mood kept unset/stale)</pre></div>
+<div class="check"><strong>Check</strong><ul><li>`manual` as an absorbing state — exactly the AC-19 guarantee?</li><li>AI re-classifying on edit (while source=&#x27;ai&#x27;) — desirable, or should the first AI mood stick?</li></ul></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js"></script>
+<script>
+(async () => {
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "strict",
+    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
+    themeVariables: { fontSize: "18px" },
+    // useMaxWidth:false = render at natural size instead of shrinking to the card
+    flowchart: { useMaxWidth: false, nodeSpacing: 55, rankSpacing: 65, padding: 10 },
+    sequence:  { useMaxWidth: false, actorMargin: 100, messageMargin: 46, width: 185, height: 60 },
+    er:        { useMaxWidth: false, minEntityWidth: 120, entityPadding: 18 },
+    state:     { useMaxWidth: false },
+    gantt:     { useMaxWidth: false }
+  });
+  await mermaid.run({ querySelector: ".mermaid" });
+
+  document.querySelectorAll(".diagram").forEach(card => {
+    const svg = card.querySelector("svg");
+    if (!svg) return;
+    const natural = svg.getBoundingClientRect().width || 600;
+    let scale = 1;
+    const apply = () => {
+      svg.style.width = Math.round(natural * scale) + "px";
+      svg.style.height = "auto";
+    };
+    const fit = () => {
+      const avail = card.clientWidth - 34;
+      scale = Math.min(1.6, Math.max(0.55, avail / natural));
+      apply();
+    };
+
+    const tools = document.createElement("div");
+    tools.className = "dtools";
+    const btn = (label, title, fn) => {
+      const b = document.createElement("button");
+      b.textContent = label; b.title = title;
+      b.addEventListener("click", fn);
+      tools.appendChild(b);
+    };
+    btn("−", "Zoom out", () => { scale = Math.max(0.3, scale / 1.25); apply(); });
+    btn("+", "Zoom in",  () => { scale = Math.min(4, scale * 1.25); apply(); });
+    btn("⊡", "Fit to card", fit);
+    btn("⤢", "Fullscreen", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().then(() => { scale = 1; apply(); });
+    });
+    card.prepend(tools);
+    card.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) fit(); });
+
+    fit(); // start fitted to the card; zoom in from there
+  });
+})();
+</script>
+</body>
+</html>

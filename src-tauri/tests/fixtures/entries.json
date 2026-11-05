@@ -1,0 +1,86 @@
+[
+  {
+    "id": "fx-01",
+    "created_at": "2026-03-02T19:00:00Z",
+    "tags": ["work"],
+    "no_cloud": false,
+    "body": "Big interview at Northwind on Thursday. I keep rehearsing answers in my head and my stomach is in knots. What if they ask about the gap year?"
+  },
+  {
+    "id": "fx-02",
+    "created_at": "2026-03-06T21:30:00Z",
+    "tags": ["work"],
+    "no_cloud": false,
+    "body": "The interview went so much better than I feared. The panel laughed at my joke about spreadsheets and the gap year never even came up. Proud of myself for walking in anyway."
+  },
+  {
+    "id": "fx-03",
+    "created_at": "2026-04-11T08:15:00Z",
+    "tags": ["gym", "habit"],
+    "no_cloud": false,
+    "body": "Third gym session this week. Squats felt lighter today. Small, boring, repeated — that is apparently how progress feels."
+  },
+  {
+    "id": "fx-04",
+    "created_at": "2026-05-20T22:40:00Z",
+    "tags": ["family"],
+    "no_cloud": false,
+    "body": "Called mom for an hour. She told the story about the lake house again and I didn't mind at all. I should call more often."
+  },
+  {
+    "id": "fx-05",
+    "created_at": "2026-06-14T23:10:00Z",
+    "tags": [],
+    "no_cloud": true,
+    "body": "Something I don't want anywhere near a server: the health scare results came back and waiting for the follow-up interview with the specialist is eating me alive."
+  },
+  {
+    "id": "fx-06",
+    "created_at": "2026-07-03T20:00:00Z",
+    "tags": ["gym"],
+    "no_cloud": false,
+    "body": "Skipped the gym twice this week and I can feel the difference in my mood. Note to self: movement is medicine."
+  },
+  {
+    "id": "fx-07",
+    "created_at": "2026-08-19T18:25:00Z",
+    "tags": ["work"],
+    "no_cloud": false,
+    "body": "First month at Northwind done. The imposter feeling shows up every Monday and leaves by Wednesday. Pattern noted."
+  },
+  {
+    "id": "fx-08",
+    "created_at": "2026-09-07T21:05:00Z",
+    "tags": ["friends"],
+    "no_cloud": false,
+    "body": "Dinner with Sam after months of rescheduling. We talked about burnout and about starting the pottery class we always joke about."
+  },
+  {
+    "id": "fx-09",
+    "created_at": "2026-09-28T07:50:00Z",
+    "tags": ["habit"],
+    "no_cloud": false,
+    "body": "Tried writing three sentences every morning before coffee. Day nine today. The streak itself is becoming the reward."
+  },
+  {
+    "id": "fx-10",
+    "created_at": "2026-10-15T22:55:00Z",
+    "tags": ["work"],
+    "no_cloud": false,
+    "body": "Gave my first demo to the whole team. Hands shaking, voice steady. Afterwards the lead said 'clean work'. I wrote it down so I don't forget it."
+  },
+  {
+    "id": "fx-11",
+    "created_at": "2026-10-30T23:30:00Z",
+    "tags": [],
+    "no_cloud": false,
+    "body": "Long one tonight. Paragraph one about the rainy commute and the podcast on attention. Paragraph two about how the apartment finally feels like home now that the plants survived a full season. Paragraph three about planning a tiny trip north before winter, maybe the coast, maybe just a cabin — somewhere with no reception and a thick book. It keeps growing because I keep remembering small good things: the bakery that learned my order, the neighbor's dog that waits for me, the way evening light lands on the kitchen table. If this paragraph gets long enough it should be split into more than one chunk by the chunker, which is exactly what this fixture is for, so let me keep going a little: tomorrow I want to wake early, stretch, write, and not look at my phone until nine. That would be a good day. That would be enough."
+  },
+  {
+    "id": "fx-12",
+    "created_at": "2026-11-01T20:10:00Z",
+    "tags": ["work"],
+    "no_cloud": false,
+    "body": "New interview nerves, old story: panel presentation next week for the senior role. Rereading what March-me wrote helps. I have been here before and it went well."
+  }
+]

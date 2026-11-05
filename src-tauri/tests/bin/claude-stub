@@ -1,0 +1,14 @@
+#!/bin/sh
+# Test stub for the claude CLI (TC-14/TC-15). Records everything it receives
+# into $CLAUDE_STUB_OUT, then answers like `claude -p --output-format json`.
+out="${CLAUDE_STUB_OUT:?CLAUDE_STUB_OUT not set}"
+pwd > "$out/cwd.txt"
+ls -A . > "$out/cwd-listing.txt"
+printf '%s\n' "$@" > "$out/argv.txt"
+env > "$out/env.txt"
+cat - > "$out/stdin.txt"
+case "${CLAUDE_STUB_MODE:-ok}" in
+  bad-json) echo "this is not json"; exit 0 ;;
+  fail)     echo "boom" >&2; exit 1 ;;
+  *)        printf '{"type":"result","subtype":"success","is_error":false,"result":"stub reflection"}\n' ;;
+esac

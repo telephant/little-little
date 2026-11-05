@@ -8,6 +8,14 @@ and gently reflected back: after you write, the side panel shows related past
 entries and a short reflection — via Ollama (on-device) or Claude Code's
 `claude -p` (cloud, explicit opt-in, one-time confirmation).
 
+Beyond writing (M2): every entry quietly gets an AI **mood** (manual always
+wins) feeding a mood-colored **calendar**; **semantic search** answers plain
+questions ("when did I last feel anxious about work?") with instant results and
+a one-line cited answer; **export/backup** to Markdown or JSON with restore;
+guided **onboarding** downloads models with live progress; status chips keep
+model state honest. Entries flagged "never send to cloud" stay out of every
+cloud call — reflections, search answers and background mood reading alike.
+
 ## Run (dev)
 
 Prerequisites: Rust (rustup), Node + pnpm, and [Ollama](https://ollama.com) running
@@ -26,8 +34,9 @@ pnpm tauri dev
 ```
 
 First launch: choose a passphrase (**there is no recovery if you lose it**),
-then open Settings and pick your embedding + chat models — nothing is selected
-for you. Write an entry, pause, and watch the panel.
+then onboarding guides you through picking (or downloading) your embedding +
+chat models — nothing is ever selected for you. Write an entry, pause, and
+watch the panel; try the Calendar and Search views after a few entries.
 
 ## Checks
 

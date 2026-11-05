@@ -225,6 +225,7 @@ terminal line `status:"success"`. One pull at a time; progress also surfaces in 
 
 ## Activity (C-14)
 
-`get_activity()` → `{embed_pending, mood_pending, pulling: {model, pct}?}` from cheap COUNT queries +
-pull state. Frontend polls every 2s only while a save/pull is in flight or counts are nonzero,
-otherwise on demand. Chips in settings derive from `SettingsView` + activity.
+`get_activity()` → `{embed_pending, embed_total, mood_pending, pulling: {model, pct, status}?}`
+from cheap COUNT queries + pull state. As built (T-18): the frontend polls every 2s whenever the
+journal is unlocked — the three COUNTs are negligible and this is simpler than busy-gated polling;
+revisit only if it ever shows up in profiles. Chips in settings derive from `SettingsView` + activity.

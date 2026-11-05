@@ -20,3 +20,18 @@ cd src-tauri
 cargo test --lib -- --nocapture 2>&1 | grep MEASURE   # chunking + retrieval distances
 OLLAMA_TEST=1 cargo test --lib -- --ignored           # live embed+chat smoke
 ```
+
+---
+
+# M2 measurements (observed live 2026-11-05, real models)
+
+| What | Provisional | Observed | Verdict |
+|------|-------------|----------|---------|
+| Mood latency | — | 12 fixture entries in 5.2s (~0.43s each, qwen3:4b-instruct) | Background worker keeps up easily |
+| Mood quality | eyeball (M-1) | All 12 plausible: interview nerves=2 "anxious", success=4 "proud", streak=5 "happy", health scare=2 "anxious" | No misfires on the fixture arc |
+| Search K | 8 | Real-embedding top-3 for the interview query = exactly the three interview entries | Keep K=8 |
+| Search answer latency | — | 0.62s, correct and dated ("…on 2026-03-02, when you were preparing for the Northwind interview") | "asking…" state barely visible |
+| Pull stream | — | Real all-minilm pull: NDJSON {status, digest?, total?, completed?} → "success" | Parser handles arbitrary chunk splits |
+| Calendar render @1k entries | <100ms | not yet measured (journal is small) | Measure when real data grows |
+
+Rerun: `OLLAMA_TEST=1 cargo test --lib live_m2 -- --ignored --nocapture`

@@ -4,13 +4,16 @@
 
 ```
 1  --> First launch: choose a passphrase
-1b --> Pick your models in settings (nothing is pre-selected); AI features wait until you do
+1b --> Onboarding: pick or download your models (nothing is pre-selected, progress shown live); skippable
 2  --> Write today's entry; it saves itself as you type
 3  --> A moment after you stop, the side panel shows past entries that relate to what you wrote
 4  --> Below them, a short caring reflection, citing the entries it drew on
 5  --> Regenerate it, dismiss it, or just keep writing
-6  --> Settings: switch between On-device (Ollama) and Cloud (Claude); first switch to Cloud asks you to confirm; the badge in the corner always shows which is active
-7  --> Mark any entry "never send to cloud"; it stays out of anything sent to Claude
+6  --> Settings: switch between On-device (Ollama) and Cloud (Claude); first switch to Cloud asks you to confirm (and mentions background mood reading); the badge in the corner always shows which is active
+7  --> Mark any entry "never send to cloud"; it stays out of anything sent to Claude — reflections, search answers and moods alike
+8  --> Each entry quietly gets a mood (5 dots to set your own — yours is permanent); the Calendar view colors your days with them
+9  --> Ask the Search view anything in plain words: instant matching entries, then a one-line answer citing their dates
+10 --> Settings: export everything as Markdown, back up as JSON, restore on a new machine; status chips always say what the AI is doing
 ```
 
 Check:

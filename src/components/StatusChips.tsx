@@ -10,23 +10,20 @@ export function StatusChips(props: { settings: SettingsView; activity: Activity 
   const chips: { kind: string; text: string }[] = [];
 
   if (!settings.embed_model) {
-    chips.push({ kind: "missing", text: "no embedding model chosen" });
+    chips.push({ kind: "missing", text: "no memory model chosen" });
   } else if (activity && activity.embed_pending > 0) {
     const done = activity.embed_total - activity.embed_pending;
     chips.push({ kind: "busy", text: `indexing ${done} of ${activity.embed_total}` });
   } else {
-    chips.push({
-      kind: "ready",
-      text: `embeddings ready (${settings.embed_model}${settings.embed_dim ? `, ${settings.embed_dim}d` : ""})`,
-    });
+    chips.push({ kind: "ready", text: `memory ready (${settings.embed_model})` });
   }
 
   if (!settings.chat_model) {
-    chips.push({ kind: "missing", text: "no chat model chosen" });
+    chips.push({ kind: "missing", text: "no reflection model chosen" });
   } else if (activity && activity.mood_pending > 0) {
     chips.push({ kind: "busy", text: `reading moods (${activity.mood_pending} left)` });
   } else {
-    chips.push({ kind: "ready", text: `chat ready (${settings.chat_model})` });
+    chips.push({ kind: "ready", text: `reflections ready (${settings.chat_model})` });
   }
 
   if (activity?.pulling) {

@@ -86,12 +86,12 @@ export function Settings(props: {
       </fieldset>
 
       <fieldset>
-        <legend>Models (nothing is chosen for you)</legend>
+        <legend>On-device models (nothing is chosen for you)</legend>
         {models && !models.ollama_running && (
           <p className="warning">Start Ollama to list your installed models.</p>
         )}
         <label>
-          Embedding model
+          Memory model
           <select
             value={settings.embed_model ?? ""}
             onChange={(e) => void pickModel("embed", e.target.value)}
@@ -106,26 +106,38 @@ export function Settings(props: {
             ))}
           </select>
         </label>
-        <label>
-          Chat model
-          <select
-            value={settings.chat_model ?? ""}
-            onChange={(e) => void pickModel("chat", e.target.value)}
-          >
-            <option value="" disabled>
-              choose…
-            </option>
-            {(models?.ollama_models ?? []).map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </select>
-        </label>
-        {settings.embed_model && settings.embed_dim && (
+        <p className="hint">
+          Indexes your entries on this device so related memories and search work —
+          even when Cloud is selected. Changing it re-indexes every entry.
+        </p>
+        {settings.chat_provider === "ollama" ? (
+          <>
+            <label>
+              Reflection model
+              <select
+                value={settings.chat_model ?? ""}
+                onChange={(e) => void pickModel("chat", e.target.value)}
+              >
+                <option value="" disabled>
+                  choose…
+                </option>
+                {(models?.ollama_models ?? []).map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p className="hint">
+              Writes your reflections — and also moods and search answers — on this device.
+            </p>
+          </>
+        ) : (
           <p className="hint">
-            Index dimension {settings.embed_dim}. Changing the embedding model re-indexes
-            every entry.
+            Reflections, moods and search answers are written by Claude. Private entries
+            {settings.chat_model
+              ? ` stay on this device with ${settings.chat_model}.`
+              : " stay on this device — but no on-device model is chosen, so their moods will wait."}
           </p>
         )}
       </fieldset>

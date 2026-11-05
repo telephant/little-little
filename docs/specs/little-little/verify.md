@@ -97,6 +97,11 @@ Commands: all 9 M2 commands match design.md exactly (grep). ADR-0004 (as accepte
 - [ ] M-4 Cloud dialog mentions background mood classification (switch provider to see it)
 - [ ] Search view: ask it something about what you wrote
 
+## Findings from the user's interactive pass
+
+- **V2-2 (fixed 2026-11-05, T-20):** two further confusions from the same pass: (a) jargon — "Embedding model", "Index dimension 768", chips "embeddings ready (…, 768d)" / "chat ready"; (b) with Cloud selected, the local pickers sat unexplained. Fix (user-directed cascade): embed model is now "Memory model" everywhere with a plain re-index hint; the Reflection model picker renders only when On-device is selected — under Cloud a note says Claude writes reflections/moods/answers and names the on-device model still serving private entries (or warns when none is chosen); chips now read "memory ready (model)" / "reflections ready (model)". TC-41..43 pin it. Left for backlog: dropdowns list all installed models regardless of kind (wrong-model trap).
+- **V2-1 (fixed 2026-11-05, T-19):** Settings used two vocabularies for one pipeline — provider fieldset said "Where your reflections are generated" while the model picker said "Chat model" (and Onboarding step 2 said "Voice (chat)", the missing-chip "no chat model chosen"). User read them as three separate model settings. Fix: user-facing term is now "Reflection model" everywhere, with a hint that it also writes moods and search answers; internal names (`chat_model` key, `chat_provider`, Rust `ChatProvider`) deliberately unchanged. TC-38..40 pin the copy; full `pnpm check` green.
+
 ## Verdict
 
 **Pass with follow-ups** — all 12 M2 ACs green in this run with live-model evidence; the interactive checklist above completes the record.

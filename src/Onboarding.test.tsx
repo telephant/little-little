@@ -29,13 +29,13 @@ describe("onboarding (T-18)", () => {
     const onboarding = await screen.findByTestId("onboarding");
     // Wait for the installed-model options to load (both dropdowns list them).
     await within(onboarding).findAllByRole("option", { name: /nomic-embed-text/i });
-    fireEvent.change(within(onboarding).getByLabelText(/embedding model/i), {
+    fireEvent.change(within(onboarding).getByLabelText(/memory model/i), {
       target: { value: "nomic-embed-text:latest" },
     });
     await waitFor(() =>
       expect(fake.setModels).toHaveBeenCalledWith("nomic-embed-text:latest", null),
     );
-    fireEvent.change(within(onboarding).getByLabelText(/chat model/i), {
+    fireEvent.change(within(onboarding).getByLabelText(/reflection model/i), {
       target: { value: "qwen3:4b-instruct" },
     });
     await waitFor(() => expect(fake.setModels).toHaveBeenCalledWith(null, "qwen3:4b-instruct"));
@@ -67,7 +67,7 @@ describe("onboarding (T-18)", () => {
     await waitFor(() => expect(fake.pullModel).toHaveBeenCalled());
     // Progress was rendered along the way and the select now contains the model.
     await waitFor(() => {
-      const embed = within(onboarding).getByLabelText(/embedding model/i);
+      const embed = within(onboarding).getByLabelText(/memory model/i);
       expect(within(embed).getByRole("option", { name: /nomic-embed-text/i })).toBeInTheDocument();
     });
   });
@@ -107,6 +107,37 @@ describe("onboarding (T-18)", () => {
     await waitFor(() => expect(screen.getByTestId("activity-dot")).not.toHaveClass("busy"), {
       timeout: 6000,
     });
+  });
+
+  /** TC-43 (T-20): onboarding step 1 speaks "memory", not "embeddings". */
+  it("TC-43: onboarding labels the index model as memory model", async () => {
+    await createJournal();
+    const onboarding = await screen.findByTestId("onboarding");
+    expect(within(onboarding).getByLabelText(/memory model/i)).toBeInTheDocument();
+    expect(within(onboarding).queryByLabelText(/embedding model/i)).not.toBeInTheDocument();
+    expect(within(onboarding).queryByText(/\(embeddings\)/i)).not.toBeInTheDocument();
+  });
+
+  /** TC-39 (T-19): onboarding step 2 speaks "reflection", not "chat". */
+  it("TC-39: onboarding labels the generation model as reflection model", async () => {
+    await createJournal();
+    const onboarding = await screen.findByTestId("onboarding");
+    expect(within(onboarding).getByLabelText(/reflection model/i)).toBeInTheDocument();
+    expect(within(onboarding).queryByLabelText(/chat model/i)).not.toBeInTheDocument();
+    expect(within(onboarding).queryByText(/\(chat\)/i)).not.toBeInTheDocument();
+  });
+
+  /** TC-40 (T-19): missing-model chip says "no reflection model chosen". */
+  it("TC-40: missing chip uses reflection-model wording", async () => {
+    await fake.setModels("nomic-embed-text:latest", null); // embed chosen, generation model not
+    await createJournal();
+    const onboarding = await screen.findByTestId("onboarding");
+    fireEvent.click(within(onboarding).getByRole("button", { name: /skip for now/i }));
+    await screen.findByTestId("editor-body");
+    fireEvent.click(screen.getByRole("button", { name: /settings/i }));
+    const chips = await screen.findByTestId("status-chips");
+    expect(chips).toHaveTextContent(/no reflection model chosen/i);
+    expect(chips).not.toHaveTextContent(/chat/i);
   });
 
   /** M-4 groundwork: cloud dialog copy mentions background mood classification. */

@@ -23,6 +23,7 @@ Promoted: onboarding & model setup, calendar + mood, semantic search, export/bac
 - M3 Tone presets (Warm friend / Calm coach / Concise) via persona-prompt layer — why: decouples voice from logic — P2
 - M3 Mood timeline: weekly/monthly trends — why: builds on M2 mood data — P2
 - M3 Writing prompts ("What made you smile today?") — why: blank-page help — P3
+- M3 Filter model dropdowns by kind (embedding vs generation) so a wrong pick is impossible — why: V2-2 verify pass found both dropdowns list every installed Ollama model — P2
 
 ## M4 — Deeper memory
 

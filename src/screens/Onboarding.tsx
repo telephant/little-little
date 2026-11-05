@@ -66,9 +66,9 @@ export function Onboarding(props: {
       )}
 
       <section>
-        <h2>1 · Memory (embeddings)</h2>
+        <h2>1 · Memory</h2>
         <label>
-          Embedding model
+          Memory model
           <select value={settings.embed_model ?? ""} onChange={(e) => void pick("embed", e.target.value)}>
             <option value="" disabled>choose…</option>
             {installed.map((m) => (
@@ -84,9 +84,9 @@ export function Onboarding(props: {
       </section>
 
       <section>
-        <h2>2 · Voice (chat)</h2>
+        <h2>2 · Voice (reflections)</h2>
         <label>
-          Chat model
+          Reflection model
           <select value={settings.chat_model ?? ""} onChange={(e) => void pick("chat", e.target.value)}>
             <option value="" disabled>choose…</option>
             {installed.map((m) => (

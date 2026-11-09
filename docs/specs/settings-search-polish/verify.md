@@ -10,7 +10,7 @@
 | AC | TC | Result | Evidence |
 |----|----|--------|----------|
 | AC-1 | TC-1, TC-2 | pass | Settings.test.tsx; headless render shows a solid cobalt dot (scratchpad t01.png) |
-| AC-2 | TC-3 | **open (manual, real window)** | not seen in WKWebView; the dot no longer uses `:checked::after` or the SVG filter |
+| AC-2 | TC-3 | manual-ok | user confirmed in the real app, 2026-11-09 (dot no longer uses `:checked::after` or the SVG filter) |
 | AC-3 | TC-4, TC-5 | pass | test + measured ✕ = 32×32 px (headless `settingsClose` rect); hover rule in CSS |
 | AC-4 | TC-6, TC-7 | pass | Esc closes; ignored while the cloud dialog is open |
 | AC-5 | TC-8 | pass | three `.data-row`s with title, description, one button |
@@ -38,7 +38,7 @@ A `pnpm tauri dev` instance was already running (process 32451, vite on port 142
 - Not yet seen rendered: search results with real data (the screenshot stub returns none); covered by TC-13 only.
 
 ## Your hands-on pass (manual checklist)
-- [ ] Settings: click each provider radio; the dot moves; Cloud first asks for confirmation (AC-2)
+- [x] Settings: click each provider radio; the dot moves (AC-2) — confirmed by the user 2026-11-09
 - [ ] Settings: ✕ and Esc close it; "Your data" rows read clearly, Restore sits apart
 - [ ] Search: examples, Ask button, a real question with results and an answer card
 - [ ] No memories column on Search, Settings, Calendar, lock screen, onboarding; present on Journal (AC-11)

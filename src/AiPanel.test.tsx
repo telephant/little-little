@@ -317,3 +317,15 @@ describe("memories before and after this page (memories-sides)", () => {
     expect(screen.getByRole("group", { name: /later/i })).toBeInTheDocument();
   });
 });
+
+describe("reflection first (journal-layout)", () => {
+  /** JL-1: the reflection sits at the top of the right side; the memories control comes after it. */
+  it("JL-1: the reflection is above the memories control", async () => {
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
+    const editor = await startJournal();
+    fireEvent.change(editor, { target: { value: "new interview nerves" } });
+    const refl = await screen.findByTestId("reflection", undefined, { timeout: 6000 });
+    const memories = screen.getByRole("button", { name: /2 memories/i });
+    expect(refl.compareDocumentPosition(memories) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});

@@ -19,6 +19,7 @@
 | AC-8 | TC-8 | pass | MS-1; Rust `ready_panel_groups_neighbours_earlier_and_later`; headless render (scratchpad `mem.png`) shows Earlier / Later groups |
 | AC-9 | TC-9 | pass | MS-2 |
 | AC-10 | TC-10 | pass | Rust `ready_panel_groups_*` (≤3 per side, nearest in time first) |
+| AC-12 | TC-13 | pass | QR-8: unlocking loads the latest page's panel (bug found by the user: the right side was empty on arrival) |
 | AC-11 | TC-11 | pass | Rust `tc7_related_memories_cite_sources`, `tc9_reflection_context_is_honest` |
 
 ## Measurements (provisional, not pass/fail)

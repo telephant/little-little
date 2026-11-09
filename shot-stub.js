@@ -69,12 +69,14 @@ const handlers = {
   get_ai_panel: () => ({
     state: "ready",
     related: [],
-    reflection: { id: "r1", entry_id: "demo-1", kind: "reflection", body: "You wrote about this before, and the worry softened by the weekend.", context_entry_ids: [], provider: "ollama", dismissed: false, created_at: iso(5, 10) },
+    reflection: { id: "r1", entry_id: "demo-1", kind: "reflection", body: "You wrote about this before, and the worry softened by the weekend.  ".repeat(1), context_entry_ids: [], provider: "ollama", dismissed: false, created_at: iso(5, 10) },
     earlier: [
       { entry_id: "demo-3", snippet: "The interview went so much better than I feared. I walked home the long way.", distance: 0.3, created_at: iso(3, 21) },
       { entry_id: "demo-2", snippet: "Big interview on Thursday. Stomach in knots all evening.", distance: 0.4, created_at: iso(2, 19) },
     ],
     later: [
+      { entry_id: "demo-8", snippet: "A week on: the offer came through, and the nerves were forgotten by lunch.", distance: 0.5, created_at: iso(12, 9) },
+      { entry_id: "demo-7", snippet: "First day in the new place, everything smaller than I had imagined.", distance: 0.5, created_at: iso(15, 9) },
       { entry_id: "demo-9", snippet: "Looking back, that interview opened a door I did not expect.", distance: 0.5, created_at: iso(20, 9) },
     ],
   }),

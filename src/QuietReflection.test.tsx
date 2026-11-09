@@ -77,4 +77,20 @@ describe("quiet reflection", () => {
     fireEvent.click(lookBack);
     await waitFor(() => expect(lastGenerate()).toBe(true));
   });
+
+  /** QR-8: unlocking opens the latest page and its panel is loaded (never empty on arrival). */
+  it("QR-8: after unlocking, the latest page shows its stored memories and reflection", async () => {
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
+    await fake.setupPassphrase("hunter2 hunter2"); // a journal that already exists
+    const old = await fake.createEntry();
+    await fake.saveEntry(old.id, "an older page about the interview");
+    vi.mocked(fake.getAiPanel).mockClear();
+    render(<App />);
+    const pass = await screen.findByLabelText(/passphrase/i);
+    fireEvent.change(pass, { target: { value: "hunter2 hunter2" } });
+    fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
+    await screen.findByTestId("editor-body");
+    await waitFor(() => expect(fake.getAiPanel).toHaveBeenCalledWith(old.id, false));
+    expect(await screen.findByTestId("reflection")).toBeInTheDocument();
+  });
 });

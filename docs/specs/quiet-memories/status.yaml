@@ -15,4 +15,5 @@ acs:
   AC-9: {status: passing}
   AC-10: {status: passing}
   AC-11: {status: passing}
+  AC-12: {status: passing}
 stale: []

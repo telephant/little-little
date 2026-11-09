@@ -116,7 +116,6 @@ export function AiPanel(props: {
     case "ready":
       return (
         <div className="panel-ready">
-          <Memories earlier={s.earlier} later={s.later} onOpenEntry={props.onOpenEntry} />
           {phase === "tucked" ? (
             <button className="recall" onClick={props.onRecall}>
               bring it back
@@ -139,6 +138,7 @@ export function AiPanel(props: {
               </div>
             </div>
           )}
+          <Memories earlier={s.earlier} later={s.later} onOpenEntry={props.onOpenEntry} />
         </div>
       );
   }

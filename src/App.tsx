@@ -85,6 +85,7 @@ function App() {
     // Open the most recent entry, or start a fresh one.
     if (list.length > 0) {
       setActive(await ipc.getEntry(list[0].id));
+      loadPanel(list[0].id, false); // arrive to its stored memories and reflection, never an empty side
     } else {
       setActive(await ipc.createEntry());
     }
@@ -171,7 +172,10 @@ function App() {
                 // The pre-restore blank draft is gone; show the restored journal.
                 const list = await ipc.listEntries();
                 setEntries(list);
-                if (list.length > 0) setActive(await ipc.getEntry(list[0].id));
+                if (list.length > 0) {
+                  setActive(await ipc.getEntry(list[0].id));
+                  loadPanel(list[0].id, false);
+                }
               })();
             }}
           />

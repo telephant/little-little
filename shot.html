@@ -37,8 +37,13 @@
       await sleep(300);
       if (view === "journal" && params.get("memories")) {
         (await until(() => document.querySelector(".entry-list li button")))?.click();
-        (await until(() => document.querySelector(".memories-toggle")))?.click();
+        await until(() => document.querySelector(".memories-toggle"));
         await sleep(1800); // let the reflection arrive
+        const r0 = (() => { const e = document.querySelector('[data-testid="reflection"]'); if (!e) return null; const b = e.getBoundingClientRect(); return { top: Math.round(b.top), width: Math.round(b.width), height: Math.round(b.height) }; })();
+        if (params.get("memories") !== "peek") document.querySelector(".memories-toggle")?.click();
+        await sleep(300);
+        const r1 = (() => { const e = document.querySelector('[data-testid="reflection"]'); if (!e) return null; const b = e.getBoundingClientRect(); return { top: Math.round(b.top), width: Math.round(b.width), height: Math.round(b.height) }; })();
+        window.__reflection = { closed: r0, open: r1 };
       }
       if (view === "calendar" && params.get("pick")) {
         (await until(() => document.querySelector('[data-testid="day-' + `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-05"]`)))?.click();
@@ -65,6 +70,10 @@
         sidePanel: rect('[data-testid="side-panel"]'),
         calendar: rect(".calendar"),
         settingsClose: rect(".settings-close"),
+        reflection: window.__reflection ?? null,
+        ruleBlack: rect(".rule-black"),
+        ruleBlue: rect(".rule-blue"),
+        sidePanelScroll: (() => { const e = document.querySelector('[data-testid="side-panel"]'); return e ? { scrollH: e.scrollHeight, clientH: e.clientHeight, scrollTop: e.scrollTop } : null; })(),
         sidePanelShown: !!document.querySelector('[data-testid="side-panel"]') && getComputedStyle(document.querySelector('[data-testid="side-panel"]')).display !== "none",
         grid: rect(".calendar-grid"),
         legend: rect(".calendar-legend"),

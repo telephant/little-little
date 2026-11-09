@@ -62,6 +62,8 @@
   line-height: 1.6;
 }
 
+/* The window never scrolls: each column scrolls on its own and keeps its overscroll to itself. */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
   margin: 0;
   background: var(--white);
@@ -72,8 +74,9 @@ body {
   display: grid;
   /* the side column is narrower on small windows so the journal's editor keeps >= 300px at the 900px minimum */
   grid-template-columns: 1fr 14px minmax(240px, 22vw);
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr); /* minmax(0, …): a tall column scrolls inside its row instead of stretching it */
   height: 100vh;
+  overflow: hidden;
 }
 
 .top-bar {
@@ -112,6 +115,7 @@ body {
 .main-pane {
   padding: 1.5rem 2rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
   min-height: 0;
 }
 
@@ -121,14 +125,23 @@ body {
 .shell.no-side { grid-template-columns: 1fr; }
 .shell.no-side .rule-blue, .shell.no-side .side-panel { display: none; }
 
+/* The memories column scrolls on its own, inside the same 1.5rem inset as the black and blue rules. */
 .side-panel {
-  padding: 1.5rem 1rem;
-  overflow-y: auto;
+  margin: 1.5rem 0;
+  padding: 0 1rem;
+  /* Always reserve the scrollbar track (invisible with overlay scrollbars). With `auto`, opening the memories made
+     the column overflow, a classic scrollbar appeared, the column got ~17px narrower and the reflection's
+     watercolour edge (drawn from its size) changed shape. Measured in WKWebView: 32k pixels changed with `auto`, 0 with
+     `scroll`. `scrollbar-gutter: stable` did not prevent it there. */
+  overflow-y: scroll;
+  overscroll-behavior: contain;
   min-height: 0;
 }
 
 /* Painted column rules (spec D-10): decorative pseudo-element carries the filter. */
 .rule { position: relative; min-height: 0; }
+/* the blue rule has the same top and bottom inset as the black one (the main pane's 1.5rem padding) */
+.rule-blue { margin: 1.5rem 0; }
 .rule::before {
   content: "";
   position: absolute;
@@ -185,7 +198,7 @@ body {
   height: 100%;
   min-height: 0;
 }
-.entry-list { overflow-y: auto; min-height: 0; padding-right: 0.3rem; }
+.entry-list { overflow-y: auto; overscroll-behavior: contain; min-height: 0; padding-right: 0.3rem; }
 .entry-list ul { list-style: none; margin: 1rem 0 0; padding: 0; }
 .entry-list .new-entry { background: none; border: none; padding: 0; color: var(--cobalt); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; cursor: pointer; }
 .entry-list li button {
@@ -223,6 +236,7 @@ body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   resize: none;
   border: none;
   outline: none;
@@ -287,7 +301,8 @@ body {
 /* T-09: AI panel */
 .panel-note { display: flex; flex-direction: column; gap: 0.6rem; color: var(--ink-soft); font-family: var(--serif); font-style: italic; }
 .panel-note button { align-self: flex-start; background: none; border: none; padding: 0; color: var(--cobalt); font-family: var(--display); font-style: normal; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; cursor: pointer; }
-.memories { margin-bottom: 1rem; }
+.memories { margin: 0; }
+.panel-ready > * + .memories { margin-top: 1rem; }
 .memories-toggle { background: none; border: none; padding: 0; color: var(--ink-soft); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.72rem; cursor: pointer; }
 .memories-toggle[aria-expanded="true"] { color: var(--cobalt); }
 .memory-groups { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.7rem; }

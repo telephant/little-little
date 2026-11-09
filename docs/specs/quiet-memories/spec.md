@@ -111,6 +111,12 @@ AC-11  The reflection's sources are unchanged
   Then  it is written from the 3 nearest pages and its "based on" line lists them
   Verify: auto
 
+AC-12  Arriving on a page shows its panel
+  Given a journal with entries
+  When  the user unlocks it (or restores a backup) and the latest page opens
+  Then  that page's stored memories and reflection are looked up without generating, so the right side is not empty
+  Verify: auto
+
 Provisional targets — measure first: 30 s idle, 200 non-space characters, pool of 12 nearest, 3 per side.
 
 ## 7. Non-functional

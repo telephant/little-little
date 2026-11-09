@@ -15,6 +15,7 @@ Retroactive: these tests were written with the code on 2026-11-09 (frontend Vite
 | TC-9 | AC-9 | component | Given related pages on one side only When N memories is opened Then only that group is shown | AiPanel.test.tsx MS-2 |
 | TC-10 | AC-10 | unit (Rust) | Given many related pages When the panel is built Then each side has at most 3, Earlier newest-first, Later oldest-first | prompt/mod.rs ready_panel_groups_neighbours_earlier_and_later |
 | TC-11 | AC-11 | unit (Rust, existing) | Given an entry with related pages When a reflection is generated Then related has the 3 nearest and the prompt contains each snippet | prompt/mod.rs tc7_related_memories_cite_sources, tc9_reflection_context_is_honest |
+| TC-13 | AC-12 | integration | Given a journal with an older page When it is unlocked Then get_ai_panel is called for the latest page with generate=false and its reflection shows | QuietReflection.test.tsx QR-8 |
 | TC-12 | AC-2, AC-5, AC-7 | manual | In the real app: write a new page, stop, wait ~30 s → memories arrive; open an old page → no model activity; click Look back → it asks | user, real window |
 
 ## Manual checklist (TC-12)

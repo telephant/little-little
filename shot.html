@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- DEV ONLY (window-polish C-8): runs the real app against shot-stub.js, drives it to a view and prints layout
+     metrics into #metrics. Open http://localhost:1420/shot.html?view=calendar&pick=1 (view=journal|calendar|search). -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>shot</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <pre id="metrics" style="position:fixed;left:-9999px"></pre>
+    <script type="module">
+      import "/shot-stub.js";
+      const params = new URLSearchParams(location.search);
+      const view = params.get("view") || "calendar";
+      // the paint filters live in index.html's body; reuse them so marks render as in the app
+      const html = await (await fetch("/index.html")).text();
+      const defs = new DOMParser().parseFromString(html, "text/html").querySelector("svg");
+      if (defs) document.body.prepend(defs);
+      await import("/src/main.tsx");
+
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const until = async (fn, ms = 4000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { const v = fn(); if (v) return v; await sleep(50); } return null; };
+      const byText = (sel, re) => [...document.querySelectorAll(sel)].find((e) => re.test(e.textContent || ""));
+
+      const pass = await until(() => document.querySelector('input[type="password"]'));
+      if (pass) {
+        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+        setter.call(pass, "demo demo demo");
+        pass.dispatchEvent(new Event("input", { bubbles: true }));
+        (await until(() => byText("button", /^(unlock|create journal)$/i)))?.click();
+      }
+      await until(() => document.querySelector('[data-testid="editor-body"]'));
+      if (view !== "journal") (await until(() => byText("button", new RegExp(`^${view}$`, "i"))))?.click();
+      await until(() => document.querySelector(view === "calendar" ? '[data-testid="calendar"]' : '[data-testid="main-pane"]'));
+      await sleep(300);
+      if (view === "calendar" && params.get("pick")) {
+        (await until(() => document.querySelector('[data-testid="day-' + `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-05"]`)))?.click();
+        await sleep(500);
+      }
+
+      const rect = (s) => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(r.bottom), left: Math.round(r.left), right: Math.round(r.right), height: Math.round(r.height), width: Math.round(r.width) }; };
+      const pane = document.querySelector('[data-testid="main-pane"]');
+      const cells = [...document.querySelectorAll(".calendar-grid .day")];
+      const rows = {};
+      cells.forEach((c) => { const t = Math.round(c.getBoundingClientRect().top); (rows[t] ??= []).push(Math.round(c.getBoundingClientRect().height)); });
+      const centreY = (sel) => { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return Math.round((r.top + r.bottom) / 2); };
+      const barLine = { wordmark: centreY(".wordmark"), nav: centreY(".view-nav button"), settings: centreY(".settings-button"), privacy: centreY('[data-testid="privacy-badge"]'), bar: centreY(".top-bar") };
+      const metrics = {
+        barLine,
+        viewport: { w: innerWidth, h: innerHeight },
+        pageScroll: { scrollH: document.documentElement.scrollHeight, scrollW: document.documentElement.scrollWidth },
+        pane: pane ? { scrollH: pane.scrollHeight, clientH: pane.clientHeight, scrollW: pane.scrollWidth, clientW: pane.clientWidth, overflowsV: pane.scrollHeight > pane.clientHeight + 1, overflowsH: pane.scrollWidth > pane.clientWidth + 1 } : null,
+        topBar: rect(".top-bar"),
+        wordmark: rect(".wordmark"),
+        privacy: rect('[data-testid="privacy-badge"]'),
+        editor: rect(".editor"),
+        entryList: rect(".entry-list"),
+        sidePanel: rect('[data-testid="side-panel"]'),
+        calendar: rect(".calendar"),
+        grid: rect(".calendar-grid"),
+        legend: rect(".calendar-legend"),
+        dayColumn: rect('[data-testid="day-column"]') || rect(".day-entries"),
+        weekRows: Object.keys(rows).sort((a, b) => a - b).map((t) => Math.min(...rows[t])),
+      };
+      document.getElementById("metrics").textContent = "METRICS " + JSON.stringify(metrics) + " END";
+      document.title = "done";
+    </script>
+  </body>
+</html>

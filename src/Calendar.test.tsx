@@ -1,5 +1,5 @@
 // T-13: TC-26 calendar component behavior + mood picker.
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { Calendar } from "./screens/Calendar";
@@ -110,5 +110,63 @@ describe("painted calendar (paper-ui T-08)", () => {
     const { r } = await renderMonth();
     expect(screen.getByTestId("calendar")).toBeInTheDocument();
     for (const c of [".calendar-grid", ".calendar-legend", ".calendar-header"]) expect(r.container.querySelector(c)).not.toBeNull();
+  });
+});
+
+describe("one-screen calendar (window-polish T-04)", () => {
+  async function openCalendar() {
+    const editor = await startJournal();
+    fireEvent.change(editor, { target: { value: "a day worth a note" } });
+    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalled(), { timeout: 6000 });
+    fireEvent.click(screen.getByRole("button", { name: /^calendar$/i }));
+    return await screen.findByTestId("calendar");
+  }
+  const todayCell = async () => screen.findByTestId(`day-${new Date().toISOString().slice(0, 10)}`);
+
+  /** TC-7: the page itself does not scroll in the calendar view. */
+  it("TC-7: the calendar view uses the fixed pane and hides the AI side panel", async () => {
+    await openCalendar();
+    expect(screen.getByTestId("main-pane")).toHaveClass("main-pane-fixed");
+    expect(document.querySelector(".shell")).toHaveClass("view-calendar");
+    fireEvent.click(screen.getByRole("button", { name: /^search$/i }));
+    await screen.findByTestId("search");
+    expect(screen.getByTestId("main-pane")).not.toHaveClass("main-pane-fixed");
+    expect(document.querySelector(".shell")).not.toHaveClass("view-calendar");
+  });
+
+  /** TC-9: the day column is always there: hint first, then the day's entries. */
+  it("TC-9: day column shows a hint, then the picked day's entries in the same column", async () => {
+    await openCalendar();
+    const column = screen.getByTestId("day-column");
+    expect(within(column).getByTestId("day-hint")).toHaveTextContent(/pick a day/i);
+    expect(screen.queryByTestId("day-entries")).toBeNull();
+    const cell = await todayCell();
+    await waitFor(() => expect(cell).not.toBeDisabled());
+    fireEvent.click(cell);
+    const list = await screen.findByTestId("day-entries");
+    expect(column).toContainElement(list);
+    expect(list).toHaveTextContent(/a day worth a note/);
+    expect(within(column).queryByTestId("day-hint")).toBeNull();
+  });
+
+  /** TC-10: several entries on one day, counts and opening an entry still work. */
+  it("TC-10: a day with ten entries shows its count and lists them in the column", async () => {
+    const editor = await startJournal();
+    fireEvent.change(editor, { target: { value: "first" } });
+    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalled(), { timeout: 6000 });
+    for (let i = 0; i < 9; i++) {
+      const e = await fake.createEntry();
+      await fake.saveEntry(e.id, `extra note ${i + 1}`);
+    }
+    fireEvent.click(screen.getByRole("button", { name: /^calendar$/i }));
+    const cell = await todayCell();
+    await waitFor(() => expect(cell).toHaveAttribute("title", "10 entries"));
+    fireEvent.click(cell);
+    const list = await screen.findByTestId("day-entries");
+    await waitFor(() => expect(list.querySelectorAll("li")).toHaveLength(10));
+    fireEvent.click(within(list).getByRole("button", { name: /extra note 3/i }));
+    await waitFor(() =>
+      expect((screen.getByTestId("editor-body") as HTMLTextAreaElement).value).toContain("extra note 3"),
+    );
   });
 });

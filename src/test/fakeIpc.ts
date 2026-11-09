@@ -109,7 +109,7 @@ export function resetFake() {
     { status: "success", pct: null, done: true },
   ];
   nextEntryMood = null;
-  for (const f of Object.values(fake)) f.mockClear();
+  for (const f of Object.values(fake)) f.mockReset(); // restores the original implementation and drops one-off overrides (test isolation)
 }
 
 export const fake = {

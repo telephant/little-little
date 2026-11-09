@@ -178,10 +178,66 @@ describe("independent scrolling (journal view)", () => {
     expect(screen.getByTestId("main-pane")).toHaveClass("main-pane-fixed");
     expect(screen.getByTestId("entry-list")).toBeInTheDocument();
   });
-  it("other views keep a normally scrolling pane", async () => {
+  it("search and settings keep a normally scrolling pane (the calendar is a fixed pane since window-polish)", async () => {
+    await setUpUnlockedWithEntry();
+    fireEvent.click(screen.getByRole("button", { name: /^search$/i }));
+    await screen.findByTestId("search");
+    expect(screen.getByTestId("main-pane")).not.toHaveClass("main-pane-fixed");
+  });
+});
+
+describe("title bar (window-polish T-03)", () => {
+  const MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)";
+  const WIN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36";
+  afterEach(() => vi.restoreAllMocks());
+
+  /** TC-4: the bar is a deep drag region; its controls never carry a drag attribute. */
+  it("TC-4: top bar is the drag region and its controls are not", async () => {
+    await setUpUnlockedWithEntry();
+    const bar = screen.getByTestId("top-bar");
+    expect(bar).toHaveAttribute("data-tauri-drag-region", "deep");
+    const controls = bar.querySelectorAll("button, a");
+    expect(controls.length).toBeGreaterThanOrEqual(4); // Journal, Calendar, Search, Settings
+    for (const c of controls) expect(c.hasAttribute("data-tauri-drag-region")).toBe(false);
+  });
+
+  /** TC-5 (component half): the inset class only exists on macOS. */
+  it("TC-5: platform-mac class on macOS, absent elsewhere", async () => {
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(MAC);
+    const mac = render(<App />);
+    expect(mac.container.querySelector(".shell")).toHaveClass("platform-mac");
+    mac.unmount();
+    vi.spyOn(window.navigator, "userAgent", "get").mockReturnValue(WIN);
+    const other = render(<App />);
+    expect(other.container.querySelector(".shell")).not.toHaveClass("platform-mac");
+    other.unmount();
+    await screen.findByLabelText(/passphrase/i).catch(() => undefined);
+  });
+
+  /** TC-6: the painted bar still works. */
+  it("TC-6: nav and the status notes keep working", async () => {
     await setUpUnlockedWithEntry();
     fireEvent.click(screen.getByRole("button", { name: /^calendar$/i }));
     await screen.findByTestId("calendar");
-    expect(screen.getByTestId("main-pane")).not.toHaveClass("main-pane-fixed");
+    fireEvent.click(screen.getByRole("button", { name: /^search$/i }));
+    await screen.findByTestId("search");
+    fireEvent.click(screen.getByRole("button", { name: /^journal$/i }));
+    await screen.findByTestId("editor-body");
+    fireEvent.click(screen.getByRole("button", { name: /settings/i }));
+    await screen.findByTestId("settings-pane");
+    expect(screen.getByTestId("activity-dot")).toBeInTheDocument();
+    expect(screen.getByTestId("privacy-badge")).toHaveTextContent(/on-device · stays on this device/i);
+  });
+});
+
+describe("privacy note keeps distinct words in its short form (window-polish)", () => {
+  it("renders the key word and a separate detail span", () => {
+    const local = render(<PrivacyBadge isCloud={false} />);
+    expect(local.getByTestId("privacy-badge").querySelector(".privacy-detail")).toHaveTextContent(/stays on this device/i);
+    expect(local.getByTestId("privacy-badge").firstElementChild).toHaveTextContent(/^On-device$/);
+    local.unmount();
+    const cloud = render(<PrivacyBadge isCloud={true} />);
+    expect(cloud.getByTestId("privacy-badge").firstElementChild).toHaveTextContent(/^Cloud$/);
+    expect(cloud.getByTestId("privacy-badge").querySelector(".privacy-detail")).toHaveTextContent(/text goes to Claude/i);
   });
 });

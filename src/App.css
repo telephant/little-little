@@ -70,7 +70,8 @@ body {
 
 .shell {
   display: grid;
-  grid-template-columns: 1fr 14px minmax(240px, 320px);
+  /* the side column is narrower on small windows so the journal's editor keeps >= 300px at the 900px minimum */
+  grid-template-columns: 1fr 14px minmax(240px, 22vw);
   grid-template-rows: auto 1fr;
   height: 100vh;
 }
@@ -80,10 +81,21 @@ body {
   display: flex;
   align-items: center;
   gap: 1.6rem;
-  padding: 0.7rem 1.6rem;
+  /* Tuned for the real window: tao sizes the title-bar container to (button height + trafficLightPosition.y) and leaves the
+     buttons at its bottom, so their centre line is about y px below the window top. A plain 52px bar (border-box, no vertical
+     padding) centres its content at ~26px, so y=26 in tauri.conf.json puts wordmark, nav and notes on the buttons' line.
+     Change one together with the other and re-check the real window (windowConfig.test.ts pins them). */
+  box-sizing: border-box;
+  height: 52px;
+  min-height: 52px;
+  padding: 0 1.6rem;
   border-bottom: 1px solid var(--hair);
+  user-select: none;
 }
+/* room for the macOS window buttons at the left of the bar (6.4rem: about 30px of air between the buttons and the wordmark, per the user) */
+.platform-mac .top-bar { padding-left: 6.4rem; }
 .wordmark {
+  white-space: nowrap;
   font-family: var(--display);
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -104,7 +116,10 @@ body {
 }
 
 .main-pane-fixed { overflow: hidden; display: flex; flex-direction: column; }
-.main-pane-fixed > .workspace { flex: 1; min-height: 0; }
+.main-pane-fixed > .workspace, .main-pane-fixed > .calendar { flex: 1; min-height: 0; }
+/* calendar view: the AI panel has nothing to show there, so the pane gets the full width */
+.shell.view-calendar { grid-template-columns: 1fr; }
+.shell.view-calendar .rule-blue, .shell.view-calendar .side-panel { display: none; }
 
 .side-panel {
   padding: 1.5rem 1rem;
@@ -127,6 +142,7 @@ body {
 .rule-blue::before { background: var(--cobalt); }
 
 .privacy-badge {
+  white-space: nowrap;
   font-family: var(--display);
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -276,24 +292,27 @@ body {
 
 /* view nav, calendar, mood */
 .view-nav { display: flex; gap: 1.2rem; }
-.view-nav button { background: none; border: none; border-radius: 0; color: var(--ink-soft); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; padding: 0.2rem 0; cursor: pointer; position: relative; }
+.view-nav button { white-space: nowrap; background: none; border: none; border-radius: 0; color: var(--ink-soft); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.78rem; padding: 0.2rem 0; cursor: pointer; position: relative; }
 .view-nav button.active { color: var(--ink); }
 .view-nav button.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 3px; background: var(--cobalt); filter: url(#paint-b); }
 
-.calendar { max-width: 600px; }
+.calendar { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1.6rem; height: 100%; min-height: 0; }
+.calendar-main { display: flex; flex-direction: column; min-height: 0; }
+.day-column { min-height: 0; overflow-y: auto; border-left: 1px solid var(--hair); padding-left: 1.2rem; }
+.day-hint { margin: 0.4rem 0 0; font-family: var(--serif); font-style: italic; color: var(--ink-soft); }
 .calendar-header { display: flex; align-items: center; gap: 1rem; }
 .calendar-header h2 { flex: 1; text-align: center; margin: 0; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 1.1rem; font-weight: 400; }
 .calendar-header button { background: none; border: none; color: var(--cobalt); font-family: var(--display); font-size: 1.3rem; padding: 0.1rem 0.5rem; cursor: pointer; }
-.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.2rem; margin-top: 1rem; }
+.calendar-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); gap: 0.2rem; margin-top: 1rem; }
 .calendar-grid .dow { text-align: center; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.68rem; color: var(--ink-soft); }
-.calendar-grid .day { aspect-ratio: 1; border: none; border-radius: 8px; background: none; color: var(--ink); cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; padding: 0; isolation: isolate; }
+.calendar-grid .day { border: none; border-radius: 8px; background: none; color: var(--ink); cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; padding: 0; isolation: isolate; }
 .calendar-grid .day:disabled { cursor: default; }
 .calendar-grid .day:disabled .day-num { color: var(--ink-muted); }
 .day-num { position: absolute; top: 3px; left: 6px; font-family: var(--display); font-size: 0.68rem; color: var(--ink-soft); }
 .calendar-grid .day.selected::before { content: ""; position: absolute; inset: 2px; background: var(--wash-sky); filter: url(#paint-c); z-index: -1; }
-.calendar-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 1rem; margin: 1.2rem 0 0; padding: 0; }
+.calendar-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.8rem 0 0; padding: 0; flex: none; }
 .calendar-legend li { display: flex; align-items: center; gap: 0.35rem; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.66rem; color: var(--ink-soft); }
-.day-entries { margin-top: 1.2rem; }
+.day-entries { margin-top: 0; }
 .day-entries h3 { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.85rem; font-weight: 400; color: var(--ink-soft); }
 .day-entries ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
 .day-entries button { background: none; border: none; border-bottom: 1px solid var(--hair); border-radius: 0; color: var(--ink); font-family: var(--serif); text-align: left; padding: 0.45rem 0.1rem; cursor: pointer; width: 100%; }
@@ -388,3 +407,8 @@ body {
 .mark-actions .text-link:disabled { color: var(--ink-muted); cursor: default; text-decoration: none; }
 .mark-canvas .hint { font-size: 0.85rem; color: var(--ink-soft); font-style: italic; margin: 0; }
 .mark-canvas .error { color: var(--coral); margin: 0; }
+
+/* narrow windows (the 900px minimum): keep the bar on one row; the privacy note keeps On-device / Cloud and drops its tail */
+@media (max-width: 1000px) {
+  .privacy-detail { display: none; }
+}

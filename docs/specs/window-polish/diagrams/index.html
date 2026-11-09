@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>window-polish — design diagrams</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1f27; --muted: #5b6470;
+    --card: #f6f8fa; --border: #d8dee5; --accent: #2563eb;
+    --check-bg: #fff7e6; --check-border: #e8c15a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151a; --fg: #e6e9ee; --muted: #9aa4b1;
+      --card: #1a2029; --border: #2c3542; --accent: #7aa2ff;
+      --check-bg: #2a2412; --check-border: #8a6d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  header h1 { font-size: 17px; margin: 0 0 6px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; }
+  section { margin-top: 36px; }
+  h2 {
+    font-size: 20px; margin: 0 0 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  p { margin: 10px 0; color: var(--muted); }
+  .diagram {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; overflow: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .diagram pre.plain {
+    margin: 0; overflow-x: auto; color: var(--fg);
+    font: 15px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .diagram:fullscreen {
+    background: var(--bg); border: none; border-radius: 0; padding: 40px;
+  }
+  .dtools {
+    position: sticky; top: 0; z-index: 5;
+    float: right; display: flex; gap: 6px;
+  }
+  .dtools button {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .dtools button:hover { border-color: var(--accent); color: var(--accent); }
+  .check {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--check-bg); border: 1px solid var(--check-border);
+    border-radius: 8px; font-size: 14.5px;
+  }
+  .check strong { display: block; margin-bottom: 4px; }
+  .check ul { margin: 0; padding-left: 20px; }
+  .check li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>window-polish — design diagrams</h1>
+  <nav><a href="#product-flow">Product flow</a>
+<a href="#components">Components</a>
+<a href="#drag-and-zoom">Drag and zoom</a>
+<a href="#calendar-layout">Calendar layout</a></nav>
+</header>
+<main>
+<section id="product-flow">
+<h2>Product flow</h2>
+<div class="diagram"><pre class="plain">1. User launches the app --&gt; a centred 1100x760 window opens with the macOS buttons at the left of our painted top bar
+2. User drags the bar --&gt; the window moves; pressing a nav link or button never starts a drag
+3. User double-clicks the bar --&gt; the window zooms like any macOS window
+4. User shrinks the window --&gt; it stops at 900x620; every view still fits
+5. User opens Calendar --&gt; the month fills the window height, no page scrolling
+6. User clicks a day --&gt; its entries appear in the column beside the month; a long list scrolls inside the column</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is there any moment where the page itself would still scroll (calendar, journal, search, settings)?</li><li>Do the macOS buttons ever overlap the wordmark at the minimum width?</li><li>Does anything about this flow change on a non-macOS system (it should not break, only look native)?</li></ul></div>
+</section>
+<section id="components">
+<h2>Components</h2>
+<p>Config and capability on one side, presentation on the other.</p>
+<div class="diagram"><pre class="mermaid">flowchart LR
+  Conf[C-1 tauri.conf.json] --&gt; Win[Native window Overlay bar]
+  Cap[C-2 capability] --&gt; Win
+  Plat[C-4 isMac] --&gt; Bar[C-3 top bar drag region and inset]
+  Bar --&gt; Win
+  Pane[C-5 fixed main pane] --&gt; Cal[C-6 calendar layout]
+  Cal --&gt; Col[C-7 day column]
+  Shot[C-8 dev screenshot harness] -.-&gt; Cal</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Does anything in the production build depend on the dev-only harness?</li><li>Is the capability applied to the main window only?</li><li>Which component decides the minimum width, and is it the only one?</li></ul></div>
+</section>
+<section id="drag-and-zoom">
+<h2>Drag and zoom</h2>
+<p>What happens when the user presses on the bar.</p>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+  participant U as User
+  participant S as Tauri drag script
+  participant B as Top bar DOM
+  participant C as Capability check
+  participant W as Native window
+  U-&gt;&gt;B: mouse down
+  B-&gt;&gt;S: composed path
+  S-&gt;&gt;S: drag region and not a control?
+  S-&gt;&gt;C: start_dragging or internal_toggle_maximize
+  C--&gt;&gt;S: allowed or denied
+  S-&gt;&gt;W: move or zoom</pre></div>
+<div class="check"><strong>Check</strong><ul><li>What does the user see if the permission were missing (nothing happens)?</li><li>Does a press on the Settings button reach the window at all?</li></ul></div>
+</section>
+<section id="calendar-layout">
+<h2>Calendar layout</h2>
+<p>Regions of the calendar page inside the fixed pane.</p>
+<div class="diagram"><pre class="mermaid">flowchart TB
+  Pane[main pane fixed, no scroll] --&gt; Cal[calendar two columns]
+  Cal --&gt; Main[calendar-main column]
+  Cal --&gt; Col[day column scrolls inside]
+  Main --&gt; Head[month header]
+  Main --&gt; Grid[grid: weekday row then week rows share the height]
+  Main --&gt; Leg[legend]
+  Col --&gt; Hint[hint until a day is picked]
+  Col --&gt; List[entries of the picked day]</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Do six week rows fit at 620 px height with the header and legend?</li><li>Does the day column keep its width when no day is picked (no layout jump)?</li><li>Is the column the only thing that can scroll?</li></ul></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js"></script>
+<script>
+(async () => {
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "strict",
+    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
+    themeVariables: { fontSize: "18px" },
+    // useMaxWidth:false = render at natural size instead of shrinking to the card
+    flowchart: { useMaxWidth: false, nodeSpacing: 55, rankSpacing: 65, padding: 10 },
+    sequence:  { useMaxWidth: false, actorMargin: 100, messageMargin: 46, width: 185, height: 60 },
+    er:        { useMaxWidth: false, minEntityWidth: 120, entityPadding: 18 },
+    state:     { useMaxWidth: false },
+    gantt:     { useMaxWidth: false }
+  });
+  await mermaid.run({ querySelector: ".mermaid" });
+
+  document.querySelectorAll(".diagram").forEach(card => {
+    const svg = card.querySelector("svg");
+    if (!svg) return;
+    const natural = svg.getBoundingClientRect().width || 600;
+    let scale = 1;
+    const apply = () => {
+      svg.style.width = Math.round(natural * scale) + "px";
+      svg.style.height = "auto";
+    };
+    const fit = () => {
+      const avail = card.clientWidth - 34;
+      scale = Math.min(1.6, Math.max(0.55, avail / natural));
+      apply();
+    };
+
+    const tools = document.createElement("div");
+    tools.className = "dtools";
+    const btn = (label, title, fn) => {
+      const b = document.createElement("button");
+      b.textContent = label; b.title = title;
+      b.addEventListener("click", fn);
+      tools.appendChild(b);
+    };
+    btn("−", "Zoom out", () => { scale = Math.max(0.3, scale / 1.25); apply(); });
+    btn("+", "Zoom in",  () => { scale = Math.min(4, scale * 1.25); apply(); });
+    btn("⊡", "Fit to card", fit);
+    btn("⤢", "Fullscreen", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().then(() => { scale = 1; apply(); });
+    });
+    card.prepend(tools);
+    card.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) fit(); });
+
+    fit(); // start fitted to the card; zoom in from there
+  });
+})();
+</script>
+</body>
+</html>

@@ -13,8 +13,17 @@
     "windows": [
       {
         "title": "little-little",
-        "width": 800,
-        "height": 600
+        "width": 1100,
+        "height": 760,
+        "minWidth": 900,
+        "minHeight": 620,
+        "center": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 18,
+          "y": 26
+        }
       }
     ],
     "security": {

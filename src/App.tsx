@@ -13,6 +13,7 @@ import { useReflectionPhase } from "./hooks/useReflectionPhase";
 import { Editor } from "./components/Editor";
 import { EntryList } from "./components/EntryList";
 import { PrivacyBadge } from "./components/PrivacyBadge";
+import { isMac } from "./lib/platform";
 
 type Phase = "loading" | "first-run" | "locked" | "unlocked";
 
@@ -31,6 +32,7 @@ function App() {
   const [onboarding, setOnboarding] = useState(false);
   const panelSeq = useRef(0);
   const { activity, busy } = useActivity(phase === "unlocked");
+  const [mac] = useState(isMac); // decided once at startup
   const reflection = useReflectionPhase();
   const { onReady } = reflection;
 
@@ -97,9 +99,16 @@ function App() {
     loadPanel(id);
   }
 
+  // Journal and calendar are fixed panes (the page never scrolls; inner columns do). The calendar has no use for the AI panel,
+  // so in that view the pane takes the full width.
+  const inWorkView = phase === "unlocked" && !onboarding && !showSettings;
+  const calendarView = inWorkView && view === "calendar";
+
   return (
-    <div className="shell">
-      <header className="top-bar" data-testid="top-bar">
+    <div className={`shell${mac ? " platform-mac" : ""}${calendarView ? " view-calendar" : ""}`}>
+      {/* The bar is the window's title bar (Overlay style): "deep" makes the whole bar draggable while buttons and
+          links never start a drag (Tauri's drag script skips interactive elements). */}
+      <header className="top-bar" data-testid="top-bar" data-tauri-drag-region="deep">
         <span className="wordmark">Little Little</span>
         {phase === "unlocked" && !onboarding && !showSettings && (
           <nav className="view-nav">
@@ -125,7 +134,7 @@ function App() {
         </div>
       </header>
       <main
-        className={`main-pane ${phase === "unlocked" && !onboarding && !showSettings && view === "journal" ? "main-pane-fixed" : ""}`}
+        className={`main-pane ${inWorkView && (view === "journal" || view === "calendar") ? "main-pane-fixed" : ""}`}
         data-testid="main-pane"
       >
         {phase === "first-run" && (

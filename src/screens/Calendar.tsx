@@ -45,6 +45,7 @@ export function Calendar(props: { onOpenEntry: (id: string) => void }) {
 
   return (
     <div className="calendar" data-testid="calendar">
+      <div className="calendar-main">
       <div className="calendar-header">
         <button aria-label="previous month" onClick={() => nav(-1)}>‹</button>
         <h2>{MONTHS[month - 1]} {year}</h2>
@@ -90,21 +91,28 @@ export function Calendar(props: { onOpenEntry: (id: string) => void }) {
           </li>
         ))}
       </ul>
-      {selected && (
-        <div className="day-entries" data-testid="day-entries">
-          <h3>{selected}</h3>
-          <ul>
-            {dayEntries.map((e) => (
-              <li key={e.id}>
-                <button onClick={() => props.onOpenEntry(e.id)}>
-                  {e.mood_label && <span className="mood-label">{e.mood_label} · </span>}
-                  {e.preview || "(empty)"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      </div>
+      <aside className="day-column" data-testid="day-column">
+        {selected ? (
+          <div className="day-entries" data-testid="day-entries">
+            <h3>{selected}</h3>
+            <ul>
+              {dayEntries.map((e) => (
+                <li key={e.id}>
+                  <button onClick={() => props.onOpenEntry(e.id)}>
+                    {e.mood_label && <span className="mood-label">{e.mood_label} · </span>}
+                    {e.preview || "(empty)"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="day-hint" data-testid="day-hint">
+            Pick a day to see its entries.
+          </p>
+        )}
+      </aside>
     </div>
   );
 }

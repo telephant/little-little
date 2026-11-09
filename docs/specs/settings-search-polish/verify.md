@@ -19,7 +19,7 @@
 | AC-8 | TC-11 | pass | Ask button disabled while empty; Enter/click submit |
 | AC-9 | TC-12 | pass | `searching…` and no-match hint |
 | AC-10 | TC-13 | pass | long local date, snippet, answer card before results |
-| AC-11 | TC-14, TC-15, TC-16 | pass (DOM) / **visual in real window open** | headless metrics at 900×600: side panel hidden on settings and search, shown on journal |
+| AC-11 | TC-14, TC-15, TC-16 | pass (DOM) / **visual in real window: journal seen by the user, other screens still open** | headless metrics at 900×600: side panel hidden on settings and search, shown on journal |
 
 ## Measurements (provisional)
 | What | Result |
@@ -42,3 +42,6 @@ A `pnpm tauri dev` instance was already running (process 32451, vite on port 142
 - [ ] Settings: ✕ and Esc close it; "Your data" rows read clearly, Restore sits apart
 - [ ] Search: examples, Ask button, a real question with results and an answer card
 - [ ] No memories column on Search, Settings, Calendar, lock screen, onboarding; present on Journal (AC-11)
+
+## Update 2026-11-09
+The user confirmed the radio (AC-2) and the memories column on the Journal in the real app. Still to eyeball: no memories column on Search, Settings, Calendar, the lock screen and onboarding.

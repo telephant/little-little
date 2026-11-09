@@ -1,6 +1,6 @@
 # quiet-memories — verify (2026-11-09)
 
-**Verdict: pass with follow-ups.** Everything automatable passes in this run. One manual check (TC-12) needs you in the real window: it needs the Rust side restarted and your journal passphrase.
+**Verdict: pass.** Everything automatable passes, and the user confirmed the memories behaviour in the real app on 2026-11-09 (TC-12).
 
 ## Runs (this session)
 - `pnpm check` (exit 0): 15 test files, 215 tests passed; `tsc` clean; `vite build` OK; `cargo test` 75 passed, 6 ignored (live-model tests); `cargo clippy -- -D warnings` clean.
@@ -34,9 +34,14 @@ Not measurable without real use: the 30 s wait, the 200-character minimum and th
 ## Real-app check (not done by me)
 Your running `pnpm tauri dev` serves the new frontend, but the `get_ai_panel(entry_id, generate)` change is Rust, so that instance must be restarted first. I cannot drive it (journal locked behind your passphrase).
 
-## Your hands-on pass (TC-12)
-- [ ] Restart `pnpm tauri dev`
-- [ ] New page, ~40 words, stop: nothing for ~30 s, then memories and a reflection
-- [ ] Keep typing past the wait: nothing arrives mid-thought
-- [ ] Open an older page: stored reflection or a quiet "Look back"; the activity dot stays idle
-- [ ] "N memories" shows Earlier and Later
+## Hands-on pass (TC-12) — confirmed by the user, 2026-11-09 ("memories work in the real app")
+- [x] Restart `pnpm tauri dev`
+- [x] New page, ~40 words, stop: nothing for ~30 s, then memories and a reflection
+- [x] Keep typing past the wait: nothing arrives mid-thought
+- [x] Open an older page: stored reflection or a quiet "Look back"; the activity dot stays idle
+- [x] "N memories" shows Earlier and Later
+
+## Found during real use (fixed, with tests or measurements)
+- Right side empty on arrival after unlocking → AC-12 / QR-8.
+- Reflection edge changed when the memories opened (classic scrollbar narrowed the column) → right column always reserves its scrollbar track; measured in WKWebView, 32k changed pixels before, 0 after.
+- Reflection moved to the top of the column, above the memories control (JL-1).

@@ -6,6 +6,7 @@ import { ipc } from "../lib/ipc";
 import type { Activity, AvailableModels, SettingsView } from "../lib/types";
 import { CloudConfirmDialog } from "../components/CloudConfirmDialog";
 import { StatusChips } from "../components/StatusChips";
+import { PaintedRadio } from "../components/PaintedRadio";
 
 export function Settings(props: {
   settings: SettingsView;
@@ -20,6 +21,17 @@ export function Settings(props: {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Esc leaves Settings — but not while the cloud confirm dialog is open (it owns the key then).
+  const { onClose } = props;
+  useEffect(() => {
+    if (confirming) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirming, onClose]);
 
   useEffect(() => {
     void ipc.listAvailableModels().then(setModels).catch(() => setModels(null));
@@ -58,7 +70,7 @@ export function Settings(props: {
     <div className="settings" data-testid="settings-pane">
       <div className="settings-header">
         <h2>Settings</h2>
-        <button onClick={props.onClose} aria-label="close settings">
+        <button className="settings-close" onClick={props.onClose} aria-label="close settings" title="Close (Esc)">
           ✕
         </button>
       </div>
@@ -67,26 +79,20 @@ export function Settings(props: {
 
       <fieldset className="settings-section">
         <legend>Where your reflections are generated</legend>
-        <label>
-          <input
-            type="radio"
-            className="painted-radio"
-            name="provider"
-            checked={settings.chat_provider === "ollama"}
-            onChange={() => void pickProvider("ollama")}
-          />
+        <PaintedRadio
+          name="provider"
+          checked={settings.chat_provider === "ollama"}
+          onChange={() => void pickProvider("ollama")}
+        >
           On-device (Ollama){models && !models.ollama_running ? " — not running" : ""}
-        </label>
-        <label>
-          <input
-            type="radio"
-            className="painted-radio"
-            name="provider"
-            checked={settings.chat_provider === "claude_cli"}
-            onChange={() => void pickProvider("claude_cli")}
-          />
+        </PaintedRadio>
+        <PaintedRadio
+          name="provider"
+          checked={settings.chat_provider === "claude_cli"}
+          onChange={() => void pickProvider("claude_cli")}
+        >
           Cloud (Claude){models && !models.claude_available ? " — Claude Code not found" : ""}
-        </label>
+        </PaintedRadio>
       </fieldset>
 
       <fieldset className="settings-section">
@@ -148,54 +154,75 @@ export function Settings(props: {
 
       <fieldset className="settings-section">
         <legend>Your data</legend>
+        <p className="hint data-intro">
+          Everything stays on this device unless you save a copy somewhere.
+        </p>
         <div className="data-actions">
-          <button
-            className="text-link"
-            onClick={() => {
-              void (async () => {
-                const dir = await pickOpen({ directory: true }).catch(() => null);
-                if (typeof dir === "string") {
-                  const n = await ipc.exportMarkdown(dir).catch((e) => setError(String(e)));
-                  if (typeof n === "number") setNotice(`${n} entries exported as Markdown.`);
-                }
-              })();
-            }}
-          >
-            Export Markdown…
-          </button>
-          <button
-            className="text-link"
-            onClick={() => {
-              void (async () => {
-                const path = await pickSave({ defaultPath: "little-little-backup.json" }).catch(() => null);
-                if (path) {
-                  const n = await ipc.exportJson(path).catch((e) => setError(String(e)));
-                  if (typeof n === "number") setNotice(`Backup written (${n} entries).`);
-                }
-              })();
-            }}
-          >
-            Back up (JSON)…
-          </button>
-          <button
-            className="text-link"
-            onClick={() => {
-              void (async () => {
-                const path = await pickOpen({ filters: [{ name: "Backup", extensions: ["json"] }] }).catch(() => null);
-                if (typeof path === "string") {
-                  const n = await ipc.restoreJson(path).catch((e) => setError(String(e)));
-                  if (typeof n === "number") {
-                    setNotice(`${n} entries restored — re-indexing in the background.`);
-                    props.onRestored();
+          <div className="data-row">
+            <div className="data-row-text">
+              <span className="data-row-title">Markdown copy</span>
+              <span className="data-row-desc">One .md file per entry, saved into a folder you choose — readable anywhere.</span>
+            </div>
+            <button
+              className="text-link"
+              onClick={() => {
+                void (async () => {
+                  const dir = await pickOpen({ directory: true }).catch(() => null);
+                  if (typeof dir === "string") {
+                    const n = await ipc.exportMarkdown(dir).catch((e) => setError(String(e)));
+                    if (typeof n === "number") setNotice(`${n} entries exported as Markdown.`);
                   }
-                }
-              })();
-            }}
-          >
-            Restore backup…
-          </button>
+                })();
+              }}
+            >
+              Export Markdown…
+            </button>
+          </div>
+          <div className="data-row">
+            <div className="data-row-text">
+              <span className="data-row-title">Backup file</span>
+              <span className="data-row-desc">A single JSON file with every entry, mood and mark — keep it somewhere safe.</span>
+            </div>
+            <button
+              className="text-link"
+              onClick={() => {
+                void (async () => {
+                  const path = await pickSave({ defaultPath: "little-little-backup.json" }).catch(() => null);
+                  if (path) {
+                    const n = await ipc.exportJson(path).catch((e) => setError(String(e)));
+                    if (typeof n === "number") setNotice(`Backup written (${n} entries).`);
+                  }
+                })();
+              }}
+            >
+              Back up (JSON)…
+            </button>
+          </div>
+          <div className="data-divider" role="separator" />
+          <div className="data-row data-row-restore">
+            <div className="data-row-text">
+              <span className="data-row-title">Restore</span>
+              <span className="data-row-desc">Bring a backup back. Only works into an empty journal.</span>
+            </div>
+            <button
+              className="text-link"
+              onClick={() => {
+                void (async () => {
+                  const path = await pickOpen({ filters: [{ name: "Backup", extensions: ["json"] }] }).catch(() => null);
+                  if (typeof path === "string") {
+                    const n = await ipc.restoreJson(path).catch((e) => setError(String(e)));
+                    if (typeof n === "number") {
+                      setNotice(`${n} entries restored — re-indexing in the background.`);
+                      props.onRestored();
+                    }
+                  }
+                })();
+              }}
+            >
+              Restore backup…
+            </button>
+          </div>
         </div>
-        <p className="hint">Restore only works into an empty journal.</p>
       </fieldset>
 
       {notice && <p className="hint">{notice}</p>}

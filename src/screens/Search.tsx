@@ -10,21 +10,32 @@ type AnswerState =
   | { kind: "ready"; answer: SearchAnswer }
   | { kind: "unavailable" };
 
+/** Static prompts for the empty page (A-3): they teach what the journal can be asked, they are not generated from entries. */
+const EXAMPLES = [
+  "When did I last feel anxious about work?",
+  "What has been making me happy lately?",
+  "What have I been worrying about this month?",
+];
+
+const LONG_DATE = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
 export function Search(props: { onOpenEntry: (id: string) => void }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const [hidden, setHidden] = useState(0);
   const [answer, setAnswer] = useState<AnswerState>({ kind: "idle" });
+  const [searching, setSearching] = useState(false);
   const seq = useRef(0);
 
-  async function run(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
+  async function runQuery(raw: string) {
+    const q = raw.trim();
     if (!q) return;
     const mySeq = ++seq.current;
     setAnswer({ kind: "idle" });
+    setSearching(true);
     const out = await ipc.search(q).catch(() => null);
     if (mySeq !== seq.current) return;
+    setSearching(false);
     if (!out) {
       setResults([]);
       setHidden(0);
@@ -47,7 +58,13 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
 
   return (
     <div className="search" data-testid="search">
-      <form className="search-line" onSubmit={(e) => void run(e)}>
+      <form
+        className="search-line"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void runQuery(query);
+        }}
+      >
         <input
           type="search"
           placeholder="Ask your journal… (e.g. when did I last feel anxious about work?)"
@@ -56,7 +73,39 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
           aria-label="search query"
           autoFocus
         />
+        <button type="submit" className="text-link search-submit" data-testid="search-submit" disabled={!query.trim()}>
+          Ask
+        </button>
       </form>
+
+      {results === null && !searching && (
+        <div className="search-intro" data-testid="search-intro">
+          <p>Ask in your own words — answers come from your own entries, and stay on this device unless Cloud is on.</p>
+          <ul className="search-examples">
+            {EXAMPLES.map((ex) => (
+              <li key={ex}>
+                <button
+                  type="button"
+                  className="search-example"
+                  data-testid="search-example"
+                  onClick={() => {
+                    setQuery(ex);
+                    void runQuery(ex);
+                  }}
+                >
+                  {ex}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {searching && (
+        <p className="placeholder" data-testid="search-loading">
+          searching…
+        </p>
+      )}
 
       {answer.kind === "asking" && <p className="placeholder">asking…</p>}
       {answer.kind === "ready" && (
@@ -75,13 +124,22 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
         </p>
       )}
 
-      {results !== null && (
+      {results !== null && !searching && (
         <ul className="search-results" data-testid="search-results">
-          {results.length === 0 && <li className="placeholder search-empty">No matching entries.</li>}
+          {results.length === 0 && (
+            <li className="placeholder search-empty">
+              No matching entries.
+              <span className="search-empty-hint" data-testid="search-empty-hint">
+                {" "}Try different words, or describe the moment instead of naming it.
+              </span>
+            </li>
+          )}
           {results.map((r) => (
             <li key={r.entry_id}>
               <button data-testid="search-result" className="search-note" onClick={() => props.onOpenEntry(r.entry_id)}>
-                <span className="date">{r.created_at.slice(0, 10)}</span>
+                <time className="date" dateTime={r.created_at}>
+                  {LONG_DATE.format(new Date(r.created_at))}
+                </time>
                 <span className="snippet">{r.snippet}</span>
               </button>
             </li>

@@ -117,9 +117,9 @@ body {
 
 .main-pane-fixed { overflow: hidden; display: flex; flex-direction: column; }
 .main-pane-fixed > .workspace, .main-pane-fixed > .calendar { flex: 1; min-height: 0; }
-/* calendar view: the AI panel has nothing to show there, so the pane gets the full width */
-.shell.view-calendar { grid-template-columns: 1fr; }
-.shell.view-calendar .rule-blue, .shell.view-calendar .side-panel { display: none; }
+/* everywhere but the journal the memories column has nothing to show, so the pane gets the full width */
+.shell.no-side { grid-template-columns: 1fr; }
+.shell.no-side .rule-blue, .shell.no-side .side-panel { display: none; }
 
 .side-panel {
   padding: 1.5rem 1rem;
@@ -241,18 +241,32 @@ body {
 .settings { max-width: 560px; display: flex; flex-direction: column; gap: 1.2rem; }
 .settings-header { display: flex; justify-content: space-between; align-items: center; }
 .settings-header h2 { margin: 0; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 1.1rem; font-weight: 400; }
-.settings-header button { background: none; border: none; color: var(--ink-soft); cursor: pointer; font-size: 1rem; }
+.settings-close { width: 32px; height: 32px; display: grid; place-items: center; background: none; border: none; border-radius: 50%; color: var(--ink-soft); cursor: pointer; font-size: 1.2rem; line-height: 1; padding: 0; }
+.settings-close:hover { color: var(--cobalt); background: var(--wash-sky); }
+.settings-close:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 2px; }
 .settings fieldset { border: none; border-top: 1px solid var(--hair); padding: 1rem 0 0.4rem; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 .settings legend { padding: 0 0.6rem 0 0; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; color: var(--ink-soft); }
 .settings select { background: none; color: var(--ink); font-family: var(--serif); border: none; border-bottom: 1px solid var(--hair); border-radius: 0; padding: 0.3rem 0.4rem; margin-left: 0.6rem; }
 .text-link { background: none; border: none; padding: 0; color: var(--cobalt); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; cursor: pointer; }
 .text-link:hover { text-decoration: underline; }
-.data-actions { display: flex; flex-wrap: wrap; gap: 1.4rem; }
-/* painted radio: the dot is a pseudo-element so the filter never touches the control or its label */
-.painted-radio { appearance: none; width: 1.1rem; height: 1.1rem; margin: 0 0.5rem 0 0; vertical-align: -0.2rem; border: none; background: none; position: relative; cursor: pointer; }
-.painted-radio::before { content: ""; position: absolute; inset: 1px; border: 2px solid var(--ink); border-radius: 50%; filter: url(#ink); }
-.painted-radio:checked::after { content: ""; position: absolute; inset: 4px; background: var(--cobalt); border-radius: 50%; filter: url(#paint-s); }
-.painted-radio:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 2px; }
+.data-actions { display: flex; flex-direction: column; gap: 0; }
+.data-row { display: flex; align-items: center; justify-content: space-between; gap: 1.4rem; padding: 0.7rem 0; border-top: 1px solid var(--hair); }
+.data-row:first-child { border-top: none; }
+.data-row-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.data-row-title { font-family: var(--serif); font-size: 1rem; color: var(--ink); }
+.data-row-desc { font-family: var(--serif); font-size: 0.85rem; color: var(--ink-soft); }
+.data-row .text-link { flex: none; white-space: nowrap; }
+.data-divider { height: 0; border-top: 2px solid var(--hair); margin: 0.6rem 0 0; }
+.data-divider + .data-row { border-top: none; }
+/* painted radio: the ring is a pseudo-element with the ink filter; the dot is a real element driven by .is-checked (no filter,
+   no :checked pseudo-element), so the selected state cannot vanish in a webview that renders those differently */
+.painted-choice { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; color: var(--ink-soft); }
+.painted-choice.is-checked { color: var(--ink); }
+.painted-radio { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.radio-mark { position: relative; flex: none; width: 1.25rem; height: 1.25rem; }
+.radio-mark::before { content: ""; position: absolute; inset: 1px; border: 2px solid var(--ink); border-radius: 50%; filter: url(#ink); }
+.is-checked .radio-mark::after { content: ""; position: absolute; inset: 5px; background: var(--cobalt); border-radius: 52% 48% 55% 45% / 48% 54% 46% 52%; }
+.painted-radio:focus-visible + .radio-mark { outline: 2px solid var(--cobalt); outline-offset: 3px; border-radius: 50%; }
 .settings .hint { color: var(--ink-soft); font-family: var(--serif); font-size: 0.85rem; margin: 0; }
 .settings .warning { color: var(--ink-soft); font-size: 0.9rem; }
 .settings .error { color: var(--coral); }
@@ -330,19 +344,29 @@ body {
 .search { max-width: 620px; display: flex; flex-direction: column; gap: 0.9rem; }
 .search input[type="search"] { width: 100%; background: none; color: var(--ink); border: none; border-bottom: 2px solid var(--hair); border-radius: 0; padding: 0.5rem 0.1rem; font-family: var(--serif); font-size: 1.1rem; outline: none; }
 .search input[type="search"]:focus { border-bottom-color: var(--cobalt); }
+.search-line { display: flex; align-items: flex-end; gap: 1rem; }
+.search-line input[type="search"] { flex: 1; min-width: 0; }
+.search-submit { padding: 0.5rem 0.2rem; }
+.search-submit:disabled { color: var(--ink-muted); cursor: default; text-decoration: none; }
+.search-intro p { margin: 0.4rem 0 0.8rem; font-family: var(--serif); color: var(--ink-soft); }
+.search-examples { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.search-example { background: none; border: none; padding: 0.1rem 0 0.1rem 0.9rem; text-align: left; cursor: pointer; font-family: var(--serif); font-style: italic; font-size: 1rem; color: var(--ink); position: relative; }
+.search-example::before { content: ""; position: absolute; left: 0; top: 0.2rem; bottom: 0.2rem; width: 5px; background: var(--sky); filter: url(#paint-b); }
+.search-example:hover { color: var(--cobalt); }
+.search-empty-hint { color: var(--ink-soft); }
 .search-answer { position: relative; padding: 1.2rem 1rem; isolation: isolate; }
 .search-answer::before { content: ""; position: absolute; inset: 0; background: var(--wash-sky); filter: url(#wash2); z-index: -1; }
 .search-answer p { margin: 0 0 0.3rem; font-family: var(--serif); color: var(--ink); }
 .search-answer .sources { font-size: 0.75rem; color: var(--ink-soft); font-style: italic; }
 .hidden-note { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.66rem; color: var(--ink-muted); margin: 0; }
-.search-results { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.7rem; }
+.search-results { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
 .search-results button { width: 100%; text-align: left; background: none; border: none; padding: 0.1rem 0 0.1rem 0.9rem; color: var(--ink); cursor: pointer; position: relative; }
 .search-results button::before { content: ""; position: absolute; left: 0; top: 0.15rem; bottom: 0.15rem; width: 5px; background: var(--sky); filter: url(#paint-b); }
 .search-results .date { display: block; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.66rem; color: var(--ink-soft); }
-.search-results .snippet { display: block; font-family: var(--serif); font-size: 0.92rem; }
+.search-results .snippet { display: block; font-family: var(--serif); font-size: 1rem; line-height: 1.4; margin-top: 0.1rem; }
+.search-results button:hover .snippet { color: var(--cobalt); }
 
 /* M2 T-16: data actions */
-.data-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
 /* M2 T-18: onboarding, chips, activity dot */
 .onboarding { max-width: 560px; display: flex; flex-direction: column; gap: 1.1rem; font-family: var(--serif); }

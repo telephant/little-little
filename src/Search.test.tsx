@@ -113,3 +113,73 @@ describe("painted search (paper-ui T-09)", () => {
     expect(empty).toHaveClass("search-empty");
   });
 });
+
+describe("search page states (settings-search-polish T-05)", () => {
+  /** TC-10 */
+  it("TC-10: the empty page explains itself and offers example questions that run when clicked", async () => {
+    const input = (await openSearch()) as HTMLInputElement;
+    expect(screen.getByTestId("search-intro")).toBeInTheDocument();
+    const examples = screen.getAllByTestId("search-example");
+    expect(examples).toHaveLength(3);
+    const text = examples[0].textContent!.trim();
+    fireEvent.click(examples[0]);
+    expect(input.value).toBe(text);
+    await waitFor(() => expect(fake.search).toHaveBeenCalledWith(text));
+    // once a search has run, the intro makes way for results
+    await waitFor(() => expect(screen.queryByTestId("search-intro")).toBeNull());
+  });
+
+  /** TC-11 */
+  it("TC-11: the Ask button is disabled until there is a query, and submits it", async () => {
+    setFakeSearch(OUT);
+    const input = await openSearch();
+    const ask = screen.getByTestId("search-submit");
+    expect(ask).toBeDisabled();
+    fireEvent.change(input, { target: { value: "  " } });
+    expect(ask).toBeDisabled();
+    fireEvent.change(input, { target: { value: "interview" } });
+    expect(ask).toBeEnabled();
+    fireEvent.click(ask);
+    await waitFor(() => expect(fake.search).toHaveBeenCalledTimes(1));
+    expect(fake.search).toHaveBeenCalledWith("interview");
+    await screen.findAllByTestId("search-result");
+  });
+
+  /** TC-12 */
+  it("TC-12: shows 'searching…' while in flight and a hint when nothing matches", async () => {
+    let release!: (o: SearchOutput) => void;
+    vi.mocked(fake.search).mockImplementationOnce(() => new Promise<SearchOutput>((res) => (release = res)));
+    const input = await openSearch();
+    fireEvent.change(input, { target: { value: "nothing like this" } });
+    fireEvent.click(screen.getByTestId("search-submit"));
+    expect(await screen.findByTestId("search-loading")).toHaveTextContent(/searching…/);
+    release({ results: [], hidden_count: 0 });
+    await waitFor(() => expect(screen.queryByTestId("search-loading")).toBeNull());
+    expect(screen.getByText(/No matching entries/i)).toBeInTheDocument();
+    expect(screen.getByTestId("search-empty-hint")).toBeInTheDocument();
+  });
+});
+
+describe("search results (settings-search-polish T-06)", () => {
+  /** TC-13 */
+  it("TC-13: results show a long date and the snippet; the answer card sits above them", async () => {
+    setFakeSearch(
+      { results: [{ entry_id: "e-z", snippet: "A quiet Monday.", created_at: "2026-11-09T12:00:00Z", distance: 0.2 }], hidden_count: 0 },
+      async () => ({ answer: "A quiet one.", cited_dates: ["2026-11-09"] }),
+    );
+    const input = await openSearch();
+    fireEvent.change(input, { target: { value: "quiet" } });
+    fireEvent.click(screen.getByTestId("search-submit"));
+    const result = await screen.findByTestId("search-result");
+    expect(result).toHaveTextContent("A quiet Monday.");
+    const date = result.querySelector(".date")!;
+    expect(date).toHaveTextContent(/2026/);
+    expect(date).toHaveTextContent(/Nov/);
+    expect(date).toHaveTextContent(/Mon/);
+    const answer = await screen.findByTestId("search-answer");
+    const list = screen.getByTestId("search-results");
+    expect(answer.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(result);
+    await waitFor(() => expect(fake.getEntry).toHaveBeenCalledWith("e-z"));
+  });
+});

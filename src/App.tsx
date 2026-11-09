@@ -103,9 +103,11 @@ function App() {
   // so in that view the pane takes the full width.
   const inWorkView = phase === "unlocked" && !onboarding && !showSettings;
   const calendarView = inWorkView && view === "calendar";
+  // The memories column belongs to the journal only: lock gate, onboarding, calendar, search and settings use the full width.
+  const showSide = inWorkView && view === "journal";
 
   return (
-    <div className={`shell${mac ? " platform-mac" : ""}${calendarView ? " view-calendar" : ""}`}>
+    <div className={`shell${mac ? " platform-mac" : ""}${calendarView ? " view-calendar" : ""}${showSide ? "" : " no-side"}`}>
       {/* The bar is the window's title bar (Overlay style): "deep" makes the whole bar draggable while buttons and
           links never start a drag (Tauri's drag script skips interactive elements). */}
       <header className="top-bar" data-testid="top-bar" data-tauri-drag-region="deep">

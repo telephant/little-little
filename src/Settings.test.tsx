@@ -223,3 +223,92 @@ describe("painted settings and dialog (paper-ui T-10)", () => {
     expect(actions.map((b) => b.textContent)).toEqual(["Cancel", "Send my entries to Claude"]);
   });
 });
+
+describe("painted radio state (settings-search-polish T-01)", () => {
+  const choice = (name: RegExp) => screen.getByRole("radio", { name }).closest("label")!;
+
+  /** TC-1 */
+  it("TC-1: the active provider's radio is checked and its choice is marked is-checked", async () => {
+    await openSettingsFromUnlockedApp();
+    const ollama = screen.getByRole("radio", { name: /on-device|ollama/i });
+    const cloud = screen.getByRole("radio", { name: /claude/i });
+    expect(ollama).toBeChecked();
+    expect(cloud).not.toBeChecked();
+    expect(choice(/on-device|ollama/i)).toHaveClass("is-checked");
+    expect(choice(/claude/i)).not.toHaveClass("is-checked");
+    expect(choice(/on-device|ollama/i).querySelector(".radio-mark")).not.toBeNull();
+  });
+
+  /** TC-2 */
+  it("TC-2: is-checked moves to Cloud after switching", async () => {
+    await openSettingsFromUnlockedApp();
+    fireEvent.click(screen.getByRole("radio", { name: /claude/i }));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /send my entries/i }));
+    await waitFor(() => expect(choice(/claude/i)).toHaveClass("is-checked"));
+    expect(choice(/on-device|ollama/i)).not.toHaveClass("is-checked");
+  });
+});
+
+describe("leaving settings (settings-search-polish T-02)", () => {
+  /** TC-4 */
+  it("TC-4: the ✕ closes settings and returns to the previous view", async () => {
+    await openSettingsFromUnlockedApp();
+    const close = screen.getByRole("button", { name: /close settings/i });
+    expect(close).toHaveClass("settings-close");
+    fireEvent.click(close);
+    expect(screen.queryByTestId("settings-pane")).toBeNull();
+    expect(screen.getByTestId("editor-body")).toBeInTheDocument();
+  });
+
+  /** TC-6 */
+  it("TC-6: Escape closes settings", async () => {
+    await openSettingsFromUnlockedApp();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByTestId("settings-pane")).toBeNull();
+  });
+
+  /** TC-7 */
+  it("TC-7: Escape does not close settings while the cloud confirm dialog is open", async () => {
+    await openSettingsFromUnlockedApp();
+    fireEvent.click(screen.getByRole("radio", { name: /claude/i }));
+    await screen.findByRole("dialog");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByTestId("settings-pane")).toBeInTheDocument();
+  });
+});
+
+describe("your data rows (settings-search-polish T-03)", () => {
+  /** TC-8 */
+  it("TC-8: Your data has an intro and three described rows with one action each", async () => {
+    await openSettingsFromUnlockedApp();
+    const section = screen.getByText("Your data").closest("fieldset")!;
+    expect(section.querySelector(".data-intro")).not.toBeNull();
+    const rows = section.querySelectorAll(".data-row");
+    expect(rows).toHaveLength(3);
+    for (const row of rows) {
+      expect(row.querySelector(".data-row-title")?.textContent?.trim()).toBeTruthy();
+      expect(row.querySelector(".data-row-desc")?.textContent?.trim()).toBeTruthy();
+      const buttons = row.querySelectorAll("button");
+      expect(buttons).toHaveLength(1);
+      expect(buttons[0]).toHaveClass("text-link");
+    }
+    expect(screen.getByRole("button", { name: /export markdown/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /back up/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /restore backup/i })).toBeInTheDocument();
+  });
+
+  /** TC-9 */
+  it("TC-9: Restore sits after a divider and says it only works into an empty journal", async () => {
+    await openSettingsFromUnlockedApp();
+    const section = screen.getByText("Your data").closest("fieldset")!;
+    const divider = section.querySelector(".data-divider")!;
+    expect(divider).not.toBeNull();
+    const kids = [...section.querySelector(".data-actions")!.children];
+    const at = kids.indexOf(divider);
+    expect(kids.slice(0, at).filter((k) => k.matches(".data-row"))).toHaveLength(2);
+    const restore = kids.slice(at + 1).find((k) => k.matches(".data-row"))!;
+    expect(restore).toHaveTextContent(/only works into an empty journal/i);
+    expect(restore.querySelector("button")).toHaveTextContent(/restore backup/i);
+  });
+});

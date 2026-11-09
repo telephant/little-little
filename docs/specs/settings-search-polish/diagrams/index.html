@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>settings-search-polish — design diagrams</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1f27; --muted: #5b6470;
+    --card: #f6f8fa; --border: #d8dee5; --accent: #2563eb;
+    --check-bg: #fff7e6; --check-border: #e8c15a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151a; --fg: #e6e9ee; --muted: #9aa4b1;
+      --card: #1a2029; --border: #2c3542; --accent: #7aa2ff;
+      --check-bg: #2a2412; --check-border: #8a6d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  header h1 { font-size: 17px; margin: 0 0 6px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; }
+  section { margin-top: 36px; }
+  h2 {
+    font-size: 20px; margin: 0 0 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  p { margin: 10px 0; color: var(--muted); }
+  .diagram {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; overflow: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .diagram pre.plain {
+    margin: 0; overflow-x: auto; color: var(--fg);
+    font: 15px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .diagram:fullscreen {
+    background: var(--bg); border: none; border-radius: 0; padding: 40px;
+  }
+  .dtools {
+    position: sticky; top: 0; z-index: 5;
+    float: right; display: flex; gap: 6px;
+  }
+  .dtools button {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .dtools button:hover { border-color: var(--accent); color: var(--accent); }
+  .check {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--check-bg); border: 1px solid var(--check-border);
+    border-radius: 8px; font-size: 14.5px;
+  }
+  .check strong { display: block; margin-bottom: 4px; }
+  .check ul { margin: 0; padding-left: 20px; }
+  .check li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>settings-search-polish — design diagrams</h1>
+  <nav><a href="#product-flow">Product flow</a>
+<a href="#components">Components</a>
+<a href="#side-panel-visibility">Side panel visibility</a>
+<a href="#search-states">Search states</a></nav>
+</header>
+<main>
+<section id="product-flow">
+<h2>Product flow</h2>
+<div class="diagram"><pre class="plain">1. User opens Settings --&gt; page shows Back ✕, provider choice with a clearly filled radio
+2. User clicks the other provider --&gt; the filled dot moves at once
+3. User scrolls to Your data --&gt; three rows each say what they do
+4. User presses ✕ or Esc --&gt; returns to the view they came from
+5. User opens Search --&gt; sees a short explanation and example questions, no memories column
+6. User types a question and presses Search/Enter --&gt; &quot;searching…&quot;, then answer card and dated results
+7. User clicks a result --&gt; Journal opens on that entry, memories column returns</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is it clear on step 1 which provider is active?</li><li>Does leaving Settings return to Search/Calendar if that was the origin?</li></ul></div>
+</section>
+<section id="components">
+<h2>Components</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+  App[C-5 App shell] --&gt; Settings[C-2 Settings]
+  App --&gt; Search[C-4 Search]
+  App --&gt; SidePanel[AiPanel]
+  Settings --&gt; Radio[C-1 PaintedRadio]
+  Settings --&gt; Rows[C-3 DataRow x3]
+  Search --&gt; IPC[(ipc.search / searchAnswer)]
+  Settings --&gt; IPC2[(ipc settings / export)]</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is anything here that needs a backend change? (should be no)</li><li>Is C-5 the only place that decides side-panel visibility?</li></ul></div>
+</section>
+<section id="side-panel-visibility">
+<h2>Side panel visibility</h2>
+<div class="diagram"><pre class="mermaid">flowchart TD
+  A[view + showSettings] --&gt;|journal and not settings| B[shell: side column shown]
+  A --&gt;|calendar / search / settings| C[shell no-side: one column]</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Do gate and onboarding also lose the column? (yes, decided)</li><li>Does the journal layout at 900px stay unchanged?</li></ul></div>
+</section>
+<section id="search-states">
+<h2>Search states</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+  [*] --&gt; idle
+  idle --&gt; searching: submit / example click
+  searching --&gt; results: hits
+  searching --&gt; empty: zero hits
+  results --&gt; searching: new query
+  empty --&gt; searching: new query</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is there a state for search failure? (today: treated as empty)</li><li>Does a stale answer from an older query ever show?</li></ul></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js"></script>
+<script>
+(async () => {
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "strict",
+    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
+    themeVariables: { fontSize: "18px" },
+    // useMaxWidth:false = render at natural size instead of shrinking to the card
+    flowchart: { useMaxWidth: false, nodeSpacing: 55, rankSpacing: 65, padding: 10 },
+    sequence:  { useMaxWidth: false, actorMargin: 100, messageMargin: 46, width: 185, height: 60 },
+    er:        { useMaxWidth: false, minEntityWidth: 120, entityPadding: 18 },
+    state:     { useMaxWidth: false },
+    gantt:     { useMaxWidth: false }
+  });
+  await mermaid.run({ querySelector: ".mermaid" });
+
+  document.querySelectorAll(".diagram").forEach(card => {
+    const svg = card.querySelector("svg");
+    if (!svg) return;
+    const natural = svg.getBoundingClientRect().width || 600;
+    let scale = 1;
+    const apply = () => {
+      svg.style.width = Math.round(natural * scale) + "px";
+      svg.style.height = "auto";
+    };
+    const fit = () => {
+      const avail = card.clientWidth - 34;
+      scale = Math.min(1.6, Math.max(0.55, avail / natural));
+      apply();
+    };
+
+    const tools = document.createElement("div");
+    tools.className = "dtools";
+    const btn = (label, title, fn) => {
+      const b = document.createElement("button");
+      b.textContent = label; b.title = title;
+      b.addEventListener("click", fn);
+      tools.appendChild(b);
+    };
+    btn("−", "Zoom out", () => { scale = Math.max(0.3, scale / 1.25); apply(); });
+    btn("+", "Zoom in",  () => { scale = Math.min(4, scale * 1.25); apply(); });
+    btn("⊡", "Fit to card", fit);
+    btn("⤢", "Fullscreen", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().then(() => { scale = 1; apply(); });
+    });
+    card.prepend(tools);
+    card.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) fit(); });
+
+    fit(); // start fitted to the card; zoom in from there
+  });
+})();
+</script>
+</body>
+</html>

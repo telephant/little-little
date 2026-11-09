@@ -241,3 +241,48 @@ describe("privacy note keeps distinct words in its short form (window-polish)", 
     expect(cloud.getByTestId("privacy-badge").querySelector(".privacy-detail")).toHaveTextContent(/text goes to Claude/i);
   });
 });
+
+describe("side panel only on Journal (settings-search-polish T-04)", () => {
+  const shell = () => document.querySelector(".shell")!;
+
+  /** TC-14 */
+  it("TC-14: the memories column is present only in the unlocked Journal view", async () => {
+    await setUpUnlockedWithEntry();
+    expect(screen.getByTestId("side-panel")).toBeInTheDocument();
+    expect(shell()).not.toHaveClass("no-side");
+
+    fireEvent.click(screen.getByRole("button", { name: /^calendar$/i }));
+    await screen.findByTestId("calendar");
+    expect(shell()).toHaveClass("no-side");
+
+    fireEvent.click(screen.getByRole("button", { name: /^search$/i }));
+    await screen.findByTestId("search");
+    expect(shell()).toHaveClass("no-side");
+
+    fireEvent.click(screen.getByRole("button", { name: /^journal$/i }));
+    await screen.findByTestId("editor-body");
+    expect(shell()).not.toHaveClass("no-side");
+
+    fireEvent.click(screen.getByRole("button", { name: /settings/i }));
+    await screen.findByTestId("settings-pane");
+    expect(shell()).toHaveClass("no-side");
+    fireEvent.click(screen.getByRole("button", { name: /close settings/i }));
+    await screen.findByTestId("editor-body");
+    expect(shell()).not.toHaveClass("no-side");
+  });
+
+  /** TC-15 */
+  it("TC-15: the lock gate and onboarding have no memories column either", async () => {
+    resetFake(); // models unset → onboarding after creating the journal
+    render(<App />);
+    const pass = await screen.findByLabelText(/passphrase/i);
+    expect(shell()).toHaveClass("no-side");
+    fireEvent.change(pass, { target: { value: "hunter2 hunter2" } });
+    fireEvent.click(screen.getByRole("button", { name: /create journal/i }));
+    const skip = await screen.findByRole("button", { name: /skip for now/i });
+    expect(shell()).toHaveClass("no-side");
+    fireEvent.click(skip);
+    await screen.findByTestId("editor-body");
+    expect(shell()).not.toHaveClass("no-side");
+  });
+});

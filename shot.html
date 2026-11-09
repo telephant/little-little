@@ -32,6 +32,7 @@
       }
       await until(() => document.querySelector('[data-testid="editor-body"]'));
       if (view !== "journal") (await until(() => byText("button", new RegExp(`^${view}$`, "i"))))?.click();
+      if (view === "settings") await until(() => document.querySelector('[data-testid="settings-pane"]'));
       await until(() => document.querySelector(view === "calendar" ? '[data-testid="calendar"]' : '[data-testid="main-pane"]'));
       await sleep(300);
       if (view === "calendar" && params.get("pick")) {
@@ -58,6 +59,8 @@
         entryList: rect(".entry-list"),
         sidePanel: rect('[data-testid="side-panel"]'),
         calendar: rect(".calendar"),
+        settingsClose: rect(".settings-close"),
+        sidePanelShown: !!document.querySelector('[data-testid="side-panel"]') && getComputedStyle(document.querySelector('[data-testid="side-panel"]')).display !== "none",
         grid: rect(".calendar-grid"),
         legend: rect(".calendar-legend"),
         dayColumn: rect('[data-testid="day-column"]') || rect(".day-entries"),

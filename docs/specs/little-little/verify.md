@@ -1,3 +1,35 @@
+# Verify — little-little M1 + M2 (closing run 2026-11-09)
+
+**Verdict: pass.** All 29 ACs are passing or manual-ok; the follow-ups carried since 2026-11-05 are closed, except F-4 which moves to the M3 backlog. The earlier run records are kept below unchanged.
+
+## Closing run (2026-11-09)
+
+`pnpm check`: exit 0 — 13 frontend test files, **191 tests**; `tsc`, `vite build`, **72 Rust tests** (6 ignored live tests), `clippy -D warnings` clean. The real app has been launched and used daily since M1 (the lesson recorded in the post-close correction below); the user confirmed the M2 manual checklist (unlock and migrate, moods, calendar, onboarding, cloud dialog, search) is fine.
+
+| Item | Result | Evidence |
+|------|--------|----------|
+| AC-1..AC-13, AC-16..AC-29 | pass | automated tests, per the tables below; still green in this run |
+| AC-14 distress-aware reflection | **manual-ok** (local and Claude) | local: qwen3:4b-instruct (2026-11-05). **Claude provider, live (2026-11-09):** `OLLAMA_TEST=1 CLAUDE_TEST=1 cargo test --lib live_distress_claude -- --ignored --nocapture` — through the real `build_ai_panel` and the sandboxed `claude -p`: warm, no cheerfulness, acknowledges the heavy night, calls back to the 2026-09-07 entry (talking with Sam), encourages reaching out, gives a crisis line (988); 8.9 s. (The test needs `CLAUDE_TEST=1` because it makes a billed call.) |
+| AC-15 light/dark | **superseded** | dark mode was removed by the painted UI (`paper-ui` D-2: light only, verified 2026-11-09); the visual pass F-1 is obsolete |
+| M2 manual checklist M-0..M-4 + search | manual-ok | the user confirmed (2026-11-09) |
+
+### Follow-ups closed or moved
+
+- **F-1** visual pass light/dark — obsolete (light only now; the painted UI passed its own verification).
+- **F-2** TC-21 with the Claude provider — done, see AC-14 above. Note: the fixtures' distress entry `jf-028` is flagged never-send-to-cloud, so the check used the synthetic distress text of the existing live test, not `jf-028`.
+- **F-3** zero-network check — **pass.** The running app held **no network sockets at idle** (`lsof -i` sampled 5 times) and no connection to anything but localhost; the only URL in the Rust code is Ollama at `http://localhost:11434` (plus one test port), the HTTP client is built **without TLS** (`reqwest` default-features off), and the frontend references no external host (fonts are bundled). The cloud path is the sandboxed `claude` CLI subprocess, used only after the one-time confirmation. A packet-level capture during a live write→reflect cycle was not done.
+- **F-4** similarity cutoff — still open, kept in `backlog.md` (M1.1 F-4 / M3 contextual alerts).
+
+### Drift check
+
+Commands: 28 registered; 26 match this spec's design exactly; `set_mark` and `clear_mark` were added by spec `paint-marks`. Migrations: v3 (`entries.mark`) was added by that spec. A note was added to `design.md`. ADRs 0001–0004 still accurate (0005 fixtures, 0006 mark storage belong to later specs).
+
+### Scope
+
+Nothing from `backlog.md` (M3+) was implemented here.
+
+---
+
 # Verify — little-little M1 (run 2026-11-05)
 
 Full check (`pnpm check`): **green** — 12 vitest, 34 cargo tests (+2 ignored live tests run separately, both green), tsc, vite build, `cargo clippy -- -D warnings`. Live Ollama smoke: embed + chat round-trip OK.

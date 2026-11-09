@@ -117,3 +117,7 @@ M2 — all resolved 2026-11-05:
 - [x] Search: instant ranked results + independent async answer; cloud mode hides flagged entries with a "N hidden" note — approved
 - [x] Restore into empty journal only; merge → backlog — approved
 - [x] Onboarding curated shortlist, never auto-selected — approved
+
+## Later additions (not part of this design)
+
+Later specs added to the app without changing this design: `paint-marks` added the commands `set_mark` / `clear_mark`, the `entries.mark` column (migration v3) and ADR-0006; `paper-ui` and `window-polish` changed the frontend look and layout only; `journal-fixtures` added test data (ADR-0005). See their own folders under `docs/specs/`.

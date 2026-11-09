@@ -4,9 +4,9 @@ One-liners for later milestones. M1 (walking skeleton) lives in spec.md.
 
 ## M1.1 — Verification follow-ups (from verify.md, accepted 2026-11-05)
 
-- M1.1 F-1 Visual pass: light/dark themes + typing feel while embedding (`pnpm tauri dev`) — P1
-- M1.1 F-2 TC-21 distress reflection with provider=claude_cli (needs signed-in Claude Code) — P1
-- M1.1 F-3 NFR zero-network check: `lsof -i` during a write→reflect cycle — P2
+- ~~M1.1 F-1 Visual pass: light/dark themes~~ — obsolete (light only since paper-ui, verified 2026-11-09)
+- ~~M1.1 F-2 TC-21 distress reflection with provider=claude_cli~~ — done 2026-11-09 (live, warm tone)
+- ~~M1.1 F-3 NFR zero-network check~~ — done 2026-11-09 (no sockets at idle, localhost-only code, no TLS client); a packet capture during a live cycle was not done
 - M1.1 F-4 Re-log retrieval distances with the live embedding model; decide similarity cutoff — P2
 
 ## M2 — Make it a real daily app (IN PROGRESS — promoted to spec.md 2026-11-05)

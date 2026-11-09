@@ -2,6 +2,8 @@
 
 Feature id stays `paper-ui` (folder name, history); the look is no longer paper. See D-2.
 
+> Later specs changed parts of what this one describes: `paint-marks` (an entry can carry a painted mark that replaces the default mood mark; colour per stroke), and `window-polish` (the calendar page is a fixed one-screen layout with a day column and no AI side panel; the top bar is the 52 px macOS title bar; the privacy note shortens below 1000 px). The ACs below were verified against the code as of 2026-11-09.
+
 ## 0. Review guide
 
 **Summary:** Redraw the whole Little Little interface as hand-painted marker work on a plain

@@ -1,10 +1,9 @@
 feature: paper-ui          # "Painted UI"; folder name kept for history
-stage: implement
+stage: done
 updated: 2026-11-06
 decisions: {D-1: decided, D-2: decided, D-3: decided, D-4: decided, D-5: decided, D-6: decided, D-7: decided, D-8: decided, D-9: decided, D-10: decided}
-gates: {init: approved, design: approved, plan: approved, implement: pending, verify: pending}
+gates: {init: approved, design: approved, plan: approved, implement: approved, verify: approved}
 # design gate approved implicitly 2026-11-06 when the user asked to finish via /spec-*
-# implement gate stays pending: T-01..T-12 done (107 tests green); T-13 (AC-16 interactive pass, AC-13 look) is the user's.
 acs:
   AC-1: {status: passing}
   AC-2: {status: passing}
@@ -18,8 +17,8 @@ acs:
   AC-10: {status: passing}
   AC-11: {status: passing}
   AC-12: {status: passing}
-  AC-13: {status: in-progress}
+  AC-13: {status: manual-ok}
   AC-14: {status: passing}
   AC-15: {status: passing}
-  AC-16: {status: todo}
+  AC-16: {status: manual-ok}
 stale: []

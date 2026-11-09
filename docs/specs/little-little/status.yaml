@@ -1,8 +1,8 @@
 feature: little-little
-stage: verify          # M2: all ACs green incl. live runs; user's interactive pass completes it
+stage: done
 updated: 2026-11-05
 decisions: {D-1: decided, D-2: decided, D-3: decided, D-4: decided, D-5: decided, D-6: decided, D-7: decided, D-8: decided, D-9: decided}
-gates: {init: approved, design: approved, plan: approved, implement: approved, verify: pending}
+gates: {init: approved, design: approved, plan: approved, implement: approved, verify: approved}
 acs:
   # M1 (verified 2026-11-05)
   AC-1: {status: passing}
@@ -19,7 +19,7 @@ acs:
   AC-12: {status: passing}
   AC-13: {status: passing}
   AC-14: {status: manual-ok}
-  AC-15: {status: manual-ok}
+  AC-15: {status: manual-ok}  # superseded: light only since paper-ui
   AC-16: {status: passing}
   AC-17: {status: passing}
   # M2

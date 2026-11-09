@@ -1,44 +1,44 @@
 # journal-fixtures — verify
 
-Automated ACs: **AC-1..AC-10 all passing** (TC-1..TC-9 in every `pnpm check`; TC-10 live:
-`OLLAMA_TEST=1 cargo test --lib live_probe_quality -- --ignored --nocapture` — ran 2026-11-05,
-**7/7 probes hit top-5** against nomic-embed-text, bar was 5-of-6).
+Verified 2026-11-09. **Verdict: pass.** AC-1..AC-10 automated (re-run this session); AC-11 confirmed by the user in the real app.
 
-Remaining: **AC-11, the interactive pass** — yours to run.
+## Run (this session)
 
-## Before you start — wipe the DEV journal only
+`pnpm check`: exit 0 (191 frontend tests, 72 Rust tests, clippy clean; the 10 `testdata` tests run in every check). Live probe re-run:
+`OLLAMA_TEST=1 cargo test --lib live_probe_quality -- --ignored --nocapture` against `nomic-embed-text:latest` — **7/7 probes hit the top 5** (bar was 5 of 6); all 57 entries embedded in **0.6 s**.
 
-The backup restores only into an empty journal, so the dev journal must go first.
+## Results
 
-- Data dir: `~/Library/Application Support/com.telephant.little-little/`
-- Delete **only** `journal.db`, `journal.db-shm`, `journal.db-wal`.
-- **Do NOT touch `journal.my-real-one.db*`** — that is your real journal, parked.
-
-```sh
-cd ~/Library/"Application Support"/com.telephant.little-little
-rm journal.db journal.db-shm journal.db-wal
-```
-
-Backup file to restore: `src-tauri/tests/fixtures/journal-backup.json` (57 entries,
-2026-05-04 → 2026-11-03, moods ship null so the live pipeline classifies them).
-
-## Manual checklist (AC-11)
-
-Run `pnpm tauri dev`, then:
-
-- [ ] **M-1** Onboard fresh (pick models), Settings → Restore backup → `journal-backup.json` → notice says **"57 entries restored"** and the entry list fills (newest open).
-- [ ] **M-2** Status chips show indexing, then moods fill; calendar shows ~6 months with a believable color spread (work-stress dips, race-day highs).
-- [ ] **M-3** Search three probes — "when did I decide to leave my job", "how did my first 10K race go", "my first pottery bowl out of the kiln" — instant results look right and the AI answer cites sensible dates.
-- [ ] **M-4** Write a new work-themed entry (job, team, manager) → its reflection calls back to a work-arc entry by date.
-- [ ] **M-5** Switch provider to Cloud → search "when was mum's surgery" → the two no_cloud entries are hidden and the hidden-count notice explains it; the distress entry (jf-028) never leaves the device.
-
-When all five pass, say so and `/spec-verify journal-fixtures` closes the milestone
-(status.yaml AC-11 → passing, gate `verify` → approved).
+| AC | Test | Result | Evidence |
+|----|------|--------|----------|
+| AC-1 source validates | TC-1 `tc1_source_validates_full_size` (+ `source_is_structurally_valid`) | pass | cargo test |
+| AC-2 backup output conforms | TC-7 `tc7_backup_conforms_to_export_v1` | pass | cargo test |
+| AC-3 backup restores | TC-8 `tc8_backup_restores_round_trip` | pass | cargo test |
+| AC-4 outputs in sync | TC-9 `tc9_outputs_in_sync` | pass | cargo test (still byte-identical after the `mark` field was added: it is skipped when empty) |
+| AC-5 story arcs | TC-2 `tc2_story_arcs` | pass | cargo test |
+| AC-6 privacy coverage | TC-3 `tc3_privacy_coverage` | pass | cargo test |
+| AC-7 distress entry present | TC-4 `tc4_distress_entry` | pass | cargo test |
+| AC-8 edge cases present | TC-5 `tc5_edge_cases` | pass | cargo test |
+| AC-9 moods ship null | TC-6 `tc6_moods_ship_null` | pass | cargo test |
+| AC-10 search probes plausible | TC-10 `live_probe_quality` (live, ignored) | pass | 7/7 hit top-5 this session |
+| AC-11 interactive pass | TC-11 (M-1..M-5) | **manual-ok** | the user confirmed all five steps worked in the real app (2026-11-09) |
 
 ## Measurements
 
 | What | Target | Observed |
 |------|--------|----------|
-| Embed 57 entries (live, dev machine) | — | **2.7 s** (TC-10 run, 2026-11-05) |
-| Restore-to-ready (embed + moods, stopwatch to idle chips) | ~30 s [assumption] | _pending — record during M-2_ |
-| Probe quality | ≥5/6 | **7/7** |
+| Embed 57 entries (live, dev machine) | n/a | **0.6 s** (2026-11-09); 2.7 s on 2026-11-05 |
+| Restore-to-ready (stopwatch to idle chips) | ~30 s [assumption] | not timed during the user's pass; no complaint reported |
+| Probe quality | >= 5/6 | **7/7** |
+
+## Drift check
+
+Names and paths match: `src-tauri/tests/fixtures/journal-backup.json`, `journal-dataset.json`, `journal60.json`, the `testdata` module, Settings "Restore backup". The backup format gained an optional `mark` field (paint-marks) that is skipped when empty, so the fixture files are unchanged and still verified by TC-9. ADR-0005 (fixtures source) is still accurate. No README claim to fix.
+
+## Scope
+
+Nothing beyond the spec was built. Backlog items (parameterised generator, non-English variant, auto-restore flag, expanded probe suite) are untouched.
+
+## Findings
+
+None open.

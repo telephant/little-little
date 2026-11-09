@@ -62,7 +62,7 @@ In the real Tauri webview (WKWebView, dev window) the brush marks, black/blue wo
 | ✅ 2026-11-06 [T-10](tasks/T-10.md) | Settings and cloud dialog restyle | AC-4, AC-14 | T-02 |
 | ✅ 2026-11-06 [T-11](tasks/T-11.md) | Gate and onboarding restyle | AC-4 | T-03 |
 | ✅ 2026-11-06 [T-12](tasks/T-12.md) | Legacy sweep and full check | AC-1, AC-4, AC-15 | T-05, T-06, T-07, T-08, T-09, T-10, T-11 |
-| [T-13](tasks/T-13.md) | Interactive pass (manual) | AC-16, AC-13 | T-12 |
+| ✅ 2026-11-09 [T-13](tasks/T-13.md) | Interactive pass (manual) | AC-16, AC-13 | T-12 |
 
 ## Definition of Done (every task)
 

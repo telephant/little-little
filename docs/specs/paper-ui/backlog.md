@@ -1,8 +1,6 @@
 # Painted UI — backlog
 
-- M2 Paint your own mark per entry — draw with the pointer (or shuffle) and store the SVG path with
-  the entry so it replaces the default mood mark; needs a schema field, export/restore support and a
-  size limit; P2
+- ~~M2 Paint your own mark per entry~~ — **done in `docs/specs/paint-marks/` (verified 2026-11-09)**
 - M2 Deeper reference palette — ultramarine blue and vermilion line work taken from the GSK/SKB
   shots, as an optional accent set; P3
 - M2 Animated "pending" mood — a quiet pulse on the open ring while the classifier is still reading

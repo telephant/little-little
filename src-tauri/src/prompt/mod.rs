@@ -294,6 +294,48 @@ mod tests {
         let _ = ids;
     }
 
+    /// F-2 (M1.1): the same synthetic distress entry as the local test, reflected through the real Claude provider
+    /// (`claude -p`, sandboxed). BILLED: only runs with CLAUDE_TEST=1 (and OLLAMA_TEST=1 for the local embeddings).
+    /// Run: OLLAMA_TEST=1 CLAUDE_TEST=1 cargo test --lib live_distress_claude -- --ignored --nocapture
+    #[tokio::test]
+    #[ignore]
+    async fn live_distress_claude_cli_for_manual_review() {
+        if std::env::var("OLLAMA_TEST").as_deref() != Ok("1") || std::env::var("CLAUDE_TEST").as_deref() != Ok("1") {
+            return;
+        }
+        use crate::providers::ollama;
+        let dir = tempfile::tempdir().unwrap();
+        let s = Storage::open(&dir.path().join("j.db"), "p").unwrap();
+        let dim = ollama::probe_dim(ollama::BASE_URL, "nomic-embed-text:latest").await.unwrap();
+        s.apply_embed_model("nomic-embed-text:latest", dim).unwrap();
+        let _ids = load_fixtures(&s);
+        let embedder = ollama::OllamaEmbed {
+            base_url: ollama::BASE_URL.into(),
+            model: "nomic-embed-text:latest".into(),
+        };
+        process_pending(&s, &embedder).await.unwrap();
+        let id = s.create_entry().unwrap().id;
+        s.save_entry(
+            &id,
+            "I can't stop crying tonight. Everything feels pointless and I'm so tired of \
+             pretending I'm fine. I don't see how tomorrow gets better.",
+        )
+        .unwrap();
+        process_pending(&s, &embedder).await.unwrap();
+        let provider = AnyChatProvider::Claude(crate::providers::claude_cli::ClaudeCli::default());
+        let t0 = std::time::Instant::now();
+        let panel = build_ai_panel(&s, &provider, &id, false).await.unwrap();
+        println!("MEASURE reflection latency (claude -p): {:?}", t0.elapsed());
+        match panel {
+            PanelState::Ready { reflection, related } => {
+                println!("--- DISTRESS REFLECTION (live claude -p) ---");
+                println!("{}", reflection.body);
+                println!("--- context: {:?}", related.iter().map(|r| &r.created_at).collect::<Vec<_>>());
+            }
+            other => println!("panel state: {other:?}"),
+        }
+    }
+
     /// TC-16 backend half: regenerate stores a new reflection and dismisses nothing
     /// implicitly; dismiss flags the row.
     #[tokio::test]

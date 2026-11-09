@@ -35,6 +35,11 @@
       if (view === "settings") await until(() => document.querySelector('[data-testid="settings-pane"]'));
       await until(() => document.querySelector(view === "calendar" ? '[data-testid="calendar"]' : '[data-testid="main-pane"]'));
       await sleep(300);
+      if (view === "journal" && params.get("memories")) {
+        (await until(() => document.querySelector(".entry-list li button")))?.click();
+        (await until(() => document.querySelector(".memories-toggle")))?.click();
+        await sleep(1800); // let the reflection arrive
+      }
       if (view === "calendar" && params.get("pick")) {
         (await until(() => document.querySelector('[data-testid="day-' + `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-05"]`)))?.click();
         await sleep(500);

@@ -5,10 +5,34 @@ import type { ReflectionPhase } from "../hooks/useReflectionPhase";
 
 /** "N memories" control: notes appear on hover, focus or click; leave, blur-out or Esc hides them.
  *  Its state is independent of the reflection phase (spec AC-12). */
-function Memories(props: { related: RelatedEntry[]; onOpenEntry: (id: string) => void }) {
+function Memories(props: {
+  earlier: RelatedEntry[];
+  later: RelatedEntry[];
+  onOpenEntry: (id: string) => void;
+}) {
   const [open, setOpen] = useState(false);
-  const n = props.related.length;
+  const n = props.earlier.length + props.later.length;
   if (n === 0) return null;
+  const group = (title: string, items: RelatedEntry[]) =>
+    items.length === 0 ? null : (
+      <section role="group" aria-label={title} className="memory-group">
+        <h3 className="memory-group-title">{title}</h3>
+        <ul className="memory-list">
+          {items.map((r) => (
+            <li key={r.entry_id}>
+              <button
+                data-testid="memory-card"
+                className="memory-card"
+                onClick={() => props.onOpenEntry(r.entry_id)}
+              >
+                <span className="date">{r.created_at.slice(0, 10)}</span>
+                <span className="snippet">{r.snippet}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
   return (
     <div
       className="memories"
@@ -30,20 +54,10 @@ function Memories(props: { related: RelatedEntry[]; onOpenEntry: (id: string) =>
         {n} {n === 1 ? "memory" : "memories"}
       </button>
       {open && (
-        <ul className="memory-list">
-          {props.related.map((r) => (
-            <li key={r.entry_id}>
-              <button
-                data-testid="memory-card"
-                className="memory-card"
-                onClick={() => props.onOpenEntry(r.entry_id)}
-              >
-                <span className="date">{r.created_at.slice(0, 10)}</span>
-                <span className="snippet">{r.snippet}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="memory-groups">
+          {group("Earlier", props.earlier)}
+          {group("Later", props.later)}
+        </div>
       )}
     </div>
   );
@@ -59,6 +73,8 @@ export function AiPanel(props: {
   motion?: "drift" | "fade";
   onAnimationEnd?: () => void;
   onRecall?: () => void;
+  /** Ask for memories and a reflection for the entry that is open (the quiet "Look back"). */
+  onLookBack?: () => void;
 }) {
   const phase = props.phase ?? "none";
   const s = props.state;
@@ -82,6 +98,15 @@ export function AiPanel(props: {
           Nothing to relate yet — as you write more, your past entries will show up here.
         </p>
       );
+    case "not_requested":
+      return (
+        <div className="panel-note" data-testid="look-back">
+          <p className="placeholder">Nothing has been looked up for this entry.</p>
+          <button className="text-link" onClick={props.onLookBack}>
+            Look back
+          </button>
+        </div>
+      );
     case "provider_unavailable":
       return (
         <div className="panel-note">
@@ -91,7 +116,7 @@ export function AiPanel(props: {
     case "ready":
       return (
         <div className="panel-ready">
-          <Memories related={s.related} onOpenEntry={props.onOpenEntry} />
+          <Memories earlier={s.earlier} later={s.later} onOpenEntry={props.onOpenEntry} />
           {phase === "tucked" ? (
             <button className="recall" onClick={props.onRecall}>
               bring it back

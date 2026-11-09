@@ -290,7 +290,9 @@ body {
 .memories { margin-bottom: 1rem; }
 .memories-toggle { background: none; border: none; padding: 0; color: var(--ink-soft); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.72rem; cursor: pointer; }
 .memories-toggle[aria-expanded="true"] { color: var(--cobalt); }
-.memory-list { list-style: none; margin: 0.6rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.memory-groups { display: flex; flex-direction: column; gap: 1rem; margin-top: 0.7rem; }
+.memory-group-title { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.66rem; color: var(--ink-muted); }
+.memory-list { list-style: none; margin: 0.4rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 .memory-card { display: block; width: 100%; text-align: left; background: none; border: none; padding: 0.1rem 0 0.1rem 0.9rem; color: var(--ink); cursor: pointer; position: relative; }
 .memory-card::before { content: ""; position: absolute; left: 0; top: 0.15rem; bottom: 0.15rem; width: 5px; background: var(--sky); filter: url(#paint-b); }
 .memory-card .date { display: block; font-family: var(--display); text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.66rem; color: var(--ink-soft); }

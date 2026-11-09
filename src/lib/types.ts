@@ -52,8 +52,17 @@ export type PanelState =
   | { state: "models_not_chosen" }
   | { state: "thinking" }
   | { state: "nothing_to_relate" }
+  | { state: "not_requested" }
   | { state: "provider_unavailable"; reason: string }
-  | { state: "ready"; related: RelatedEntry[]; reflection: AiResponse };
+  | {
+      state: "ready";
+      /** The nearest entries the reflection was written from. */
+      related: RelatedEntry[];
+      reflection: AiResponse;
+      /** Related entries written before this one (nearest in time first) and after it. */
+      earlier: RelatedEntry[];
+      later: RelatedEntry[];
+    };
 
 export interface PullProgress {
   status: string;

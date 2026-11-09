@@ -41,6 +41,11 @@ let searchAnswerImpl: () => Promise<SearchAnswer> = async () => ({
 });
 
 /** Tests set what the backend panel pipeline would return. */
+/** When true, a lookup that does not ask to generate answers `not_requested` (an entry with no stored reflection). */
+let quietLookup = false;
+export function setFakeQuietLookup(on: boolean) {
+  quietLookup = on;
+}
 export function setFakePanelState(s: PanelState) {
   panelState = s;
 }
@@ -94,6 +99,7 @@ export function resetFake() {
   counter = 0;
   settings = defaultSettings();
   panelState = { state: "nothing_to_relate" };
+  quietLookup = false;
   searchOutput = { results: [], hidden_count: 0 };
   searchAnswerImpl = async () => ({ answer: "fake answer", cited_dates: [] });
   availableModels = {
@@ -283,7 +289,9 @@ export const fake = {
   }),
   search: vi.fn(async (): Promise<SearchOutput> => structuredClone(searchOutput)),
   searchAnswer: vi.fn(async (): Promise<SearchAnswer> => searchAnswerImpl()),
-  getAiPanel: vi.fn(async (): Promise<PanelState> => structuredClone(panelState)),
+  getAiPanel: vi.fn(async (_entryId: string, generate: boolean): Promise<PanelState> =>
+    !generate && quietLookup ? { state: "not_requested" } : structuredClone(panelState),
+  ),
   regenerateReflection: vi.fn(async (entryId: string): Promise<PanelState> => {
     if (panelState.state === "ready") {
       panelState = {

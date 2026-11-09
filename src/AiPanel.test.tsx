@@ -1,17 +1,24 @@
 // T-09: AI panel — memories, reflection, regenerate/dismiss, fallbacks.
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { fake, resetFake, setFakeModelsChosen, setFakePanelState } from "./test/fakeIpc";
 import type { AiResponse, RelatedEntry } from "./lib/types";
 import { LINGER_KEYS } from "./hooks/useReflectionPhase";
+import { reflectTiming } from "./hooks/useReflectIdle";
 
 vi.mock("./lib/ipc", () => import("./test/fakeIpc").then((m) => ({ ipc: m.fake })));
 
+// These suites exercise the panel itself, so the "wait for a long pause" rule is switched off here;
+// QuietReflection.test.tsx covers that rule.
+const defaultTiming = { ...reflectTiming };
 beforeEach(() => {
   resetFake();
   setFakeModelsChosen();
+  reflectTiming.idleMs = 0;
+  reflectTiming.minChars = 0;
 });
+afterEach(() => Object.assign(reflectTiming, defaultTiming));
 
 const related: RelatedEntry[] = [
   { entry_id: "e-past-1", snippet: "The interview went so much better than I feared.", distance: 0.3, created_at: "2026-03-06T21:30:00Z" },
@@ -39,7 +46,7 @@ async function startJournal() {
 
 describe("AI panel (T-09)", () => {
   it("ready state renders memory cards with source links and the reflection", async () => {
-    setFakePanelState({ state: "ready", related, reflection });
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
     const editor = await startJournal();
     fireEvent.change(editor, { target: { value: "new interview nerves" } });
     await waitFor(() => expect(fake.getAiPanel).toHaveBeenCalled(), { timeout: 6000 });
@@ -63,7 +70,7 @@ describe("AI panel (T-09)", () => {
    * closes, dismiss persisted, entry unchanged.
    */
   it("TC-16: regenerate replaces the reflection; dismiss closes it", async () => {
-    setFakePanelState({ state: "ready", related, reflection });
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
     const editor = await startJournal();
     fireEvent.change(editor, { target: { value: "hello" } });
     await screen.findByTestId("reflection-body", undefined, { timeout: 6000 });
@@ -125,7 +132,7 @@ const endAnimation = (el: Element) => {
 };
 
 async function arrivedIdle() {
-  setFakePanelState({ state: "ready", related, reflection });
+  setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
   const editor = await startJournal();
   fireEvent.change(editor, { target: { value: "k" } });
   await screen.findByTestId("reflection", undefined, settle);
@@ -148,11 +155,11 @@ describe("reflection lifecycle (paper-ui T-06)", () => {
 
   /** TC-11 */
   it("TC-11: arriving while the user is typing goes straight to tucked", async () => {
-    setFakePanelState({ state: "ready", related, reflection });
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
     const editor = await startJournal();
     fake.getAiPanel.mockImplementationOnce(async () => {
       await new Promise((r) => setTimeout(r, 300));
-      return { state: "ready", related, reflection } as never;
+      return { state: "ready", related, reflection, earlier: related, later: [] } as never;
     });
     fireEvent.change(editor, { target: { value: "k" } });
     await waitFor(() => expect(fake.getAiPanel).toHaveBeenCalled(), settle);
@@ -214,7 +221,7 @@ describe("reflection lifecycle (paper-ui T-06)", () => {
 
 describe("memories and panel states (paper-ui T-07)", () => {
   async function readyPanel() {
-    setFakePanelState({ state: "ready", related, reflection });
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later: [] });
     const editor = await startJournal();
     fireEvent.change(editor, { target: { value: "k" } });
     const control = await screen.findByRole("button", { name: /2 memories/i }, { timeout: 6000 });
@@ -273,5 +280,40 @@ describe("memories and panel states (paper-ui T-07)", () => {
     expect(screen.getByRole("button", { name: /dismiss/i })).toBeInTheDocument();
     expect(screen.getByTestId("reflection-body")).toHaveTextContent(/been here before/);
     expect(screen.getByTestId("reflection-sources")).toHaveTextContent(/based on 2026-03-06, 2026-04-11/);
+  });
+});
+
+describe("memories before and after this page (memories-sides)", () => {
+  const later: RelatedEntry[] = [
+    { entry_id: "e-later-1", snippet: "Looking back, the interview opened a door.", distance: 0.4, created_at: "2026-12-02T09:00:00Z" },
+  ];
+
+  /** MS-1: one control, two plain groups: Earlier and Later. */
+  it("MS-1: the memories control opens two groups, Earlier and Later", async () => {
+    setFakePanelState({ state: "ready", related, reflection, earlier: related, later });
+    const editor = await startJournal();
+    fireEvent.change(editor, { target: { value: "new interview nerves" } });
+    await waitFor(() => expect(fake.getAiPanel).toHaveBeenCalled(), { timeout: 6000 });
+    fireEvent.click(await screen.findByRole("button", { name: /3 memories/i }));
+    const earlierGroup = screen.getByRole("group", { name: /earlier/i });
+    const laterGroup = screen.getByRole("group", { name: /later/i });
+    expect(earlierGroup.querySelectorAll('[data-testid="memory-card"]')).toHaveLength(2);
+    expect(laterGroup.querySelectorAll('[data-testid="memory-card"]')).toHaveLength(1);
+    expect(laterGroup).toHaveTextContent(/opened a door/);
+    // Earlier comes before Later in reading order.
+    expect(earlierGroup.compareDocumentPosition(laterGroup) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(laterGroup.querySelector('[data-testid="memory-card"]')!);
+    await waitFor(() => expect(fake.getEntry).toHaveBeenCalledWith("e-later-1"));
+  });
+
+  /** MS-2: an empty side shows no heading at all (nothing to explain). */
+  it("MS-2: a side with nothing in it is not shown", async () => {
+    setFakePanelState({ state: "ready", related, reflection, earlier: [], later });
+    const editor = await startJournal();
+    fireEvent.change(editor, { target: { value: "new interview nerves" } });
+    await waitFor(() => expect(fake.getAiPanel).toHaveBeenCalled(), { timeout: 6000 });
+    fireEvent.click(await screen.findByRole("button", { name: /1 memory/i }));
+    expect(screen.queryByRole("group", { name: /earlier/i })).toBeNull();
+    expect(screen.getByRole("group", { name: /later/i })).toBeInTheDocument();
   });
 });

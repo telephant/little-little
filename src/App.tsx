@@ -10,6 +10,7 @@ import { Search } from "./screens/Search";
 import { AiPanel } from "./components/AiPanel";
 import { useActivity } from "./hooks/useActivity";
 import { useReflectionPhase } from "./hooks/useReflectionPhase";
+import { useReflectIdle } from "./hooks/useReflectIdle";
 import { Editor } from "./components/Editor";
 import { EntryList } from "./components/EntryList";
 import { PrivacyBadge } from "./components/PrivacyBadge";
@@ -36,13 +37,13 @@ function App() {
   const reflection = useReflectionPhase();
   const { onReady } = reflection;
 
-  const loadPanel = useCallback((entryId: string) => {
+  const loadPanel = useCallback((entryId: string, generate: boolean) => {
     const seq = ++panelSeq.current;
     const requestedAt = Date.now();
     let tries = 0;
     const attempt = async () => {
       if (seq !== panelSeq.current) return; // a newer entry took over
-      const state = await ipc.getAiPanel(entryId).catch(() => null);
+      const state = await ipc.getAiPanel(entryId, generate).catch(() => null);
       if (seq !== panelSeq.current || !state) return;
       setPanel(state);
       if (state.state === "ready") onReady(state.reflection.id, requestedAt);
@@ -52,6 +53,13 @@ function App() {
     };
     void attempt();
   }, [onReady]);
+
+  // A new entry asks for memories only after a long quiet pause (see useReflectIdle); opening an
+  // older entry never starts the model — it shows what exists, or a quiet "Look back".
+  const reflectIdle = useReflectIdle(
+    useCallback((entryId: string) => loadPanel(entryId, true), [loadPanel]),
+  );
+  const { schedule: scheduleReflect, cancel: cancelReflect } = reflectIdle;
 
   useEffect(() => {
     void ipc.journalExists().then((exists) => setPhase(exists ? "locked" : "first-run"));
@@ -83,6 +91,7 @@ function App() {
   }
 
   async function newEntry() {
+    cancelReflect();
     setActive(await ipc.createEntry());
     setPanel(null);
     reflection.reset();
@@ -93,10 +102,11 @@ function App() {
   async function openEntry(id: string) {
     const entry = await ipc.getEntry(id).catch(() => null);
     if (!entry) return; // e.g. the source entry was deleted meanwhile
+    cancelReflect();
     setActive(entry);
     setShowSettings(false);
     setView("journal");
-    loadPanel(id);
+    loadPanel(id, false);
   }
 
   // Journal and calendar are fixed panes (the page never scrolls; inner columns do). The calendar has no use for the AI panel,
@@ -185,10 +195,13 @@ function App() {
               entry={active}
               onMoodChanged={() => void refreshList()}
               onMarkChanged={() => void refreshList()}
-              onTyped={reflection.noteKey}
-              onSaved={() => {
+              onTyped={() => {
+                reflection.noteKey();
+                cancelReflect(); // still writing: nothing is generated mid-thought
+              }}
+              onSaved={(body) => {
                 void refreshList();
-                loadPanel(active.id); // save-settle → related memories + reflection (F-4)
+                scheduleReflect(active.id, body); // only after a long pause, and only with enough written
               }}
             />
           </div>
@@ -214,6 +227,11 @@ function App() {
                 setPanel(null);
                 reflection.reset();
               });
+            }}
+            onLookBack={() => {
+              if (!active) return;
+              setPanel({ state: "thinking" });
+              loadPanel(active.id, true);
             }}
             onOpenSettings={() => setShowSettings(true)}
             phase={reflection.phase}

@@ -8,7 +8,7 @@ import { TagRow } from "./TagRow";
 import { MoodMark } from "./MoodMark";
 import { MarkCanvas } from "./MarkCanvas";
 
-export function Editor(props: { entry: Entry; onSaved?: () => void; onMoodChanged?: () => void; onMarkChanged?: () => void; onTyped?: () => void }) {
+export function Editor(props: { entry: Entry; onSaved?: (body: string) => void; onMoodChanged?: () => void; onMarkChanged?: () => void; onTyped?: () => void }) {
   const [body, setBody] = useState(props.entry.body);
   const [tags, setTags] = useState(props.entry.tags);
   const [mark, setMark] = useState<string | null>(props.entry.mark);
@@ -32,7 +32,7 @@ export function Editor(props: { entry: Entry; onSaved?: () => void; onMoodChange
   }, [props.entry.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useAutosave(body, (v) => {
-    void ipc.saveEntry(props.entry.id, v).then(props.onSaved);
+    void ipc.saveEntry(props.entry.id, v).then(() => props.onSaved?.(v));
   });
 
   async function changeTags(next: string[]) {

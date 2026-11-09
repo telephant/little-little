@@ -48,7 +48,8 @@ export const ipc = {
     invoke<SettingsView>("set_provider", { provider, confirm }),
   setModels: (embedModel: string | null, chatModel: string | null) =>
     invoke<SettingsView>("set_models", { embedModel, chatModel }),
-  getAiPanel: (entryId: string) => invoke<PanelState>("get_ai_panel", { entryId }),
+  /** `generate: false` never starts the model: a stored reflection or `not_requested` (opening an old entry). */
+  getAiPanel: (entryId: string, generate: boolean) => invoke<PanelState>("get_ai_panel", { entryId, generate }),
   regenerateReflection: (entryId: string) =>
     invoke<PanelState>("regenerate_reflection", { entryId }),
   dismissResponse: (id: string) => invoke<void>("dismiss_response", { id }),

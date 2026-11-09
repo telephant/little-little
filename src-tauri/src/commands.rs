@@ -174,13 +174,17 @@ use crate::prompt::{self, PanelState};
 use crate::providers::AnyChatProvider;
 
 #[tauri::command]
-pub async fn get_ai_panel(state: State<'_, AppState>, entry_id: String) -> CmdResult<PanelState> {
+pub async fn get_ai_panel(
+    state: State<'_, AppState>,
+    entry_id: String,
+    generate: bool,
+) -> CmdResult<PanelState> {
     let db = state.db_handle().ok_or("journal is locked")?;
     let settings = db.settings_view().map_err(|e| e.to_string())?;
     let Some(provider) = AnyChatProvider::active_from(&settings) else {
         return Ok(PanelState::ModelsNotChosen);
     };
-    prompt::build_ai_panel(&db, &provider, &entry_id, false).await
+    prompt::build_ai_panel_opts(&db, &provider, &entry_id, false, generate).await
 }
 
 #[tauri::command]

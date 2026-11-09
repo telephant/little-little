@@ -14,7 +14,8 @@ if ! curl -s -o /dev/null http://localhost:1420/; then
   pnpm exec vite --port 1420 --strictPort >/tmp/shot-vite.log 2>&1 & STARTED=$!
   for _ in $(seq 1 40); do curl -s -o /dev/null http://localhost:1420/ && break; sleep 0.5; done
 fi
-URL="http://localhost:1420/shot.html?view=${VIEW}${PICK:+&pick=1}"
+EXTRA=""; [ "$PICK" = "memories" ] && EXTRA="&memories=1" || { [ -n "$PICK" ] && EXTRA="&pick=1"; }
+URL="http://localhost:1420/shot.html?view=${VIEW}${EXTRA}"
 DOM=$("$CHROME" --headless=new --disable-gpu --hide-scrollbars --window-size="${W},${WH}" --virtual-time-budget=15000 --dump-dom "$URL" 2>/dev/null)
 echo "$DOM" | grep -o 'METRICS .* END' | sed 's/^METRICS //; s/ END$//' || echo "no metrics (page did not finish)"
 if [ -n "$OUT" ]; then

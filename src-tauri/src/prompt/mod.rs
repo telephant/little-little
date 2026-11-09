@@ -9,19 +9,45 @@ use persona::{ContextItem, DEFAULT_PERSONA};
 use serde::Serialize;
 
 const RELATED_K: usize = 3; // provisional — tests.md Measurements
+/// How many nearest entries are considered when grouping neighbours into earlier / later.
+const NEIGHBOUR_POOL: usize = 12; // provisional
+/// At most this many shown on each side.
+const NEIGHBOURS_PER_SIDE: usize = 3; // provisional
 
 /// Everything the AI panel can show. Typed states, never raw error strings (AC-13).
 #[derive(Debug, Serialize)]
 #[serde(tag = "state", rename_all = "snake_case")]
+// One value per panel request, built and serialised once: boxing the big variant would only add noise.
+#[allow(clippy::large_enum_variant)]
 pub enum PanelState {
     ModelsNotChosen,
     Thinking,
     NothingToRelate,
+    /// Related entries exist but no reflection has been made yet and the caller did not ask for one
+    /// (opening an old entry): the UI offers a quiet "Look back" instead of starting the model.
+    NotRequested,
     ProviderUnavailable { reason: String },
     Ready {
+        /// The nearest entries the reflection was written from (also its "based on" line).
         related: Vec<RelatedEntry>,
         reflection: AiResponse,
+        /// Related entries written BEFORE this one, nearest in time first.
+        earlier: Vec<RelatedEntry>,
+        /// Related entries written AFTER this one, nearest in time first.
+        later: Vec<RelatedEntry>,
     },
+}
+
+/// Group related entries around `at`: those before it (newest first) and those after it (oldest
+/// first), each capped. Entries sharing the exact timestamp are left out of both sides.
+fn split_neighbours(pool: Vec<RelatedEntry>, at: &str) -> (Vec<RelatedEntry>, Vec<RelatedEntry>) {
+    let mut earlier: Vec<RelatedEntry> = pool.iter().filter(|r| r.created_at.as_str() < at).cloned().collect();
+    let mut later: Vec<RelatedEntry> = pool.into_iter().filter(|r| r.created_at.as_str() > at).collect();
+    earlier.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+    later.sort_by(|a, b| a.created_at.cmp(&b.created_at));
+    earlier.truncate(NEIGHBOURS_PER_SIDE);
+    later.truncate(NEIGHBOURS_PER_SIDE);
+    (earlier, later)
 }
 
 /// Build the panel for an entry. `force_new` regenerates even when a stored
@@ -31,6 +57,19 @@ pub async fn build_ai_panel(
     provider: &AnyChatProvider,
     entry_id: &str,
     force_new: bool,
+) -> Result<PanelState, String> {
+    build_ai_panel_opts(storage, provider, entry_id, force_new, true).await
+}
+
+/// Like `build_ai_panel`, but with `generate == false` the chat model is never called: a stored
+/// reflection is shown if there is one, otherwise `NotRequested` (nothing runs, nothing is sent
+/// to a cloud provider until the user asks).
+pub async fn build_ai_panel_opts(
+    storage: &Storage,
+    provider: &AnyChatProvider,
+    entry_id: &str,
+    force_new: bool,
+    generate: bool,
 ) -> Result<PanelState, String> {
     let settings = storage.settings_view().map_err(|e| e.to_string())?;
     // Embeddings are always needed; an Ollama chat additionally needs a chat model.
@@ -68,6 +107,15 @@ pub async fn build_ai_panel(
     if related.is_empty() {
         return Ok(PanelState::NothingToRelate);
     }
+    let pool = retrieval::related_entries(
+        storage,
+        &query_vec,
+        entry_id,
+        provider.is_cloud(),
+        NEIGHBOUR_POOL,
+    )
+    .map_err(|e| e.to_string())?;
+    let (earlier, later) = split_neighbours(pool, &entry.created_at);
 
     // Reuse a stored reflection unless regenerating.
     if !force_new
@@ -76,7 +124,13 @@ pub async fn build_ai_panel(
         return Ok(PanelState::Ready {
             related,
             reflection: existing,
+            earlier,
+            later,
         });
+    }
+
+    if !generate {
+        return Ok(PanelState::NotRequested);
     }
 
     if let Availability::Unavailable { reason } = provider.available().await {
@@ -109,6 +163,8 @@ pub async fn build_ai_panel(
     Ok(PanelState::Ready {
         related,
         reflection,
+        earlier,
+        later,
     })
 }
 
@@ -148,7 +204,7 @@ mod tests {
         let (_d, s, ids, provider) = fixture_world(false).await;
         let fx12 = ids.last().unwrap(); // "New interview nerves, old story…"
         let panel = build_ai_panel(&s, &provider, fx12, false).await.unwrap();
-        let PanelState::Ready { related, reflection } = panel else {
+        let PanelState::Ready { related, reflection, .. } = panel else {
             panic!("expected Ready, got other state");
         };
         assert_eq!(related.len(), 3);
@@ -170,7 +226,7 @@ mod tests {
         let (_d, s, ids, provider) = fixture_world(false).await;
         let fx12 = ids.last().unwrap();
         let panel = build_ai_panel(&s, &provider, fx12, false).await.unwrap();
-        let PanelState::Ready { related, reflection } = panel else {
+        let PanelState::Ready { related, reflection, .. } = panel else {
             panic!("expected Ready");
         };
         assert!(!reflection.context_entry_ids.is_empty());
@@ -284,7 +340,7 @@ mod tests {
         let panel = build_ai_panel(&s, &provider, &id, false).await.unwrap();
         println!("MEASURE reflection latency: {:?}", t0.elapsed());
         match panel {
-            PanelState::Ready { reflection, related } => {
+            PanelState::Ready { reflection, related, .. } => {
                 println!("--- DISTRESS REFLECTION (live qwen3:4b-instruct) ---");
                 println!("{}", reflection.body);
                 println!("--- context: {:?}", related.iter().map(|r| &r.created_at).collect::<Vec<_>>());
@@ -327,7 +383,7 @@ mod tests {
         let panel = build_ai_panel(&s, &provider, &id, false).await.unwrap();
         println!("MEASURE reflection latency (claude -p): {:?}", t0.elapsed());
         match panel {
-            PanelState::Ready { reflection, related } => {
+            PanelState::Ready { reflection, related, .. } => {
                 println!("--- DISTRESS REFLECTION (live claude -p) ---");
                 println!("{}", reflection.body);
                 println!("--- context: {:?}", related.iter().map(|r| &r.created_at).collect::<Vec<_>>());
@@ -364,6 +420,59 @@ mod tests {
         assert_ne!(first.id, second.id);
         // Entry untouched by dismiss.
         assert!(s.get_entry(fx12).unwrap().body.contains("interview"));
+    }
+
+    /// memories-sides TC-1: related entries are also grouped by time around the open entry, so the
+    /// panel can show what came before and what came after.
+    #[tokio::test]
+    async fn ready_panel_groups_neighbours_earlier_and_later() {
+        let (_d, s, ids, provider) = fixture_world(false).await;
+        let mid = &ids[ids.len() / 2];
+        let at = s.get_entry(mid).unwrap().created_at;
+        let PanelState::Ready { earlier, later, .. } =
+            build_ai_panel(&s, &provider, mid, false).await.unwrap()
+        else {
+            panic!("expected Ready")
+        };
+        assert!(!earlier.is_empty() && !later.is_empty(), "a middle entry has neighbours on both sides");
+        assert!(earlier.len() <= 3 && later.len() <= 3);
+        assert!(earlier.iter().all(|r| r.created_at < at && r.entry_id != *mid));
+        assert!(later.iter().all(|r| r.created_at > at && r.entry_id != *mid));
+        // nearest in time first on each side
+        assert!(earlier.windows(2).all(|w| w[0].created_at >= w[1].created_at));
+        assert!(later.windows(2).all(|w| w[0].created_at <= w[1].created_at));
+    }
+
+    /// quiet-reflection TC-1: opening an entry without asking must not call the model and must
+    /// say so with a typed state, so the UI can offer a quiet "Look back" instead.
+    #[tokio::test]
+    async fn lookup_without_generate_never_calls_the_model() {
+        let (_d, s, ids, provider) = fixture_world(false).await;
+        let fx12 = ids.last().unwrap();
+        let panel = build_ai_panel_opts(&s, &provider, fx12, false, false).await.unwrap();
+        assert!(matches!(panel, PanelState::NotRequested), "got {panel:?}");
+        assert!(fake_requests(&provider).is_empty(), "the chat model must not be called");
+        assert!(s.latest_reflection(fx12).unwrap().is_none());
+    }
+
+    /// quiet-reflection TC-2: a reflection that already exists is shown without generating.
+    #[tokio::test]
+    async fn lookup_without_generate_shows_a_stored_reflection() {
+        let (_d, s, ids, provider) = fixture_world(false).await;
+        let fx12 = ids.last().unwrap();
+        let PanelState::Ready { reflection: made, .. } =
+            build_ai_panel_opts(&s, &provider, fx12, false, true).await.unwrap()
+        else {
+            panic!("expected Ready after generating")
+        };
+        let calls = fake_requests(&provider).len();
+        let PanelState::Ready { reflection: shown, .. } =
+            build_ai_panel_opts(&s, &provider, fx12, false, false).await.unwrap()
+        else {
+            panic!("expected the stored reflection")
+        };
+        assert_eq!(made.id, shown.id);
+        assert_eq!(fake_requests(&provider).len(), calls, "no new model call");
     }
 
     /// paint-marks TC-17: Given entries with painted marks; When the reflection, mood-read and

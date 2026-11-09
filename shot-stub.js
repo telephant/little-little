@@ -66,7 +66,18 @@ const handlers = {
   calendar_month: ({ year, month }) => calendarMonth(year, month),
   get_settings: () => ({ chat_provider: "ollama", chat_model: "demo-chat", embed_model: "demo-embed", embed_dim: 512, cloud_confirmed: false, is_cloud: false }),
   get_activity: () => ({ embed_pending: 0, embed_total: 0, mood_pending: 0, pulling: null }),
-  get_ai_panel: () => ({ state: "nothing_to_relate" }),
+  get_ai_panel: () => ({
+    state: "ready",
+    related: [],
+    reflection: { id: "r1", entry_id: "demo-1", kind: "reflection", body: "You wrote about this before, and the worry softened by the weekend.", context_entry_ids: [], provider: "ollama", dismissed: false, created_at: iso(5, 10) },
+    earlier: [
+      { entry_id: "demo-3", snippet: "The interview went so much better than I feared. I walked home the long way.", distance: 0.3, created_at: iso(3, 21) },
+      { entry_id: "demo-2", snippet: "Big interview on Thursday. Stomach in knots all evening.", distance: 0.4, created_at: iso(2, 19) },
+    ],
+    later: [
+      { entry_id: "demo-9", snippet: "Looking back, that interview opened a door I did not expect.", distance: 0.5, created_at: iso(20, 9) },
+    ],
+  }),
   list_available_models: () => ({ ollama_running: true, ollama_models: ["demo-chat", "demo-embed"], claude_available: false }),
   search: () => ({ results: [], hidden_count: 0 }),
 };

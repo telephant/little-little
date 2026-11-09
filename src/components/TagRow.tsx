@@ -14,7 +14,7 @@ export function TagRow(props: { tags: string[]; onChange: (tags: string[]) => vo
     <div className="tag-row">
       {props.tags.map((t) => (
         <span key={t} className="tag">
-          {t}
+          #{t}
           <button
             aria-label={`remove tag ${t}`}
             onClick={() => props.onChange(props.tags.filter((x) => x !== t))}
@@ -24,7 +24,7 @@ export function TagRow(props: { tags: string[]; onChange: (tags: string[]) => vo
         </span>
       ))}
       <input
-        placeholder="add tag…"
+        placeholder="+ tag"
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {

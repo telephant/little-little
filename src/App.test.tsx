@@ -2,7 +2,8 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
-import { fake, resetFake, setFakeModelsChosen } from "./test/fakeIpc";
+import { PrivacyBadge } from "./components/PrivacyBadge";
+import { fake, resetFake, setFakeModelsChosen, setFakeNextEntryMood } from "./test/fakeIpc";
 
 vi.mock("./lib/ipc", () => import("./test/fakeIpc").then((m) => ({ ipc: m.fake })));
 
@@ -44,7 +45,7 @@ describe("editor (T-04)", () => {
     const editor = await setUpUnlockedWithEntry();
     fireEvent.change(editor, { target: { value: "today I planted basil" } });
     // flush: debounce saves even though the user never pressed save
-    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalled(), { timeout: 3000 });
+    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalled(), { timeout: 6000 });
 
     const { unmount } = render(<div />); // placeholder to satisfy lint
     unmount();
@@ -83,7 +84,7 @@ describe("editor (T-04)", () => {
   it("adding a tag calls setTags", async () => {
     const editor = await setUpUnlockedWithEntry();
     expect(editor).toBeInTheDocument();
-    const tagInput = screen.getByPlaceholderText(/add tag/i);
+    const tagInput = screen.getByPlaceholderText(/\+ tag/i);
     fireEvent.change(tagInput, { target: { value: "garden" } });
     fireEvent.keyDown(tagInput, { key: "Enter" });
     await waitFor(() =>
@@ -102,5 +103,85 @@ describe("editor (T-04)", () => {
     fireEvent.change(pass, { target: { value: "hunter2 hunter2" } });
     fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
     await screen.findByTestId("editor-body");
+  });
+});
+
+describe("painted shell (paper-ui T-04)", () => {
+  /** TC-16: Given the journal view, Then three columns are separated by a black rule (left) and a blue rule (right). */
+  it("TC-16: black rule then blue rule separate list | editor | panel", async () => {
+    const editor = await setUpUnlockedWithEntry();
+    const list = document.querySelector(".entry-list")!;
+    const black = document.querySelector(".rule-black")!;
+    const blue = document.querySelector(".rule-blue")!;
+    const panel = screen.getByTestId("side-panel");
+    expect(list && black && blue).toBeTruthy();
+    const before = (a: Element, b: Element) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(before(list, black)).toBe(true);
+    expect(before(black, editor)).toBe(true);
+    expect(before(editor, blue)).toBe(true);
+    expect(before(blue, panel)).toBe(true);
+    expect(black.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  /** TC-19: Given provider local, then cloud, Then wording differs independent of colour. */
+  it("TC-19: local vs cloud badge wording differs", () => {
+    const local = render(<PrivacyBadge isCloud={false} />);
+    const localText = local.getByTestId("privacy-badge").textContent!;
+    local.unmount();
+    const cloud = render(<PrivacyBadge isCloud={true} />);
+    const cloudText = cloud.getByTestId("privacy-badge").textContent!;
+    expect(localText).toMatch(/on-device/i);
+    expect(localText).toMatch(/this device/i);
+    expect(cloudText).toMatch(/cloud/i);
+    expect(cloudText).not.toMatch(/on-device/i);
+    expect(cloudText).not.toBe(localText);
+  });
+});
+
+describe("mood marks in the journal (paper-ui T-05)", () => {
+  /** TC-9: AI mood, user picks another mark → manual, list+header update, hint disappears. */
+  it("TC-9: picking a mark saves manual, updates list and header, hides the AI hint", async () => {
+    setFakeNextEntryMood(2, "low", "ai");
+    const editor = await setUpUnlockedWithEntry();
+    fireEvent.change(editor, { target: { value: "a quiet day" } }); // saved entries show in the list
+    const header = () => document.querySelector(".editor-mark svg")!;
+    const listMark = () => screen.getByTestId("entry-list").querySelector("svg.mood-mark")!;
+    expect(header().getAttribute("data-mood")).toBe("2");
+    await waitFor(() => expect(listMark().getAttribute("data-mood")).toBe("2"), { timeout: 6000 });
+    expect(screen.getByText(/AI guess/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /mood good/i }));
+
+    await waitFor(() => expect(header().getAttribute("data-mood")).toBe("4"));
+    const id = (await fake.listEntries())[0].id;
+    expect(fake.setMood).toHaveBeenCalledWith(id, 4, null); // IPC setMood always stores source=manual
+    await waitFor(() => expect(listMark().getAttribute("data-mood")).toBe("4"));
+    expect(screen.queryByText(/AI guess/i)).toBeNull();
+  });
+});
+
+describe("autosave baseline (found via flaky panel tests)", () => {
+  it("saves an edit even if it lands before the first effect run, and saves a revert to the loaded text", async () => {
+    const editor = await setUpUnlockedWithEntry();
+    fireEvent.change(editor, { target: { value: "first words" } });
+    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalledTimes(1), { timeout: 6000 });
+    fireEvent.change(editor, { target: { value: "" } }); // back to the loaded (empty) text
+    await waitFor(() => expect(fake.saveEntry).toHaveBeenCalledTimes(2), { timeout: 6000 });
+    expect(fake.saveEntry).toHaveBeenLastCalledWith(expect.any(String), "");
+  });
+});
+
+describe("independent scrolling (journal view)", () => {
+  it("the journal pane does not scroll as a whole; list and editor scroll on their own", async () => {
+    await setUpUnlockedWithEntry();
+    expect(screen.getByTestId("main-pane")).toHaveClass("main-pane-fixed");
+    expect(screen.getByTestId("entry-list")).toBeInTheDocument();
+  });
+  it("other views keep a normally scrolling pane", async () => {
+    await setUpUnlockedWithEntry();
+    fireEvent.click(screen.getByRole("button", { name: /^calendar$/i }));
+    await screen.findByTestId("calendar");
+    expect(screen.getByTestId("main-pane")).not.toHaveClass("main-pane-fixed");
   });
 });

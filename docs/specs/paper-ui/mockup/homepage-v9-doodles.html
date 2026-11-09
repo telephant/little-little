@@ -1,0 +1,628 @@
+<title>Little Little Marker Homepage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* v8 — painted by hand. No paper, no desk: a white page where everything is marker and gouache.
+   Colours are lifted from the reference sketchbook; coverage is deliberately uneven. */
+:root {
+  --white: #ffffff;
+  --ink: #17151a;
+  --ink-soft: #55505a;
+  --ink-muted: #8d8794;
+  /* marker set (from the reference) */
+  --coral: #ea8272;   --coral-l: #f4b2a6;
+  --green: #1f9d57;   --green-l: #86d0a4;
+  --cobalt: #2f7fd6;  --sky: #8db9ea;   --sky-l: #bcd8f5;
+  --mint: #c6ecee;
+  --lav: #b49ae0;     --lav-l: #d3c5f0;  --violet: #7a5cb8;
+  --plum: #a2338f;
+  --red: #e53a35;
+  --orange: #f2931d;  --orange-l: #f8c27a;
+  --ochre: #d8c63c;   --ochre-l: #ecdf7e;
+  --brown: #6c4636;
+  --slate: #5b6d86;
+  --navy: #1d2a5c;
+  --brush: "Caveat Brush", "Marker Felt", cursive;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --drift-ms: 800ms;
+  --dissolve-ms: 1100ms;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--white); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+
+/* ---------- painted blobs: uneven marker coverage, two overlapping colours ---------- */
+.blob { position: relative; isolation: isolate; }
+.blob::before, .blob::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.blob::before {
+  inset: var(--pad, -8px); background: var(--c, var(--sky)); filter: url(#paint-a);
+  border-radius: 56% 44% 52% 48% / 48% 58% 42% 52%;
+}
+.blob::after {
+  inset: calc(var(--pad, -8px) + 7px) calc(var(--pad, -8px) - 5px) calc(var(--pad, -8px) + 3px) calc(var(--pad, -8px) + 12px);
+  background: var(--c2, var(--lav-l)); filter: url(#paint-b); mix-blend-mode: multiply; opacity: .6;
+  border-radius: 44% 56% 48% 52% / 56% 42% 58% 44%;
+}
+.blob.v2::before { filter: url(#paint-b); border-radius: 48% 52% 58% 42% / 54% 46% 54% 46%; }
+.blob.v2::after  { filter: url(#paint-c); border-radius: 52% 48% 44% 56% / 46% 58% 42% 54%; }
+.blob.v3::before { filter: url(#paint-c); border-radius: 60% 40% 46% 54% / 44% 54% 46% 56%; }
+.blob.v3::after  { filter: url(#paint-a); border-radius: 42% 58% 54% 46% / 58% 44% 56% 42%; }
+.blob.single::after { display: none; }
+
+/* hand-drawn rules */
+.rule { position: relative; isolation: isolate; height: 3px; }
+.rule::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c, var(--ink)); filter: url(#line); border-radius: 3px; }
+.vrule { position: relative; isolation: isolate; width: 4px; }
+.vrule::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c, var(--ink)); filter: url(#line); border-radius: 3px; }
+
+/* ---------- glyphs: black marker drawings with off-register colour ---------- */
+.glyph { width: 34px; height: 34px; flex: none; filter: url(#marker); overflow: visible; }
+.glyph.big { width: 84px; height: 84px; }
+.glyph.small { width: 22px; height: 22px; }
+.ink { fill: none; stroke: var(--ink); stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
+.solid { fill: var(--ink); stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; }
+.wash { stroke: none; transform: translate(3px, 3.4px); opacity: .9; fill: var(--wash, transparent); }
+.glyph.plain .wash { display: none; }
+.glyph.w-coral { --wash: var(--coral); } .glyph.w-green { --wash: var(--green-l); } .glyph.w-cobalt { --wash: var(--cobalt); }
+.glyph.w-sky { --wash: var(--sky); } .glyph.w-lav { --wash: var(--lav); } .glyph.w-orange { --wash: var(--orange); }
+.glyph.w-ochre { --wash: var(--ochre); } .glyph.w-plum { --wash: var(--plum); }
+
+/* ---------- layout ---------- */
+.app { display: grid; grid-template-columns: minmax(240px, 300px) 5px minmax(0, 1fr) 5px minmax(290px, 380px); grid-template-rows: auto minmax(0, 1fr); height: 100%; box-sizing: border-box; }
+.top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.8rem .6rem; gap: 1rem; padding-left: max(1.8rem, env(safe-area-inset-left, 0px)); padding-right: max(1.8rem, env(safe-area-inset-right, 0px)); }
+.wordmark { display: flex; align-items: center; gap: .6rem; font-family: var(--brush); font-size: 2.2rem; line-height: 1; margin: 0; letter-spacing: .01em; }
+.localnote { display: inline-flex; align-items: center; gap: .55rem; font-family: var(--brush); font-size: 1.15rem; color: var(--ink-soft); }
+.localnote i { width: 13px; height: 13px; border-radius: 50%; background: var(--green); display: inline-block; filter: url(#marker); }
+
+.left, .center, .right { min-height: 0; min-width: 0; overflow-y: auto; }
+.left { padding: 1.1rem 1.1rem 5rem 1.8rem; display: flex; flex-direction: column; gap: .9rem; padding-left: max(1.8rem, env(safe-area-inset-left, 0px)); }
+.newbtn { align-self: flex-start; --c: var(--coral); --pad: -7px; font-family: var(--brush); font-size: 1.35rem; background: none; border: none; cursor: pointer; padding: .15rem 1.1rem; color: var(--ink); margin: .3rem 0 .5rem .4rem; }
+.newbtn:hover { transform: rotate(-1.5deg); }
+.entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+.entry { position: relative; isolation: isolate; width: 100%; display: grid; grid-template-columns: 46px 1fr; gap: .85rem; align-items: center; text-align: left; background: none; border: none; cursor: pointer; padding: .55rem .6rem; color: var(--ink); }
+.entry .mood { position: relative; isolation: isolate; width: 44px; height: 44px; display: grid; place-items: center; --pad: -4px; }
+.entry .mood .glyph { width: 30px; height: 30px; }
+.entry .txt { min-width: 0; }
+.entry .date { font-family: var(--brush); font-size: 1.35rem; line-height: 1; display: block; }
+.entry .preview { font-family: var(--serif); font-size: .86rem; color: var(--ink-soft); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry::before { content: ""; position: absolute; inset: 1px -4px; z-index: -1; background: var(--sky-l); opacity: 0; filter: url(#paint-c); border-radius: 18px 10px 20px 8px; transition: opacity .2s; }
+.entry:hover::before { opacity: .45; }
+.entry.active::before { opacity: .8; }
+
+.center { padding: 1.4rem 3.2rem 5rem; display: flex; flex-direction: column; gap: .5rem; }
+.sheet { max-width: 700px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: .5rem; min-height: 100%; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.dow { font-size: .72rem; letter-spacing: .34em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; margin-top: .6rem; }
+.daydate { position: relative; isolation: isolate; font-family: var(--brush); font-weight: 400; font-size: 3.2rem; line-height: 1; margin: .1rem 0 0; display: inline-block; }
+.daydate::after { content: ""; position: absolute; left: -4px; right: -10px; bottom: -.2rem; height: .55rem; z-index: -1; background: var(--coral); opacity: .75; filter: url(#paint-b); border-radius: 40% 60% 50% 50% / 60% 50% 50% 40%; transform: rotate(-.8deg); }
+.sheet textarea { flex: 1; min-height: 16rem; width: 100%; box-sizing: border-box; margin-top: .8rem; font-family: var(--serif); font-size: 1.2rem; line-height: 2rem; background: transparent; color: var(--ink); border: none; outline: none; resize: none; padding: 0; }
+.sheet textarea::placeholder { color: var(--ink-muted); opacity: .7; font-style: italic; }
+.tags { display: flex; gap: 1.1rem; flex-wrap: wrap; align-items: center; padding-top: .4rem; }
+.tag { display: inline-flex; align-items: center; gap: .45rem; font-family: var(--brush); font-size: 1.2rem; color: var(--ink); background: none; border: none; padding: 0; cursor: default; }
+.tag::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--navy); filter: url(#marker); }
+.tag.add { cursor: pointer; color: var(--ink-muted); }
+.tag.add::before { background: var(--lav); }
+.tag.add:hover { color: var(--ink); }
+
+/* hand-drawn outline buttons */
+.mbtn { position: relative; isolation: isolate; font-family: var(--sans); font-size: .8rem; color: var(--ink); background: none; border: none; padding: .38rem 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: .45rem; line-height: 1.3; }
+.mbtn::before { content: ""; position: absolute; inset: 0; z-index: -1; border: 2.4px solid var(--ink); border-radius: 48% 52% 46% 54% / 62% 52% 48% 38%; filter: url(#line); }
+.mbtn:hover::before, .mbtn:focus-visible::before { border-color: var(--cobalt); }
+.mbtn:focus-visible { outline: none; color: var(--cobalt); }
+.mbtn.fill { font-weight: 600; }
+.mbtn.fill::after { content: ""; position: absolute; inset: 2px 3px; z-index: -2; background: var(--sky); filter: url(#paint-b); border-radius: 46% 54% 50% 50% / 58% 48% 52% 42%; opacity: .85; }
+.mbtn.static { cursor: default; }
+.mbtn.static::before { border-color: var(--ink-muted); }
+
+/* ---------- companion ---------- */
+.right { padding: 1.1rem 1.6rem 5rem 1.3rem; display: flex; flex-direction: column; gap: 1.2rem; padding-right: max(1.6rem, env(safe-area-inset-right, 0px)); }
+.sky { display: flex; flex-direction: column; gap: .6rem; }
+.cloud { position: relative; isolation: isolate; padding: 6.2rem 3.6rem 4.4rem 3.7rem; font-family: var(--serif); font-size: .98rem; line-height: 1.7; color: var(--ink); transform: rotate(-.8deg); }
+.cloud::before, .cloud::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background-repeat: no-repeat; background-size: 100% 100%; }
+.cloud::before { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 230' preserveAspectRatio='none'><path d='M44 216 C16 216 6 192 8 168 C8 140 14 108 30 88 C42 62 80 52 102 56 C118 36 150 30 170 44 C192 28 234 36 246 62 C272 62 292 88 290 118 C298 140 298 166 286 186 C284 208 262 222 238 216 C200 226 150 226 120 218 C96 228 66 222 44 216 Z' fill='%23bcd8f5'/></svg>"); filter: url(#paint-a); transform: translate(-6px, -4px); opacity: .78; }
+.cloud::after { background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 230' preserveAspectRatio='none'><path d='M44 216 C16 216 6 192 8 168 C8 140 14 108 30 88 C42 62 80 52 102 56 C118 36 150 30 170 44 C192 28 234 36 246 62 C272 62 292 88 290 118 C298 140 298 166 286 186 C284 208 262 222 238 216 C200 226 150 226 120 218 C96 228 66 222 44 216 Z' fill='%23d3c5f0'/></svg>"); filter: url(#paint-c); mix-blend-mode: multiply; opacity: .36; transform: translate(8px, 8px) scale(.94); }
+.cloud .outline { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; overflow: visible; filter: url(#line); transform: translate(-6px, -4px); }
+.cloud .outline path { fill: none; stroke: var(--ink); stroke-width: 3.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.cloud p { margin: 0; }
+.cloud .sources { font-family: var(--brush); font-size: 1.15rem; color: var(--cobalt); margin-top: .6rem; line-height: 1.1; }
+.cloud-actions { display: flex; gap: 1.1rem; justify-content: center; margin-top: .5rem; }
+.cloud-actions button { background: none; border: none; padding: 0; cursor: pointer; font-family: var(--brush); font-size: 1.2rem; color: var(--ink-soft); }
+.cloud-actions button:hover { color: var(--cobalt); }
+@keyframes drift-in { from { opacity: 0; transform: translateY(16px) rotate(-.8deg); } to { opacity: 1; transform: rotate(-.8deg); } }
+@keyframes dissolve { to { opacity: 0; transform: translateY(-20px) rotate(-.8deg); } }
+.cloud.arriving { animation: drift-in var(--drift-ms) cubic-bezier(.25,.1,.25,1) both; }
+.cloud.dissolving { animation: dissolve var(--dissolve-ms) ease-in both; }
+@media (prefers-reduced-motion: reduce) { .cloud.arriving { animation: none; opacity: 1; } .cloud.dissolving { animation: dissolve 150ms linear both; } }
+.recall { display: none; align-items: center; gap: .5rem; align-self: flex-end; background: none; border: none; cursor: pointer; color: var(--ink-soft); font-family: var(--brush); font-size: 1.3rem; padding: .2rem 0; }
+.recall:hover { color: var(--cobalt); }
+.sky.tucked .recall { display: inline-flex; }
+.sky.tucked .cloud { display: none; }
+.thinking { display: none; font-family: var(--brush); font-size: 1.35rem; color: var(--ink-soft); text-align: right; margin: 0; }
+.sky.thinking-state .thinking { display: block; }
+.sky.thinking-state .cloud, .sky.thinking-state .recall { display: none; }
+
+.mem { display: flex; flex-direction: column; gap: 1rem; align-items: flex-end; }
+.scraps { display: none; flex-direction: column; gap: 1.3rem; width: 100%; padding: .4rem .5rem; box-sizing: border-box; }
+.mem.open .scraps { display: flex; }
+.scrap { position: relative; isolation: isolate; cursor: pointer; border: none; background: none; text-align: left; display: grid; grid-template-columns: 34px 1fr; gap: .1rem .7rem; padding: .7rem .9rem; color: var(--ink); width: 100%; --pad: -8px; }
+.scrap:nth-child(1) { --c: var(--ochre-l); --c2: var(--orange-l); transform: rotate(-.8deg); }
+.scrap:nth-child(2) { --c: var(--lav-l); --c2: var(--sky-l); transform: rotate(.7deg); }
+.scrap:nth-child(3) { --c: var(--coral-l); --c2: var(--ochre-l); transform: rotate(-.4deg); }
+.scrap:hover { transform: translateY(-2px) rotate(0); }
+.scrap .glyph { grid-row: span 2; width: 32px; height: 32px; }
+.scrap .date { font-family: var(--brush); font-size: 1.2rem; line-height: 1.1; }
+.scrap .snippet { font-family: var(--serif); font-size: .85rem; line-height: 1.5; }
+
+/* ---------- calendar + settings view ---------- */
+.view { display: none; }
+body[data-view]:not([data-view="home"]) .app { display: none; }
+body[data-view="kit"] .kit, body[data-view="search"] .v-search, body[data-view="welcome"] .v-welcome, body[data-view="lock"] .v-lock { display: block; min-height: 100%; box-sizing: border-box; padding-bottom: 6rem; }
+.kit .top { padding-bottom: 1rem; }
+.kit-grid { display: grid; grid-template-columns: minmax(0, 1fr) 5px minmax(0, 1fr); gap: 2.6rem; max-width: 1100px; margin: .6rem auto 0; padding: 0 1.8rem; }
+.kit h2 { font-family: var(--brush); font-weight: 400; font-size: 2.6rem; line-height: 1; margin: 0 0 .6rem; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: .5rem .3rem; margin-top: .8rem; }
+.cal .dowh { font-size: .64rem; letter-spacing: .24em; text-transform: uppercase; color: var(--ink-soft); text-align: center; font-weight: 600; }
+.cal .cell { position: relative; height: 3.4rem; display: grid; place-items: center; min-width: 0; --pad: -2px; isolation: isolate; }
+.cal .cell .glyph { width: 28px; height: 28px; }
+.cal .cell .n { position: absolute; top: -.1rem; left: .15rem; font-family: var(--brush); font-size: .95rem; line-height: 1; color: var(--ink-soft); }
+.cal .cell.empty { visibility: hidden; }
+.cal .cell.today .ring { position: absolute; inset: -3px; z-index: 2; border: 3px solid var(--ink); border-radius: 55% 45% 52% 48% / 48% 56% 44% 52%; filter: url(#line); }
+.legend { display: flex; gap: .85rem; flex-wrap: wrap; margin-top: 1rem; font-family: var(--brush); font-size: 1.15rem; color: var(--ink-soft); }
+.legend span { display: inline-flex; align-items: center; gap: .4rem; }
+.legend .sw { position: relative; isolation: isolate; width: 24px; height: 24px; display: grid; place-items: center; --pad: -2px; }
+.legend .sw .glyph { width: 16px; height: 16px; }
+.setting { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: 1rem 0; }
+.setting .label { font-size: .95rem; }
+.setting .hint { display: block; font-size: .76rem; color: var(--ink-muted); }
+.kit .rule:nth-of-type(4n+1) { --c: var(--coral); } .kit .rule:nth-of-type(4n+2) { --c: var(--green); } .kit .rule:nth-of-type(4n+3) { --c: var(--cobalt); } .kit .rule:nth-of-type(4n) { --c: var(--lav); }
+.input { font-family: var(--sans); font-size: .9rem; color: var(--ink); border: none; border-bottom: 3px solid var(--lav); background: none; padding: .3rem .2rem; width: 9rem; min-width: 0; outline: none; border-radius: 0 0 6px 2px; }
+.input:focus { border-bottom-color: var(--cobalt); }
+.input::placeholder { color: var(--ink-muted); letter-spacing: .12em; }
+.toggle { position: relative; isolation: isolate; width: 56px; height: 30px; flex: none; border: none; background: none; cursor: pointer; padding: 0; }
+.toggle::before { content: ""; position: absolute; inset: 0; z-index: -1; border: 2.4px solid var(--ink); border-radius: 50% 46% 52% 48% / 60% 56% 44% 40%; filter: url(#line); }
+.toggle .knob { position: absolute; top: 6px; left: 7px; width: 17px; height: 17px; border-radius: 50%; background: var(--ink-muted); filter: url(#marker); transition: left .2s, background .2s; }
+.toggle.on .knob { left: 31px; background: var(--green); }
+.toggle.on::after { content: ""; position: absolute; inset: 3px 5px; z-index: -2; background: var(--green-l); border-radius: 50%; filter: url(#paint-c); opacity: .8; }
+.chips-row { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: 1.2rem; }
+
+
+/* ---------- refinement: motion ---------- */
+.entry .mood::before { transition: transform .4s cubic-bezier(.3,1.7,.5,1); }
+.entry:hover .mood::before { transform: scale(1.1) rotate(5deg); }
+.entry:hover .mood .glyph { animation: wiggle .55s ease-in-out; }
+@keyframes wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
+@keyframes brush-in { from { clip-path: inset(-14px 100% -14px -14px); opacity: .3; } to { clip-path: inset(-14px -14px -14px -14px); opacity: 1; } }
+.entries li { animation: brush-in .7s cubic-bezier(.3,.7,.3,1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+.newbtn { transition: transform .2s; } .newbtn:active { transform: scale(.94) rotate(-3deg); }
+.scrap { transition: transform .25s; }
+.mem.open .scrap { animation: pop .45s cubic-bezier(.3,1.5,.5,1) both; }
+.mem.open .scrap:nth-child(2) { animation-delay: .07s; } .mem.open .scrap:nth-child(3) { animation-delay: .14s; }
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.94); } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .entries li, .mem.open .scrap, .entry:hover .mood .glyph { animation: none; } .entry .mood::before { transition: none; } }
+
+/* ---------- refinement: personal mark pad ---------- */
+.head { position: relative; }
+.markbtn { background: none; border: none; cursor: pointer; padding: 0; position: relative; }
+.markbtn .glyph { display: block; transition: transform .3s cubic-bezier(.3,1.7,.5,1); }
+.markbtn:hover .glyph, .markbtn:focus-visible .glyph { transform: rotate(-8deg) scale(1.06); }
+.markbtn:focus-visible { outline: none; }
+.markbtn .hint { position: absolute; right: 0; top: 100%; font-family: var(--brush); font-size: 1rem; color: var(--ink-muted); white-space: nowrap; }
+.pad { position: absolute; right: 0; top: calc(100% + 1.6rem); width: 320px; z-index: 30; background: var(--white); border-radius: 18px; padding: 1rem 1.1rem 1.1rem; box-shadow: 0 0 0 2.4px var(--ink), 0 14px 34px rgba(30,20,50,.14); display: none; }
+.pad.open { display: block; animation: pop .35s cubic-bezier(.3,1.5,.5,1) both; }
+.pad h3 { font-family: var(--brush); font-weight: 400; font-size: 1.4rem; line-height: 1; margin: 0 0 .5rem; }
+.presets { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .7rem; }
+.presets button { width: 34px; height: 34px; border: none; background: none; cursor: pointer; border-radius: 10px; padding: 3px; display: grid; place-items: center; }
+.presets button:hover { background: var(--sky-l); }
+.presets .glyph { width: 26px; height: 26px; }
+.canvas { display: block; width: 100%; aspect-ratio: 1 / .62; touch-action: none; cursor: crosshair; border-radius: 12px; background: var(--white); box-shadow: inset 0 0 0 2px var(--ink-muted); }
+.canvas .hintt { font-family: var(--brush); font-size: 17px; fill: var(--ink-muted); }
+.pen { fill: none; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.swatches { display: flex; gap: .55rem; margin: .7rem 0 .2rem; align-items: center; }
+.swatches button { width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer; padding: 0; filter: url(#marker); }
+.swatches button.on { box-shadow: 0 0 0 3px var(--white), 0 0 0 5px var(--ink); }
+.pad-actions { display: flex; justify-content: space-between; margin-top: .7rem; }
+
+/* ---------- refinement: search / welcome / lock ---------- */
+.narrow { max-width: 680px; margin: .6rem auto 0; padding: 0 1.8rem; }
+.v-search h2, .v-welcome h1, .v-lock h1 { font-family: var(--brush); font-weight: 400; line-height: 1; margin: 0 0 .6rem; }
+.v-search h2 { font-size: 2.6rem; }
+.searchbar { display: flex; align-items: center; gap: .8rem; border-bottom: 4px solid var(--cobalt); border-radius: 0 0 8px 3px; padding: .3rem .2rem; margin: .6rem 0 .3rem; }
+.searchbar input { flex: 1; min-width: 0; border: none; outline: none; background: none; font-family: var(--serif); font-size: 1.35rem; color: var(--ink); }
+.hintline { font-family: var(--brush); font-size: 1.15rem; color: var(--ink-muted); margin: 0 0 1.4rem; }
+.answer { margin: 1rem 0 1.6rem; }
+.results { display: flex; flex-direction: column; gap: 1.5rem; padding: .3rem .6rem; }
+.results .scrap { max-width: 520px; }
+.results .scrap:nth-child(1) { --c: var(--ochre-l); --c2: var(--orange-l); }
+.results .scrap:nth-child(2) { --c: var(--sky-l); --c2: var(--lav-l); }
+.results .scrap:nth-child(3) { --c: var(--coral-l); --c2: var(--ochre-l); }
+.centered { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .9rem; padding: 3rem 1.8rem 6rem; box-sizing: border-box; }
+.v-welcome .centered { gap: 1.1rem; }
+.v-welcome h1 { font-size: 3.4rem; margin: 0; }
+.lead { max-width: 30rem; font-family: var(--serif); font-size: 1.1rem; color: var(--ink-soft); margin: 0; }
+.choices { display: flex; gap: 2.2rem; flex-wrap: wrap; justify-content: center; margin: 1.2rem 0 .6rem; }
+.choice { position: relative; isolation: isolate; width: 17rem; text-align: left; border: none; background: none; cursor: pointer; padding: 1.5rem 1.6rem 1.4rem; color: var(--ink); --pad: -10px; display: flex; flex-direction: column; gap: .2rem; }
+.choice:nth-of-type(1) { --c: var(--sky-l); --c2: var(--lav-l); transform: rotate(-1deg); }
+.choice:nth-of-type(2) { --c: var(--ochre-l); --c2: var(--coral-l); transform: rotate(1deg); }
+.choice .t { font-family: var(--brush); font-size: 1.6rem; line-height: 1.1; display: flex; align-items: center; gap: .6rem; }
+.choice .t::before { content: ""; width: 20px; height: 20px; border-radius: 50%; border: 2.6px solid var(--ink); background: var(--white); flex: none; filter: url(#marker); }
+.choice.on .t::before { background: var(--green); }
+.choice .d { font-family: var(--serif); font-size: .92rem; line-height: 1.5; color: var(--ink-soft); }
+.choice:hover { transform: rotate(0) translateY(-2px); }
+.v-lock h1 { font-size: 3.6rem; margin: 0; }
+.lockfield { width: min(18rem, 80vw); text-align: center; font-size: 1.1rem; }
+
+/* large painted cards: softer, more card-like than the small mood blobs */
+.scrap.blob::before, .choice.blob::before { opacity: .72; border-radius: 22px 30px 20px 28px / 26px 22px 30px 24px; }
+.scrap.blob::after, .choice.blob::after { opacity: .3; border-radius: 28px 20px 30px 22px / 22px 30px 24px 28px; }
+
+/* ---------- mockup chrome ---------- */
+.mock-tools { position: fixed; right: max(22px, env(safe-area-inset-right, 0px)); bottom: 18px; z-index: 5; display: flex; flex-direction: column; gap: .7rem; align-items: flex-end; font-size: .75rem; }
+.mock-tools .tabs { display: flex; gap: .55rem; background: var(--white); padding: .3rem .4rem; flex-wrap: wrap; justify-content: flex-end; max-width: 380px; }
+.mock-tools .tab.on { color: var(--cobalt); font-weight: 600; }
+.mock-tools .tab.on::before { border-color: var(--cobalt); }
+.mock-tools details { position: relative; background: var(--white); padding: .6rem 1rem; width: 270px; color: var(--ink-soft); border-radius: 14px; box-shadow: 0 0 0 2.4px var(--ink); }
+.mock-tools summary { cursor: pointer; user-select: none; font-family: var(--brush); font-size: 1.1rem; color: var(--ink); }
+.mock-tools .dial { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .45rem; }
+.mock-tools input[type=range] { width: 105px; accent-color: var(--cobalt); }
+.mock-tools label { display: contents; }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; min-height: 100%; }
+  .vrule { display: none; }
+  .left, .center, .right { overflow: visible; padding-left: 16px; padding-right: 16px; }
+  .center { padding-top: .5rem; }
+  .entries { max-height: 16rem; overflow-y: auto; }
+  .kit-grid { grid-template-columns: 1fr; gap: 2rem; padding: 0 16px; }
+  .kit-grid .vrule { display: none; }
+  .top { padding-left: 16px; padding-right: 16px; }
+  .sheet textarea { min-height: 40vh; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="paint-a" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="w"/>
+      <feDisplacementMap class="edge" in="SourceGraphic" in2="w" scale="9" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.22" numOctaves="2" seed="7" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .95 0 0 0 .42" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-b" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="19" result="w"/>
+      <feDisplacementMap class="edge" in="SourceGraphic" in2="w" scale="9" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.2 0.014" numOctaves="2" seed="11" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .95 0 0 0 .42" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-c" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="31" result="w"/>
+      <feDisplacementMap class="edge" in="SourceGraphic" in2="w" scale="9" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.09 0.09" numOctaves="3" seed="5" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .95 0 0 0 .42" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="line" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="12" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="4.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.3 0.03" numOctaves="2" seed="2" result="st"/>
+      <feColorMatrix in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .8 0 0 0 .55" result="m"/>
+      <feComposite in="d" in2="m" operator="in"/>
+    </filter>
+    <filter id="marker" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="8" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="3.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="gouache" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="9" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="6" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.015 0.09" numOctaves="3" seed="21" result="br"/>
+      <feColorMatrix in="br" type="matrix" values="0 0 0 0 .62  0 0 0 0 .6  0 0 0 0 .64  1.2 0 0 0 -.62" result="streaks"/>
+      <feComposite in="streaks" in2="shape" operator="in" result="gr"/>
+      <feMerge><feMergeNode in="shape"/><feMergeNode in="gr"/></feMerge>
+    </filter>
+
+    <symbol id="g-sun" viewBox="0 0 48 48"><circle class="wash" cx="24" cy="24" r="11"/><circle class="solid" cx="24" cy="24" r="7"/><path class="ink" d="M24 5v7M24 36v7M5 24h7M36 24h7M10.5 10.5l5 5M32.5 32.5l5 5M37.5 10.5l-5 5M15.5 32.5l-5 5"/></symbol>
+    <symbol id="g-cloud" viewBox="0 0 48 48"><path class="wash" d="M13 36a8 8 0 0 1-1-15.9A11 11 0 0 1 33 17a8 8 0 0 1 2 19z"/><path class="ink" d="M13 36a8 8 0 0 1-1-15.9A11 11 0 0 1 33 17a8 8 0 0 1 2 19z"/></symbol>
+    <symbol id="g-drop" viewBox="0 0 48 48"><path class="wash" d="M24 7C17 18 12 24 12 30a12 12 0 0 0 24 0c0-6-5-12-12-23z"/><path class="solid" d="M24 8C18 18 14 24 14 30a10 10 0 0 0 20 0c0-6-4-12-10-22z"/></symbol>
+    <symbol id="g-face" viewBox="0 0 48 48"><rect class="wash" x="9" y="9" width="30" height="30" rx="7"/><rect class="ink" x="7" y="7" width="34" height="34" rx="8"/><circle class="solid" cx="17" cy="20" r="2.4"/><circle class="solid" cx="31" cy="20" r="2.4"/><path class="ink" d="M16 29q8 8 16 0"/></symbol>
+    <symbol id="g-flower" viewBox="0 0 48 48"><circle class="wash" cx="24" cy="24" r="13"/><g class="solid"><circle cx="24" cy="10" r="5.5"/><circle cx="24" cy="38" r="5.5"/><circle cx="10" cy="24" r="5.5"/><circle cx="38" cy="24" r="5.5"/><circle cx="14" cy="14" r="5"/><circle cx="34" cy="14" r="5"/><circle cx="14" cy="34" r="5"/><circle cx="34" cy="34" r="5"/></g><circle cx="24" cy="24" r="5" fill="#fff"/></symbol>
+    <symbol id="g-star" viewBox="0 0 48 48"><path class="wash" d="M24 5l5 15 15 4-15 5-5 14-5-14-15-5 15-4z"/><path class="solid" d="M24 7l4 14 13 3-13 4-4 13-4-13-13-4 13-3z"/></symbol>
+    <symbol id="g-moon" viewBox="0 0 48 48"><path class="wash" d="M32 8a17 17 0 1 0 8 26 14 14 0 0 1-8-26z"/><path class="ink" d="M31 8a17 17 0 1 0 8 26 14 14 0 0 1-8-26z"/></symbol>
+    <symbol id="g-house" viewBox="0 0 48 48"><path class="wash" d="M9 23L24 8l15 15v17H9z"/><path class="ink" d="M8 23L24 7l16 16v18H8z"/><path class="solid" d="M24 24l5 5-5 5-5-5z"/></symbol>
+    <symbol id="g-eye" viewBox="0 0 48 48"><path class="wash" d="M5 24q19-22 38 0q-19 22-38 0z"/><path class="ink" d="M4 24q20-23 40 0q-20 23-40 0z"/><circle class="solid" cx="24" cy="24" r="6"/></symbol>
+    <symbol id="g-heart" viewBox="0 0 48 48"><path class="wash" d="M24 41C8 29 6 19 12 13c5-5 11-3 12 3 1-6 7-8 12-3 6 6 4 16-12 28z"/><path class="ink" d="M24 39C9 28 7 19 12 14c5-4 10-2 12 4 2-6 7-8 12-4 5 5 3 14-12 25z"/></symbol>
+    <symbol id="g-leaf" viewBox="0 0 48 48"><path class="wash" d="M10 39C8 21 20 9 41 9c0 20-12 32-31 30z"/><path class="ink" d="M9 38C7 20 19 8 40 8c0 20-12 32-31 30zM9 38L28 19"/></symbol>
+    <symbol id="g-cup" viewBox="0 0 48 48"><path class="wash" d="M11 18h24v12a10 10 0 0 1-10 10h-4a10 10 0 0 1-10-10z"/><path class="ink" d="M9 16h24v12a10 10 0 0 1-10 10h-4A10 10 0 0 1 9 28zM33 20h3a5 5 0 0 1 0 10h-3M15 6q3 3 0 6M23 6q3 3 0 6"/></symbol>
+    <symbol id="g-bolt" viewBox="0 0 48 48"><path class="wash" d="M29 6L13 28h10l-3 15 18-25H27z"/><path class="solid" d="M27 5L12 27h10l-3 16 17-24H26z"/></symbol>
+    <symbol id="g-key" viewBox="0 0 48 48"><circle class="wash" cx="17" cy="17" r="9"/><circle class="ink" cx="16" cy="16" r="8"/><path class="ink" d="M22 22L41 41M33 33l5-5M37 37l5-5"/></symbol>
+    <symbol id="g-fish" viewBox="0 0 48 48"><path class="wash" d="M9 25q11-14 23 0q-12 14-23 0z"/><path class="ink" d="M8 24q11-14 23 0q-12 14-23 0zM31 24l10-8v16z"/><circle class="solid" cx="17" cy="22" r="1.8"/></symbol>
+    <symbol id="g-spiral" viewBox="0 0 48 48"><path class="ink" d="M24 24q3-4 6 0t-3 8-12 0-6-12 8-12 16 2 8 18"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <p class="wordmark"><svg class="glyph w-coral" style="width:44px;height:44px"><use href="#g-flower"/></svg>little little</p>
+    <span class="localnote"><i></i>Local — nothing leaves this device</span>
+  </header>
+
+  <nav class="left" aria-label="Entries">
+    <button class="newbtn blob single" type="button">+ new page</button>
+    <ul class="entries">
+      <li><button class="entry active" type="button"><span class="mood blob v2 single" style="--c:var(--ochre-l)"><svg class="glyph plain"><use href="#g-sun"/></svg></span><span class="txt"><span class="date">Nov 6</span><span class="preview">First week at the new place. The office smells like</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob single" style="--c:var(--green-l)"><svg class="glyph plain"><use href="#g-flower"/></svg></span><span class="txt"><span class="date">Nov 3</span><span class="preview">Glaze day. The bowl came out of the kiln the exact</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob v3 single" style="--c:var(--sky)"><svg class="glyph plain"><use href="#g-face"/></svg></span><span class="txt"><span class="date">Nov 1</span><span class="preview">Slow Saturday. Soup, a film, nothing to report and</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob v2 single" style="--c:var(--coral-l)"><svg class="glyph plain"><use href="#g-drop"/></svg></span><span class="txt"><span class="date">Oct 28</span><span class="preview">Called mum after her check-up. Her voice had the old</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob single" style="--c:var(--orange-l)"><svg class="glyph plain"><use href="#g-star"/></svg></span><span class="txt"><span class="date">Oct 25</span><span class="preview">10K done. 61:48. Legs like wet clay but I didn't</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob v3 single" style="--c:var(--ochre-l)"><svg class="glyph plain"><use href="#g-house"/></svg></span><span class="txt"><span class="date">Oct 21</span><span class="preview">Signed the offer this morning. Sat with it for ten</span></span></button></li>
+      <li><button class="entry" type="button"><span class="mood blob v2 single" style="--c:var(--lav-l)"><svg class="glyph plain"><use href="#g-moon"/></svg></span><span class="txt"><span class="date">Oct 19</span><span class="preview">Couldn't sleep. Walked the long way home instead</span></span></button></li>
+    </ul>
+  </nav>
+
+  <div class="vrule" style="--c:var(--ink)"></div>
+
+  <main class="center">
+    <div class="sheet">
+      <div class="head">
+        <div><div class="dow">Thursday</div><h1 class="daydate">November 6</h1></div>
+        <button class="markbtn" id="markBtn" type="button" aria-expanded="false" aria-controls="pad" aria-label="Choose or draw today's mark"><svg class="glyph big w-ochre" id="todayMark" viewBox="0 0 48 48" aria-hidden="true"><use href="#g-sun"/></svg><span class="hint">change mark</span></button>
+        <div class="pad" id="pad" role="dialog" aria-label="Today's mark">
+          <h3>Today's mark</h3>
+          <div class="presets" id="presets"></div>
+          <svg class="canvas" id="canvas" viewBox="0 0 150 93"><text class="hintt" x="75" y="52" text-anchor="middle">or draw your own</text><g id="pen" filter="url(#marker)"></g></svg>
+          <div class="swatches" id="swatches"></div>
+          <div class="pad-actions"><button class="mbtn" id="padClear" type="button">clear</button><button class="mbtn fill" id="padUse" type="button">use this</button></div>
+        </div>
+      </div>
+      <textarea id="editor" spellcheck="false" placeholder="Write a little…">First week at the new place. The office smells like coffee and cardboard — half the team is still unpacking from the move. I keep reaching for dread out of habit and finding it isn't there.</textarea>
+      <div class="tags"><span class="tag">work</span><button class="tag add" type="button">+ tag</button></div>
+    </div>
+  </main>
+
+  <div class="vrule" style="--c:var(--cobalt)"></div>
+
+  <aside class="right" aria-label="Companion">
+    <div class="sky" id="sky">
+      <p class="thinking">remembering with you…</p>
+      <div class="cloud" id="reflection">
+        <svg class="outline" viewBox="0 0 300 230" preserveAspectRatio="none" aria-hidden="true"><path d="M44 216 C16 216 6 192 8 168 C8 140 14 108 30 88 C42 62 80 52 102 56 C118 36 150 30 170 44 C192 28 234 36 246 62 C272 62 292 88 290 118 C298 140 298 166 286 186 C284 208 262 222 238 216 C200 226 150 226 120 218 C96 228 66 222 44 216 Z"/></svg>
+        <p id="reflectionBody">In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.</p>
+        <p class="sources">from Jun 2 · Sep 30 · Oct 21</p>
+        <div class="cloud-actions"><button type="button" id="regen">again</button><button type="button" id="dismiss">let it go</button></div>
+      </div>
+      <button class="recall" id="recall" type="button" title="Bring the reflection back"><svg class="glyph w-sky" style="width:30px;height:30px" aria-hidden="true"><use href="#g-cloud"/></svg>bring it back</button>
+    </div>
+
+    <div class="mem" id="mem">
+      <button class="mbtn" id="memIcon" type="button" aria-expanded="false" aria-controls="scraps"><svg class="glyph plain small" aria-hidden="true"><use href="#g-eye"/></svg>3 memories</button>
+      <div class="scraps" id="scraps">
+        <button class="scrap blob" type="button"><svg class="glyph plain"><use href="#g-house"/></svg><span class="date">Oct 21</span><span class="snippet">Signed the offer this morning. Sat with it for ten minutes before telling anyone.</span></button>
+        <button class="scrap blob v2" type="button"><svg class="glyph plain"><use href="#g-spiral"/></svg><span class="date">Sep 30</span><span class="snippet">Panel interview tomorrow. Rehearsed answers at the sink until the water went cold.</span></button>
+        <button class="scrap blob v3" type="button"><svg class="glyph plain"><use href="#g-drop"/></svg><span class="date">Jun 2</span><span class="snippet">Another Sunday dreading Monday. I don't remember when that became normal.</span></button>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<section class="view kit" aria-label="Calendar and settings">
+  <header class="top">
+    <p class="wordmark"><svg class="glyph w-coral" style="width:44px;height:44px"><use href="#g-flower"/></svg>little little</p>
+    <span class="localnote"><i></i>Local — nothing leaves this device</span>
+  </header>
+  <div class="kit-grid">
+    <section>
+      <h2>November</h2>
+      <div class="cal" id="cal"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <div class="vrule" style="--c:var(--ink)"></div>
+    <section>
+      <h2>Settings</h2>
+      <div class="setting"><span class="label">Where thinking happens<span class="hint">Reflections run on this device</span></span><button class="mbtn" type="button">Ollama ▾</button></div>
+      <div class="rule"></div>
+      <div class="setting"><span class="label">Chat model</span><button class="mbtn" type="button">qwen3:4b ▾</button></div>
+      <div class="rule"></div>
+      <div class="setting"><span class="label">Gentle dissolve<span class="hint">Let reflections drift away</span></span><button class="toggle on" type="button" aria-pressed="true" id="tg"><span class="knob"></span></button></div>
+      <div class="rule"></div>
+      <div class="setting"><span class="label">Backup</span><span style="display:flex;gap:.8rem"><button class="mbtn" type="button">Export</button><button class="mbtn fill" type="button">Restore</button></span></div>
+      <div class="rule"></div>
+      <div class="setting"><span class="label">Passphrase</span><input class="input" id="pp" type="password" placeholder="••••••••"></div>
+      <div class="chips-row"><span class="mbtn static">local</span><span class="mbtn static">57 entries</span><span class="mbtn static">memory idle</span></div>
+    </section>
+  </div>
+</section>
+
+<section class="view v-search" aria-label="Search">
+  <header class="top"><p class="wordmark"><svg class="glyph w-coral" style="width:44px;height:44px"><use href="#g-flower"/></svg>little little</p><span class="localnote"><i></i>Local — nothing leaves this device</span></header>
+  <div class="narrow">
+    <h2>Search</h2>
+    <div class="searchbar"><svg class="glyph plain" style="width:30px;height:30px" aria-hidden="true"><use href="#g-eye"/></svg><input id="q" type="text" value="when did I decide to leave my job" aria-label="Search your journal"></div>
+    <p class="hintline">found in a moment · the answer follows</p>
+    <div class="cloud answer" style="transform:rotate(.5deg)">
+      <svg class="outline" viewBox="0 0 300 230" preserveAspectRatio="none" aria-hidden="true"><path d="M44 216 C16 216 6 192 8 168 C8 140 14 108 30 88 C42 62 80 52 102 56 C118 36 150 30 170 44 C192 28 234 36 246 62 C272 62 292 88 290 118 C298 140 298 166 286 186 C284 208 262 222 238 216 C200 226 150 226 120 218 C96 228 66 222 44 216 Z"/></svg>
+      <p>You decided on <b>October 21</b>, when you signed the offer. The doubts started back in June, and by late September you were rehearsing the interview at the sink.</p>
+      <p class="sources">from Oct 21 · Sep 30 · Jun 2</p>
+    </div>
+    <div class="results">
+      <button class="scrap blob" type="button"><svg class="glyph plain"><use href="#g-house"/></svg><span class="date">Oct 21</span><span class="snippet">Signed the offer this morning. Sat with it for ten minutes before telling anyone.</span></button>
+      <button class="scrap blob v2" type="button"><svg class="glyph plain"><use href="#g-spiral"/></svg><span class="date">Sep 30</span><span class="snippet">Panel interview tomorrow. Rehearsed answers at the sink until the water went cold.</span></button>
+      <button class="scrap blob v3" type="button"><svg class="glyph plain"><use href="#g-drop"/></svg><span class="date">Jun 2</span><span class="snippet">Another Sunday dreading Monday. I don't remember when that became normal.</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="view v-welcome" aria-label="Welcome">
+  <div class="centered">
+    <svg class="glyph w-coral" style="width:92px;height:92px" aria-hidden="true"><use href="#g-flower"/></svg>
+    <h1>Hello. This is yours.</h1>
+    <p class="lead">A private place to write. Your words stay on this device. Nothing is chosen for you, so pick who helps you remember.</p>
+    <div class="choices" role="radiogroup" aria-label="Who helps you remember">
+      <button class="choice blob on" id="chLocal" type="button" role="radio" aria-checked="true"><span class="t">On this device</span><span class="d">Ollama runs the helper here. Private and offline. A little slower.</span></button>
+      <button class="choice blob" id="chCloud" type="button" role="radio" aria-checked="false"><span class="t">Claude, in the cloud</span><span class="d">Smarter reflections. Needs internet. Entries you mark private never leave.</span></button>
+    </div>
+    <button class="mbtn fill" type="button" style="font-size:1rem;padding:.55rem 1.6rem">Begin</button>
+  </div>
+</section>
+
+<section class="view v-lock" aria-label="Locked">
+  <div class="centered">
+    <svg class="glyph w-ochre" style="width:120px;height:120px" aria-hidden="true"><use href="#g-key"/></svg>
+    <h1>little little</h1>
+    <p class="lead">Your journal is locked on this device.</p>
+    <input class="input lockfield" id="lockpw" type="password" placeholder="passphrase" aria-label="Passphrase">
+    <button class="mbtn fill" type="button" style="font-size:1rem;padding:.5rem 1.6rem">Open</button>
+  </div>
+</section>
+
+<div class="mock-tools">
+  <div class="tabs">
+    <button class="tab mbtn on" id="tabHome" type="button">homepage</button>
+    <button class="tab mbtn" id="tabKit" type="button">calendar + settings</button>
+    <button class="tab mbtn" id="tabSearch" type="button">search</button>
+    <button class="tab mbtn" id="tabWelcome" type="button">welcome</button>
+    <button class="tab mbtn" id="tabLock" type="button">lock</button>
+  </div>
+  <details>
+    <summary>design dials</summary>
+    <div class="dial"><label>uneven coverage <input type="range" id="dUneven" min="0" max="100" value="55" step="5"></label><span id="vUneven">55%</span></div>
+    <div class="dial"><label>ragged edges <input type="range" id="dEdge" min="0" max="20" value="9" step="1"></label><span id="vEdge">9</span></div>
+    <div class="dial"><label>linger <input type="range" id="dLinger" min="1" max="60" value="14" step="1"></label><span id="vLinger">14 keys</span></div>
+    <div class="dial"><label>drift in <input type="range" id="dDrift" min="150" max="2000" value="800" step="50"></label><span id="vDrift">800ms</span></div>
+    <div class="dial"><label>dissolve <input type="range" id="dDiss" min="150" max="2500" value="1100" step="50"></label><span id="vDiss">1100ms</span></div>
+  </details>
+</div>
+
+<script>
+(function () {
+  var sky = document.getElementById("sky"), reflection = document.getElementById("reflection"), body = document.getElementById("reflectionBody"), editor = document.getElementById("editor");
+  var phase = "present", settleTimer = null, fallbackTimer = null, keys = 0, linger = 14, rIdx = 0;
+  var reflections = [
+    "In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.",
+    "The cardboard smell you noticed is the same detail you wrote about when you moved flats in May — beginnings seem to reach you through your nose first.",
+    "Three entries this autumn end mid-sentence when work comes up. This one doesn't. You finished the thought."
+  ];
+  function ms(v) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v)) || 800; }
+  function setPhase(p) {
+    phase = p; clearTimeout(fallbackTimer);
+    if (p === "arriving") keys = 0;
+    sky.classList.toggle("tucked", p === "tucked");
+    sky.classList.toggle("thinking-state", p === "thinking");
+    reflection.classList.toggle("arriving", p === "arriving");
+    reflection.classList.toggle("dissolving", p === "dissolving");
+    if (p === "arriving" || p === "dissolving") fallbackTimer = setTimeout(onEnd, ms(p === "arriving" ? "--drift-ms" : "--dissolve-ms") + 150);
+  }
+  function onEnd() { if (phase === "arriving") setPhase("present"); else if (phase === "dissolving") setPhase("tucked"); }
+  reflection.addEventListener("animationend", onEnd);
+  function fresh() { setPhase("thinking"); setTimeout(function () { rIdx = (rIdx + 1) % reflections.length; body.textContent = reflections[rIdx]; setPhase("arriving"); }, 900); }
+  editor.addEventListener("input", function () {
+    if (phase === "present" || phase === "arriving") { keys++; if (keys >= linger) setPhase("dissolving"); }
+    clearTimeout(settleTimer); settleTimer = setTimeout(fresh, 2200);
+  });
+  document.getElementById("recall").addEventListener("click", function () { setPhase("arriving"); });
+  document.getElementById("regen").addEventListener("click", fresh);
+  document.getElementById("dismiss").addEventListener("click", function () { setPhase("tucked"); });
+
+  var mem = document.getElementById("mem"), memIcon = document.getElementById("memIcon");
+  function setMem(o) { mem.classList.toggle("open", o); memIcon.setAttribute("aria-expanded", String(o)); }
+  mem.addEventListener("mouseenter", function () { setMem(true); });
+  mem.addEventListener("mouseleave", function () { setMem(false); });
+  memIcon.addEventListener("focus", function () { setMem(true); });
+  memIcon.addEventListener("click", function () { setMem(!mem.classList.contains("open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && mem.classList.contains("open")) { setMem(false); memIcon.focus(); } });
+  Array.prototype.forEach.call(document.querySelectorAll(".entry"), function (b) {
+    b.addEventListener("click", function () { Array.prototype.forEach.call(document.querySelectorAll(".entry"), function (x) { x.classList.remove("active"); }); b.classList.add("active"); });
+  });
+
+  var moods = [["g-sun","--ochre-l"],["g-flower","--green-l"],["g-face","--sky"],["g-cloud","--lav-l"],["g-drop","--coral-l"],["g-star","--orange-l"],["g-moon","--sky-l"]];
+  var names = ["bright","good","okay","low","heavy","proud","tired"];
+  var pat = [0,1,1,2,5,1,0,2,3,1,6,0,1,2,4,3,2,1,0,5,1,2,3,1,0,1,2,6,5,0], cal = document.getElementById("cal"), c = "";
+  ["M","T","W","T","F","S","S"].forEach(function (d) { c += '<span class="dowh">' + d + '</span>'; });
+  for (var e = 0; e < 5; e++) c += '<span class="cell empty"></span>';
+  var vs = ["", " v2", " v3"];
+  for (var d = 1; d <= 30; d++) {
+    var m = moods[pat[d - 1]];
+    c += '<span class="cell blob single' + vs[d % 3] + (d === 6 ? " today" : "") + '" style="--c:var(' + m[1] + ')"><span class="n">' + d + '</span><svg class="glyph plain"><use href="#' + m[0] + '"/></svg>' + (d === 6 ? '<span class="ring"></span>' : '') + '</span>';
+  }
+  cal.innerHTML = c;
+  var lg = "";
+  moods.forEach(function (m, i) { lg += '<span><i class="sw blob single" style="--c:var(' + m[1] + ')"><svg class="glyph plain"><use href="#' + m[0] + '"/></svg></i>' + names[i] + '</span>'; });
+  document.getElementById("legend").innerHTML = lg;
+  var tg = document.getElementById("tg");
+  tg.addEventListener("click", function () { var on = tg.classList.toggle("on"); tg.setAttribute("aria-pressed", String(on)); });
+
+  var views = { "": "home", "#home": "home", "#kit": "kit", "#search": "search", "#welcome": "welcome", "#lock": "lock" };
+  var tabs = { home: "tabHome", kit: "tabKit", search: "tabSearch", welcome: "tabWelcome", lock: "tabLock" };
+  function view() {
+    var v = views[location.hash] || "home";
+    document.body.setAttribute("data-view", v);
+    Object.keys(tabs).forEach(function (k) { document.getElementById(tabs[k]).classList.toggle("on", k === v); });
+  }
+  Object.keys(tabs).forEach(function (k) { document.getElementById(tabs[k]).addEventListener("click", function () { location.hash = k; }); });
+  window.addEventListener("hashchange", view); view();
+
+  // staggered brush-in for the entry list
+  Array.prototype.forEach.call(document.querySelectorAll(".entries li"), function (li, i) { li.style.setProperty("--i", i); });
+
+  // welcome choices
+  var chL = document.getElementById("chLocal"), chC = document.getElementById("chCloud");
+  function pick(local) { chL.classList.toggle("on", local); chC.classList.toggle("on", !local); chL.setAttribute("aria-checked", String(local)); chC.setAttribute("aria-checked", String(!local)); }
+  chL.addEventListener("click", function () { pick(true); }); chC.addEventListener("click", function () { pick(false); });
+
+  // ---- personal mark pad: pick a doodle or draw your own ----
+  var markBtn = document.getElementById("markBtn"), pad = document.getElementById("pad"), todayMark = document.getElementById("todayMark");
+  var presetIds = [["g-sun","w-ochre"],["g-flower","w-green"],["g-face","w-sky"],["g-cloud","w-sky"],["g-drop","w-coral"],["g-star","w-orange"],["g-moon","w-sky"],["g-house","w-ochre"],["g-heart","w-coral"],["g-leaf","w-green"],["g-cup","w-orange"],["g-bolt","w-ochre"],["g-key","w-lav"],["g-fish","w-sky"],["g-eye","w-lav"],["g-spiral","w-plum"]];
+  var pr = "";
+  presetIds.forEach(function (p, i) { pr += '<button type="button" data-i="' + i + '" aria-label="' + p[0].slice(2) + '"><svg class="glyph ' + p[1] + '" viewBox="0 0 48 48"><use href="#' + p[0] + '"/></svg></button>'; });
+  document.getElementById("presets").innerHTML = pr;
+  var penColors = ["var(--ink)", "var(--coral)", "var(--cobalt)", "var(--green)", "var(--plum)"], penColor = penColors[0], sw = "";
+  penColors.forEach(function (c, i) { sw += '<button type="button" data-c="' + c + '" class="' + (i === 0 ? "on" : "") + '" style="background:' + c + '" aria-label="pen colour ' + (i + 1) + '"></button>'; });
+  document.getElementById("swatches").innerHTML = sw;
+  function setPad(open) { pad.classList.toggle("open", open); markBtn.setAttribute("aria-expanded", String(open)); }
+  markBtn.addEventListener("click", function () { setPad(!pad.classList.contains("open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && pad.classList.contains("open")) { setPad(false); markBtn.focus(); } });
+  function applyMark(viewBox, inner, cls) {
+    todayMark.setAttribute("viewBox", viewBox); todayMark.innerHTML = inner;
+    if (cls) todayMark.setAttribute("class", "glyph big " + cls);
+    var mood = document.querySelector(".entry.active .mood .glyph");
+    if (mood) { mood.setAttribute("viewBox", viewBox); mood.innerHTML = inner; }
+  }
+  if (/[?&]pad/.test(location.search)) setPad(true);
+  document.getElementById("presets").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return; var p = presetIds[+b.getAttribute("data-i")];
+    applyMark("0 0 48 48", '<use href="#' + p[0] + '"/>', p[1]); setPad(false);
+  });
+  document.getElementById("swatches").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return; penColor = b.getAttribute("data-c");
+    Array.prototype.forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); });
+  });
+  var canvas = document.getElementById("canvas"), pen = document.getElementById("pen"), cur = null, hasInk = false;
+  function pt(ev) { var r = canvas.getBoundingClientRect(); return [((ev.clientX - r.left) / r.width * 150).toFixed(1), ((ev.clientY - r.top) / r.height * 93).toFixed(1)]; }
+  canvas.addEventListener("pointerdown", function (ev) {
+    canvas.setPointerCapture(ev.pointerId); var p = pt(ev);
+    cur = document.createElementNS("http://www.w3.org/2000/svg", "path"); cur.setAttribute("class", "pen"); cur.setAttribute("stroke", penColor);
+    cur.setAttribute("d", "M" + p[0] + " " + p[1] + " L" + p[0] + " " + p[1]); pen.appendChild(cur); hasInk = true;
+    var h = canvas.querySelector(".hintt"); if (h) h.style.display = "none";
+  });
+  canvas.addEventListener("pointermove", function (ev) { if (!cur) return; var p = pt(ev); cur.setAttribute("d", cur.getAttribute("d") + " L" + p[0] + " " + p[1]); });
+  function endDraw() { cur = null; }
+  canvas.addEventListener("pointerup", endDraw); canvas.addEventListener("pointercancel", endDraw);
+  document.getElementById("padClear").addEventListener("click", function () { pen.innerHTML = ""; hasInk = false; var h = canvas.querySelector(".hintt"); if (h) h.style.display = ""; });
+  document.getElementById("padUse").addEventListener("click", function () {
+    if (!hasInk) { setPad(false); return; }
+    applyMark("0 0 150 93", '<g filter="none">' + pen.innerHTML + '</g>', "w-ochre"); setPad(false);
+  });
+
+  function dial(id, out, fn, fmt) { var el = document.getElementById(id), lab = document.getElementById(out); el.addEventListener("input", function () { fn(+el.value); lab.textContent = fmt(+el.value); }); }
+  dial("dUneven", "vUneven", function (v) {
+    var u = v / 100, a = (1.8 * u).toFixed(3), b = (0.92 - 0.5 * 1.8 * u).toFixed(3);
+    Array.prototype.forEach.call(document.querySelectorAll("feColorMatrix.streak"), function (f) { f.setAttribute("values", "0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  " + a + " 0 0 0 " + b); });
+  }, function (v) { return v + "%"; });
+  dial("dEdge", "vEdge", function (v) { Array.prototype.forEach.call(document.querySelectorAll("feDisplacementMap.edge"), function (f) { f.setAttribute("scale", String(v)); }); }, function (v) { return v; });
+  dial("dLinger", "vLinger", function (v) { linger = v; }, function (v) { return v + " keys"; });
+  dial("dDrift", "vDrift", function (v) { document.documentElement.style.setProperty("--drift-ms", v + "ms"); }, function (v) { return v + "ms"; });
+  dial("dDiss", "vDiss", function (v) { document.documentElement.style.setProperty("--dissolve-ms", v + "ms"); }, function (v) { return v + "ms"; });
+})();
+</script>

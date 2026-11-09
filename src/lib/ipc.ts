@@ -26,6 +26,8 @@ export const ipc = {
   setNoCloud: (id: string, noCloud: boolean) => invoke<void>("set_no_cloud", { id, noCloud }),
   setMood: (id: string, level: number, label: string | null) =>
     invoke<void>("set_mood", { id, level, label }),
+  setMark: (id: string, mark: string) => invoke<void>("set_mark", { id, mark }),
+  clearMark: (id: string) => invoke<void>("clear_mark", { id }),
   calendarMonth: (year: number, month: number) =>
     invoke<DayMood[]>("calendar_month", { year, month }),
   pullModel: (model: string, onProgress: (p: PullProgress) => void) => {

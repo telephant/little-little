@@ -6,6 +6,8 @@ mod prompt;
 mod providers;
 mod state;
 mod storage;
+#[cfg(test)]
+mod testdata;
 
 use state::AppState;
 
@@ -27,6 +29,8 @@ pub fn run() {
             commands::set_tags,
             commands::set_no_cloud,
             commands::set_mood,
+            commands::set_mark,
+            commands::clear_mark,
             commands::calendar_month,
             commands::list_available_models,
             commands::get_settings,

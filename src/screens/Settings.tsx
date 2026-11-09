@@ -12,6 +12,8 @@ export function Settings(props: {
   activity: Activity | null;
   onSettingsChange: (s: SettingsView) => void;
   onClose: () => void;
+  /** Called after a successful restore so the shell can reload entries (V2-4). */
+  onRestored: () => void;
 }) {
   const { settings } = props;
   const [models, setModels] = useState<AvailableModels | null>(null);
@@ -63,11 +65,12 @@ export function Settings(props: {
 
       <StatusChips settings={settings} activity={props.activity} />
 
-      <fieldset>
+      <fieldset className="settings-section">
         <legend>Where your reflections are generated</legend>
         <label>
           <input
             type="radio"
+            className="painted-radio"
             name="provider"
             checked={settings.chat_provider === "ollama"}
             onChange={() => void pickProvider("ollama")}
@@ -77,6 +80,7 @@ export function Settings(props: {
         <label>
           <input
             type="radio"
+            className="painted-radio"
             name="provider"
             checked={settings.chat_provider === "claude_cli"}
             onChange={() => void pickProvider("claude_cli")}
@@ -85,7 +89,7 @@ export function Settings(props: {
         </label>
       </fieldset>
 
-      <fieldset>
+      <fieldset className="settings-section">
         <legend>On-device models (nothing is chosen for you)</legend>
         {models && !models.ollama_running && (
           <p className="warning">Start Ollama to list your installed models.</p>
@@ -142,10 +146,11 @@ export function Settings(props: {
         )}
       </fieldset>
 
-      <fieldset>
+      <fieldset className="settings-section">
         <legend>Your data</legend>
         <div className="data-actions">
           <button
+            className="text-link"
             onClick={() => {
               void (async () => {
                 const dir = await pickOpen({ directory: true }).catch(() => null);
@@ -159,6 +164,7 @@ export function Settings(props: {
             Export Markdown…
           </button>
           <button
+            className="text-link"
             onClick={() => {
               void (async () => {
                 const path = await pickSave({ defaultPath: "little-little-backup.json" }).catch(() => null);
@@ -172,12 +178,16 @@ export function Settings(props: {
             Back up (JSON)…
           </button>
           <button
+            className="text-link"
             onClick={() => {
               void (async () => {
                 const path = await pickOpen({ filters: [{ name: "Backup", extensions: ["json"] }] }).catch(() => null);
                 if (typeof path === "string") {
                   const n = await ipc.restoreJson(path).catch((e) => setError(String(e)));
-                  if (typeof n === "number") setNotice(`${n} entries restored — re-indexing in the background.`);
+                  if (typeof n === "number") {
+                    setNotice(`${n} entries restored — re-indexing in the background.`);
+                    props.onRestored();
+                  }
                 }
               })();
             }}

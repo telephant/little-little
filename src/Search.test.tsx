@@ -86,3 +86,30 @@ describe("search UI (T-15)", () => {
     await waitFor(() => expect(fake.getEntry).toHaveBeenCalledWith("e-a"));
   });
 });
+
+describe("painted search (paper-ui T-09)", () => {
+  /** TC-21 (search part): answer wash, sources, results as notes, hidden note, empty state. */
+  it("TC-21: answer, sources, hidden note and results render the painted structure", async () => {
+    setFakeSearch({ ...OUT, hidden_count: 2 }, async () => ({ answer: "It went well.", cited_dates: ["2026-03-06"] }));
+    const input = await openSearch();
+    expect(input.closest("form")).toHaveClass("search-line");
+    fireEvent.change(input, { target: { value: "interview" } });
+    fireEvent.submit(input.closest("form")!);
+    const answer = await screen.findByTestId("search-answer");
+    expect(answer).toHaveClass("answer-wash");
+    expect(answer.querySelector(".sources")).toHaveTextContent(/2026-03-06/);
+    expect(screen.getByTestId("hidden-note")).toHaveClass("search-note-quiet");
+    const results = screen.getAllByTestId("search-result");
+    expect(results).toHaveLength(3);
+    for (const r of results) expect(r).toHaveClass("search-note");
+  });
+
+  it("TC-21: no results shows the quiet empty note", async () => {
+    setFakeSearch({ results: [], hidden_count: 0 });
+    const input = await openSearch();
+    fireEvent.change(input, { target: { value: "nothing" } });
+    fireEvent.submit(input.closest("form")!);
+    const empty = await screen.findByText(/no matching entries/i);
+    expect(empty).toHaveClass("search-empty");
+  });
+});

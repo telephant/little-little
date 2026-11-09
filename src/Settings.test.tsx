@@ -5,6 +5,10 @@ import App from "./App";
 import { fake, resetFake } from "./test/fakeIpc";
 
 vi.mock("./lib/ipc", () => import("./test/fakeIpc").then((m) => ({ ipc: m.fake })));
+vi.mock("@tauri-apps/plugin-dialog", () => ({
+  open: vi.fn(async () => "/fake/journal-backup.json"),
+  save: vi.fn(async () => "/fake/backup-out.json"),
+}));
 
 beforeEach(() => {
   resetFake();
@@ -162,6 +166,19 @@ describe("settings (T-05)", () => {
     );
   });
 
+  /**
+   * TC-45 (T-22, V2-4): a successful restore refreshes the entry list and
+   * opens a restored entry — the pre-restore blank draft is gone.
+   */
+  it("TC-45: restore refreshes the list and opens a restored entry", async () => {
+    await openSettingsFromUnlockedApp();
+    fireEvent.click(screen.getByRole("button", { name: /restore backup/i }));
+    await screen.findByText(/2 entries restored/i);
+    fireEvent.click(screen.getByRole("button", { name: /close settings/i }));
+    const list = await screen.findByTestId("entry-list");
+    await waitFor(() => expect(list).toHaveTextContent(/riverside 10k/i));
+  });
+
   it("TC-42b: under Cloud the note names the chosen on-device model", async () => {
     await openSettingsFromUnlockedApp();
     const pane = screen.getByTestId("settings-pane");
@@ -175,5 +192,34 @@ describe("settings (T-05)", () => {
     await waitFor(() =>
       expect(within(pane).getByText(/private entries/i)).toHaveTextContent(/qwen3:4b-instruct/i),
     );
+  });
+});
+
+describe("painted settings and dialog (paper-ui T-10)", () => {
+  /** TC-21 (settings part): hairline sections, text-link buttons, painted radios. */
+  it("TC-21: settings render hairline sections and text-link buttons with testids intact", async () => {
+    await openSettingsFromUnlockedApp();
+    const pane = screen.getByTestId("settings-pane");
+    expect(pane.querySelectorAll("fieldset.settings-section")).toHaveLength(3);
+    const data = pane.querySelector(".data-actions")!;
+    const buttons = data.querySelectorAll("button");
+    expect(buttons).toHaveLength(3);
+    for (const b of buttons) expect(b).toHaveClass("text-link");
+    for (const r of pane.querySelectorAll('input[type="radio"]')) expect(r).toHaveClass("painted-radio");
+    expect(screen.getByTestId("status-chips")).toBeInTheDocument();
+  });
+
+  /** TC-19 (dialog part) + TC-21: painted frame, same copy, exactly two actions. */
+  it("TC-19/21: cloud dialog keeps its copy and two actions inside a painted frame", async () => {
+    await openSettingsFromUnlockedApp();
+    fireEvent.click(screen.getByRole("radio", { name: /claude/i }));
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveClass("painted-frame");
+    expect(within(dialog).getByRole("heading")).toHaveTextContent("Send entries to Claude?");
+    expect(dialog).toHaveTextContent(/never send to cloud/i);
+    expect(dialog).toHaveTextContent(/mood/i);
+    expect(dialog).toHaveTextContent(/On-device mode keeps everything on this computer/);
+    const actions = within(dialog).getAllByRole("button");
+    expect(actions.map((b) => b.textContent)).toEqual(["Cancel", "Send my entries to Claude"]);
   });
 });

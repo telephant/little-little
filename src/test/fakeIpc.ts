@@ -68,6 +68,12 @@ export function setFakeModels(m: AvailableModels) {
 }
 
 /** Most suites start with models already chosen so onboarding doesn't trigger. */
+let nextEntryMood: { level: number | null; label: string | null; source: "ai" | "manual" } | null = null;
+/** The next createEntry() gets this mood (e.g. an AI guess). */
+export function setFakeNextEntryMood(level: number | null, label: string | null, source: "ai" | "manual") {
+  nextEntryMood = { level, label, source };
+}
+
 export function setFakeModelsChosen() {
   settings.embed_model = "nomic-embed-text:latest";
   settings.embed_dim = 768;
@@ -102,6 +108,7 @@ export function resetFake() {
     { status: "pulling layer", pct: 100, done: false },
     { status: "success", pct: null, done: true },
   ];
+  nextEntryMood = null;
   for (const f of Object.values(fake)) f.mockClear();
 }
 
@@ -127,10 +134,12 @@ export const fake = {
       no_cloud: false,
       embed_status: "pending",
       tags: [],
-      mood_level: null,
-      mood_label: null,
-      mood_source: null,
+      mood_level: nextEntryMood?.level ?? null,
+      mood_label: nextEntryMood?.label ?? null,
+      mood_source: nextEntryMood?.source ?? null,
+      mark: null,
     };
+    nextEntryMood = null;
     entries.set(id, e);
     return { ...e };
   }),
@@ -141,15 +150,32 @@ export const fake = {
     e.mood_label = label;
     e.mood_source = "manual";
   }),
+  setMark: vi.fn(async (id: string, mark: string) => {
+    const e = entries.get(id);
+    if (!e) throw new Error("not found");
+    try {
+      const v = JSON.parse(mark);
+      if (v?.v !== 1 || !Array.isArray(v.strokes) || v.strokes.length < 1 || v.strokes.length > 8) throw new Error();
+    } catch {
+      throw new Error("invalid mark");
+    }
+    e.mark = mark; // a mark is not text: nothing else changes
+  }),
+  clearMark: vi.fn(async (id: string) => {
+    const e = entries.get(id);
+    if (!e) throw new Error("not found");
+    e.mark = null;
+  }),
   calendarMonth: vi.fn(async (year: number, month: number): Promise<DayMood[]> => {
     const prefix = `${year}-${String(month).padStart(2, "0")}-`;
     const byDay = new Map<string, DayMood>();
     for (const e of [...entries.values()].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
       const day = e.created_at.slice(0, 10);
       if (!day.startsWith(prefix)) continue;
-      const d = byDay.get(day) ?? { date: day, level: null, count: 0 };
+      const d: DayMood = byDay.get(day) ?? { date: day, level: null, count: 0, mark: null };
       d.count += 1;
       if (e.mood_level != null) d.level = e.mood_level; // fake: latest mood wins
+      if (e.mark) d.mark = { mark: e.mark, level: e.mood_level }; // latest painted entry of the day
       byDay.set(day, d);
     }
     return [...byDay.values()];
@@ -173,6 +199,7 @@ export const fake = {
         tags: [...e.tags],
         mood_level: e.mood_level,
         mood_label: e.mood_label,
+        mark: e.mark,
       }));
   }),
   getEntry: vi.fn(async (id: string): Promise<Entry> => {
@@ -227,7 +254,33 @@ export const fake = {
   ),
   exportMarkdown: vi.fn(async () => entries.size),
   exportJson: vi.fn(async () => entries.size),
-  restoreJson: vi.fn(async () => 0),
+  restoreJson: vi.fn(async () => {
+    // Mimic restore_json: blank drafts are discarded, then the guard applies.
+    for (const [id, e] of [...entries]) {
+      if (e.body === "" && e.tags.length === 0 && e.mood_level == null && !e.mark) entries.delete(id);
+    }
+    if (entries.size > 0) {
+      throw new Error("restore requires an empty journal (merge is not supported yet)");
+    }
+    const rows = [
+      { id: "jf-051", created_at: "2026-10-18T13:25:00Z", body: "RACE DAY. Riverside 10K: 58 minutes 41 seconds." },
+      { id: "jf-002", created_at: "2026-05-09T21:40:00Z", body: "Decided. I am leaving Harlow & Price." },
+    ];
+    for (const r of rows) {
+      entries.set(r.id, {
+        ...r,
+        updated_at: r.created_at,
+        no_cloud: false,
+        embed_status: "pending",
+        tags: [],
+        mood_level: null,
+        mood_label: null,
+        mood_source: null,
+        mark: null,
+      });
+    }
+    return rows.length;
+  }),
   search: vi.fn(async (): Promise<SearchOutput> => structuredClone(searchOutput)),
   searchAnswer: vi.fn(async (): Promise<SearchAnswer> => searchAnswerImpl()),
   getAiPanel: vi.fn(async (): Promise<PanelState> => structuredClone(panelState)),

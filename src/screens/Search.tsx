@@ -47,7 +47,7 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
 
   return (
     <div className="search" data-testid="search">
-      <form onSubmit={(e) => void run(e)}>
+      <form className="search-line" onSubmit={(e) => void run(e)}>
         <input
           type="search"
           placeholder="Ask your journal… (e.g. when did I last feel anxious about work?)"
@@ -60,7 +60,7 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
 
       {answer.kind === "asking" && <p className="placeholder">asking…</p>}
       {answer.kind === "ready" && (
-        <div className="search-answer" data-testid="search-answer">
+        <div className="search-answer answer-wash" data-testid="search-answer">
           <p>{answer.answer.answer}</p>
           <p className="sources">from {answer.answer.cited_dates.join(", ")}</p>
         </div>
@@ -70,17 +70,17 @@ export function Search(props: { onOpenEntry: (id: string) => void }) {
       )}
 
       {hidden > 0 && (
-        <p className="hidden-note" data-testid="hidden-note">
+        <p className="hidden-note search-note-quiet" data-testid="hidden-note">
           {hidden} entr{hidden === 1 ? "y" : "ies"} hidden (never send to cloud)
         </p>
       )}
 
       {results !== null && (
         <ul className="search-results" data-testid="search-results">
-          {results.length === 0 && <li className="placeholder">No matching entries.</li>}
+          {results.length === 0 && <li className="placeholder search-empty">No matching entries.</li>}
           {results.map((r) => (
             <li key={r.entry_id}>
-              <button data-testid="search-result" onClick={() => props.onOpenEntry(r.entry_id)}>
+              <button data-testid="search-result" className="search-note" onClick={() => props.onOpenEntry(r.entry_id)}>
                 <span className="date">{r.created_at.slice(0, 10)}</span>
                 <span className="snippet">{r.snippet}</span>
               </button>

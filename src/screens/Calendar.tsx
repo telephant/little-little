@@ -1,7 +1,8 @@
-// Calendar view (C-10, AC-20): month grid colored by day mood, manual-first.
+// Calendar view (C-10, AC-20): month grid, each day shows its mood's default mark, manual-first.
 import { useCallback, useEffect, useState } from "react";
 import { ipc } from "../lib/ipc";
 import type { DayMood, EntrySummary } from "../lib/types";
+import { MoodMark, moodName } from "../components/MoodMark";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -59,7 +60,7 @@ export function Calendar(props: { onOpenEntry: (id: string) => void }) {
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
           const info = byDate.get(dateStr);
-          const cls = info?.level ? `day mood-${info.level}` : info ? "day has-entries" : "day";
+          const cls = info ? "day has-mark" : "day";
           return (
             <button
               key={dateStr}
@@ -69,11 +70,26 @@ export function Calendar(props: { onOpenEntry: (id: string) => void }) {
               disabled={!info}
               title={info ? `${info.count} entr${info.count === 1 ? "y" : "ies"}` : undefined}
             >
-              {i + 1}
+              <span className="day-num">{i + 1}</span>
+              {info && (
+                <MoodMark
+                  level={info.mark ? info.mark.level : info.level}
+                  mark={info.mark?.mark ?? null}
+                  size={34}
+                />
+              )}
             </button>
           );
         })}
       </div>
+      <ul className="calendar-legend" data-testid="calendar-legend">
+        {[1, 2, 3, 4, 5, null].map((l) => (
+          <li key={l ?? "none"}>
+            <MoodMark level={l} size={26} />
+            <span>{moodName(l)}</span>
+          </li>
+        ))}
+      </ul>
       {selected && (
         <div className="day-entries" data-testid="day-entries">
           <h3>{selected}</h3>

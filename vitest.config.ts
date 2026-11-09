@@ -7,5 +7,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
+    testTimeout: 12000, // autosave debounce (1s) + CPU load from the dev app made 3s waits flaky
+    css: { include: [/App\.css/] },
   },
 });

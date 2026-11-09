@@ -97,6 +97,18 @@ pub fn set_mood(state: State<AppState>, id: String, level: i64, label: Option<St
     state.with_db(|db| db.set_mood(&id, level, label.as_deref()))
 }
 
+/// Painted mark (paint-marks, ADR-0006): validated by storage; a mark is not text, so nothing is re-queued.
+#[tauri::command]
+pub fn set_mark(state: State<AppState>, id: String, mark: String) -> CmdResult<()> {
+    state.with_db(|db| db.set_mark(&id, &mark))
+}
+
+/// Back to the default mood mark.
+#[tauri::command]
+pub fn clear_mark(state: State<AppState>, id: String) -> CmdResult<()> {
+    state.with_db(|db| db.clear_mark(&id))
+}
+
 // --- settings & models (T-05, D-5/D-6) ---
 
 use crate::providers::{claude_on_path, ollama};

@@ -9,6 +9,7 @@ import { Calendar } from "./screens/Calendar";
 import { Search } from "./screens/Search";
 import { AiPanel } from "./components/AiPanel";
 import { useActivity } from "./hooks/useActivity";
+import { useReflectionPhase } from "./hooks/useReflectionPhase";
 import { Editor } from "./components/Editor";
 import { EntryList } from "./components/EntryList";
 import { PrivacyBadge } from "./components/PrivacyBadge";
@@ -30,21 +31,25 @@ function App() {
   const [onboarding, setOnboarding] = useState(false);
   const panelSeq = useRef(0);
   const { activity, busy } = useActivity(phase === "unlocked");
+  const reflection = useReflectionPhase();
+  const { onReady } = reflection;
 
   const loadPanel = useCallback((entryId: string) => {
     const seq = ++panelSeq.current;
+    const requestedAt = Date.now();
     let tries = 0;
     const attempt = async () => {
       if (seq !== panelSeq.current) return; // a newer entry took over
       const state = await ipc.getAiPanel(entryId).catch(() => null);
       if (seq !== panelSeq.current || !state) return;
       setPanel(state);
+      if (state.state === "ready") onReady(state.reflection.id, requestedAt);
       if (state.state === "thinking" && tries++ < THINKING_MAX_TRIES) {
         setTimeout(() => void attempt(), THINKING_RETRY_MS);
       }
     };
     void attempt();
-  }, []);
+  }, [onReady]);
 
   useEffect(() => {
     void ipc.journalExists().then((exists) => setPhase(exists ? "locked" : "first-run"));
@@ -78,6 +83,7 @@ function App() {
   async function newEntry() {
     setActive(await ipc.createEntry());
     setPanel(null);
+    reflection.reset();
     panelSeq.current++;
     await refreshList();
   }
@@ -93,7 +99,35 @@ function App() {
 
   return (
     <div className="shell">
-      <main className="main-pane" data-testid="main-pane">
+      <header className="top-bar" data-testid="top-bar">
+        <span className="wordmark">Little Little</span>
+        {phase === "unlocked" && !onboarding && !showSettings && (
+          <nav className="view-nav">
+            {(["journal", "calendar", "search"] as const).map((v) => (
+              <button key={v} className={view === v ? "active" : ""} onClick={() => setView(v)}>
+                {v === "journal" ? "Journal" : v === "calendar" ? "Calendar" : "Search"}
+              </button>
+            ))}
+          </nav>
+        )}
+        <div className="top-right">
+          {phase === "unlocked" && !onboarding && (
+            <button className="settings-button" onClick={() => setShowSettings((v) => !v)}>
+              Settings
+            </button>
+          )}
+          <div
+            className={`activity-dot ${busy ? "busy" : ""}`}
+            data-testid="activity-dot"
+            title={busy ? "working in the background" : "idle"}
+          />
+          <PrivacyBadge isCloud={settings ? settings.is_cloud : null} />
+        </div>
+      </header>
+      <main
+        className={`main-pane ${phase === "unlocked" && !onboarding && !showSettings && view === "journal" ? "main-pane-fixed" : ""}`}
+        data-testid="main-pane"
+      >
         {phase === "first-run" && (
           <Gate mode="first-run" onSubmit={(p) => openJournal(p, true)} />
         )}
@@ -111,20 +145,15 @@ function App() {
             activity={activity}
             onSettingsChange={setSettings}
             onClose={() => setShowSettings(false)}
+            onRestored={() => {
+              void (async () => {
+                // The pre-restore blank draft is gone; show the restored journal.
+                const list = await ipc.listEntries();
+                setEntries(list);
+                if (list.length > 0) setActive(await ipc.getEntry(list[0].id));
+              })();
+            }}
           />
-        )}
-        {phase === "unlocked" && !onboarding && !showSettings && (
-          <nav className="view-nav">
-            <button className={view === "journal" ? "active" : ""} onClick={() => setView("journal")}>
-              Journal
-            </button>
-            <button className={view === "calendar" ? "active" : ""} onClick={() => setView("calendar")}>
-              Calendar
-            </button>
-            <button className={view === "search" ? "active" : ""} onClick={() => setView("search")}>
-              Search
-            </button>
-          </nav>
         )}
         {phase === "unlocked" && !onboarding && !showSettings && view === "calendar" && (
           <Calendar onOpenEntry={(id) => void openEntry(id)} />
@@ -140,8 +169,12 @@ function App() {
               onOpen={(id) => void openEntry(id)}
               onNew={() => void newEntry()}
             />
+            <div className="rule rule-black" aria-hidden="true" />
             <Editor
               entry={active}
+              onMoodChanged={() => void refreshList()}
+              onMarkChanged={() => void refreshList()}
+              onTyped={reflection.noteKey}
               onSaved={() => {
                 void refreshList();
                 loadPanel(active.id); // save-settle → related memories + reflection (F-4)
@@ -150,36 +183,37 @@ function App() {
           </div>
         )}
       </main>
+      <div className="rule rule-blue" aria-hidden="true" />
       <aside className="side-panel" data-testid="side-panel">
-        {phase === "unlocked" && !onboarding && (
-          <button className="settings-button" onClick={() => setShowSettings((v) => !v)}>
-            Settings
-          </button>
-        )}
         {phase === "unlocked" ? (
           <AiPanel
             state={panel}
             onOpenEntry={(id) => void openEntry(id)}
             onRegenerate={() => {
               if (active) {
-                void ipc.regenerateReflection(active.id).then(setPanel);
+                const requestedAt = Date.now();
+                void ipc.regenerateReflection(active.id).then((st) => {
+                  setPanel(st);
+                  if (st.state === "ready") reflection.onReady(st.reflection.id, requestedAt);
+                });
               }
             }}
             onDismiss={(responseId) => {
-              void ipc.dismissResponse(responseId).then(() => setPanel(null));
+              void ipc.dismissResponse(responseId).then(() => {
+                setPanel(null);
+                reflection.reset();
+              });
             }}
             onOpenSettings={() => setShowSettings(true)}
+            phase={reflection.phase}
+            motion={reflection.motion}
+            onAnimationEnd={reflection.onAnimationEnd}
+            onRecall={reflection.recall}
           />
         ) : (
           <p className="placeholder">Your memories will appear here.</p>
         )}
       </aside>
-      <div
-        className={`activity-dot ${busy ? "busy" : ""}`}
-        data-testid="activity-dot"
-        title={busy ? "working in the background" : "idle"}
-      />
-      <PrivacyBadge isCloud={settings ? settings.is_cloud : null} />
     </div>
   );
 }

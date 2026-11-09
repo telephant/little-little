@@ -1,0 +1,446 @@
+<title>Little Little Paper Homepage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* v4 — everything is a piece of paper lying on a pale blue-grey desk.
+   Two tiers share one language: .paper (big surfaces) and .slip (small things).
+   Real-paper edge = pale torn-fibre rim + body with edge stain, mottling, grain. */
+:root {
+  --desk: #e6eef3;
+  --desk-hi: #f1f6f9;
+  --paper: #fdfaf2;
+  --paper-rim: #fffefa;
+  --paper-blue: #edf4f9;
+  --line-ink: rgba(120,108,88,.38);
+  --ink: #3a362f;
+  --ink-muted: #8f877a;
+  --blue: #8fb8d6;
+  --blue-deep: #4f7ea6;
+  --rule: rgba(143, 184, 214, .42);
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --hand: "Caveat", "Bradley Hand", cursive;
+  --sans: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --drift-ms: 800ms;
+  --dissolve-ms: 1100ms;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background-color: var(--desk);
+  background-image: radial-gradient(ellipse at 45% 30%, var(--desk-hi), var(--desk) 70%);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ---------- paper system ---------- */
+/* Only real objects are paper: the page, entry slips, reflection, memory scraps, cards.
+   Edge = pale fibre rim; body = near-white sheet whose edges age inward (inset shadow),
+   then the whole body is torn by an SVG displacement filter. */
+.paper, .slip { position: relative; isolation: isolate; box-sizing: border-box; --age: .34; }
+.slip { --age: .22; }
+.paper::before, .slip::before, .paper::after, .slip::after { content: ""; position: absolute; pointer-events: none; }
+.paper::before, .slip::before { inset: 5px; z-index: -2; background: var(--paper-rim); }
+.paper::after,  .slip::after  { inset: 7px; z-index: -1; background: var(--paper); }
+.paper::after { box-shadow: inset 0 0 16px 2px rgba(190,150,92,var(--age)), inset 0 0 3px 0 rgba(170,128,70,calc(var(--age) * 1.1)); }
+.slip::after  { box-shadow: inset 0 0 9px 1px rgba(190,150,92,var(--age)), inset 0 0 2px 0 rgba(170,128,70,calc(var(--age) * 1.1)); }
+.paper::before { filter: url(#rim-a) drop-shadow(0 1px 1px rgba(70,80,95,.22)) drop-shadow(0 12px 18px rgba(70,90,110,.14)); }
+.slip::before  { filter: url(#srim-a) drop-shadow(0 1px 1px rgba(70,80,95,.2)) drop-shadow(0 5px 8px rgba(70,90,110,.12)); }
+.paper::after { filter: url(#paper-a); }
+.slip::after  { filter: url(#slip-a); }
+.v2.paper::before { filter: url(#rim-b) drop-shadow(0 1px 1px rgba(70,80,95,.22)) drop-shadow(0 12px 18px rgba(70,90,110,.14)); }
+.v2.paper::after  { filter: url(#paper-b); }
+.v3.paper::before { filter: url(#rim-c) drop-shadow(0 1px 1px rgba(70,80,95,.22)) drop-shadow(0 12px 18px rgba(70,90,110,.14)); }
+.v3.paper::after  { filter: url(#paper-c); }
+.v2.slip::before { filter: url(#srim-b) drop-shadow(0 1px 1px rgba(70,80,95,.2)) drop-shadow(0 5px 8px rgba(70,90,110,.12)); }
+.v2.slip::after  { filter: url(#slip-b); }
+.v3.slip::before { filter: url(#srim-c) drop-shadow(0 1px 1px rgba(70,80,95,.2)) drop-shadow(0 5px 8px rgba(70,90,110,.12)); }
+.v3.slip::after  { filter: url(#slip-c); }
+.blue { --paper: var(--paper-blue); --paper-rim: #fbfdfe; }
+
+/* Ink-drawn controls: same ink, no paper (keeps small things legible) */
+.pill { font-family: var(--sans); font-size: .78rem; color: var(--ink-muted); background: none; border: 1px dashed var(--line-ink); border-radius: 999px; padding: .28rem .9rem; cursor: pointer; line-height: 1.3; display: inline-flex; align-items: center; gap: .4rem; }
+.pill:hover, .pill:focus-visible { color: var(--blue-deep); border-color: var(--blue); outline: none; }
+.pill.solid { border-style: solid; }
+.pill.primary { color: var(--blue-deep); border: 1px solid var(--blue); background: rgba(143,184,214,.2); font-weight: 600; }
+.pill.static { cursor: default; }
+.pill.static:hover { color: var(--ink-muted); border-color: var(--line-ink); }
+
+.tape {
+  position: absolute; top: -9px; left: 50%; width: 92px; height: 24px; z-index: 2;
+  transform: translateX(-50%) rotate(-2.2deg);
+  background: linear-gradient(180deg, rgba(160,198,225,.62), rgba(140,184,214,.5));
+  box-shadow: 0 1px 2px rgba(60,80,100,.18);
+  clip-path: polygon(0 0,100% 0,98% 22%,100% 48%,98% 74%,100% 100%,0 100%,2% 76%,0 50%,2% 24%);
+  pointer-events: none;
+}
+
+/* ---------- layout ---------- */
+.shell {
+  display: grid;
+  grid-template-columns: minmax(190px, 240px) minmax(0, 1fr) minmax(240px, 310px);
+  gap: 1.1rem;
+  height: 100%; box-sizing: border-box;
+  padding: 1.2rem;
+  padding-left: max(1.2rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.2rem, env(safe-area-inset-right, 0px));
+}
+
+/* entry slips */
+.index { display: flex; flex-direction: column; gap: .8rem; overflow-y: auto; min-width: 0; padding: .3rem .4rem 3.4rem .2rem; }
+.wordmark { font-family: var(--hand); font-size: 1.7rem; line-height: 1; color: var(--blue-deep); margin: .1rem 0 .1rem .5rem; }
+.new-entry { align-self: flex-start; margin-left: .3rem; color: var(--ink); }
+.index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .55rem; }
+.entry {
+  width: 100%; text-align: left; cursor: pointer; border: none; background: none;
+  padding: .7rem .95rem .72rem; color: var(--ink);
+  display: flex; flex-direction: column; gap: .05rem;
+  transition: transform .25s ease;
+}
+.index li:nth-child(odd) .entry  { transform: rotate(-.35deg); }
+.index li:nth-child(even) .entry { transform: rotate(.3deg); }
+.entry:hover { transform: translateY(-2px) rotate(0deg) !important; }
+.entry.active { transform: translateX(10px) rotate(-.5deg) !important; --paper: var(--paper-blue); --paper-rim: #f8fbfd; }
+.entry .date { font-family: var(--hand); font-size: 1.1rem; line-height: 1.1; color: var(--blue-deep); }
+.entry .preview { font-family: var(--serif); font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.index-foot { margin-top: auto; align-self: flex-start; font-family: var(--hand); font-size: 1.1rem; color: var(--ink-muted); padding: 0 .8rem; }
+
+/* the page */
+.pagecol { min-width: 0; min-height: 0; display: flex; justify-content: center; padding: .4rem .2rem .8rem; }
+.sheet { flex: 1; max-width: 760px; display: flex; flex-direction: column; gap: .6rem; padding: 2.1rem clamp(1.4rem, 4vw, 3rem) 1.6rem; min-height: 0; transform: rotate(-.15deg); }
+.date-line { font-family: var(--hand); font-size: 1.35rem; color: var(--blue-deep); line-height: 1; }
+.sheet textarea {
+  flex: 1; min-height: 12rem; width: 100%; box-sizing: border-box;
+  font-family: var(--serif); font-size: 1.12rem; line-height: 2.1rem;
+  background-color: transparent; color: var(--ink);
+  background-image: repeating-linear-gradient(transparent 0 calc(2.1rem - 1px), var(--rule) calc(2.1rem - 1px) 2.1rem);
+  background-attachment: local;
+  border: none; outline: none; resize: none; padding: 0;
+}
+.sheet textarea::placeholder { color: var(--ink-muted); opacity: .7; font-style: italic; }
+.tags { display: flex; gap: .6rem; flex-wrap: wrap; padding-top: .3rem; }
+.tag { font-size: .75rem; }
+
+/* companion */
+.companion { display: flex; flex-direction: column; gap: 1.1rem; overflow-y: auto; min-width: 0; padding: .6rem .4rem 3.4rem; }
+.sky { display: flex; flex-direction: column; gap: .6rem; }
+.reflection {
+  font-family: var(--serif); font-size: .96rem; line-height: 1.7; color: var(--ink);
+  display: flex; flex-direction: column; gap: .6rem;
+  padding: 1.5rem 1.4rem 1.1rem; transform: rotate(.4deg);
+}
+.reflection p { margin: 0; }
+.reflection .sources { font-family: var(--hand); font-size: 1.05rem; color: var(--blue-deep); line-height: 1.1; }
+.reflection-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+.reflection-actions button { background: none; border: none; padding: 0; cursor: pointer; font-family: var(--hand); font-size: 1.1rem; color: var(--ink-muted); }
+.reflection-actions button:hover { color: var(--blue-deep); }
+
+@keyframes drift-in { from { opacity: 0; transform: translateY(14px) rotate(.4deg); } to { opacity: 1; transform: rotate(.4deg); } }
+@keyframes dissolve { to { opacity: 0; transform: translateY(-18px) rotate(.4deg); } }
+.reflection.arriving { animation: drift-in var(--drift-ms) cubic-bezier(.25,.1,.25,1) both; }
+.reflection.dissolving { animation: dissolve var(--dissolve-ms) ease-in both; }
+@media (prefers-reduced-motion: reduce) {
+  .reflection.arriving { animation: none; opacity: 1; }
+  .reflection.dissolving { animation: dissolve 150ms linear both; }
+}
+
+.recall { display: none; align-items: center; gap: .45rem; align-self: flex-end; background: none; border: none; cursor: pointer; color: var(--ink-muted); font-family: var(--hand); font-size: 1.15rem; padding: .2rem 0; }
+.recall svg { width: 24px; height: 15px; color: var(--blue); }
+.recall:hover { color: var(--blue-deep); }
+.sky.tucked .recall { display: inline-flex; }
+.sky.tucked .reflection { display: none; }
+.thinking { display: none; font-family: var(--hand); font-size: 1.2rem; color: var(--ink-muted); text-align: right; margin: 0; }
+.sky.thinking-state .thinking { display: block; }
+.sky.thinking-state .reflection, .sky.thinking-state .recall { display: none; }
+
+.mem { display: flex; flex-direction: column; gap: .8rem; align-items: flex-end; }
+.mem-icon { font-size: .8rem; }
+.mem-icon svg { width: 14px; height: 14px; }
+.scraps { display: none; flex-direction: column; gap: .8rem; width: 100%; }
+.mem.open .scraps { display: flex; }
+.scrap { cursor: pointer; border: none; background: none; text-align: left; display: flex; flex-direction: column; gap: .1rem; padding: .85rem 1.05rem; color: var(--ink); font-family: var(--serif); width: 100%; }
+.scrap:nth-child(odd) { transform: rotate(-.6deg); }
+.scrap:nth-child(even) { transform: rotate(.5deg); }
+.scrap:hover { transform: translateY(-2px) rotate(0); }
+.scrap .date { font-family: var(--hand); font-size: 1.05rem; color: var(--blue-deep); line-height: 1.1; }
+.scrap .snippet { font-size: .85rem; line-height: 1.5; }
+
+.badge { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); z-index: 3; font-family: var(--hand); font-size: 1.05rem; color: var(--ink-muted); }
+
+/* ---------- kit view (calendar + settings preview) ---------- */
+.kit { display: none; padding: 1.4rem; padding-left: max(1.4rem, env(safe-area-inset-left, 0px)); padding-right: max(1.4rem, env(safe-area-inset-right, 0px)); overflow-y: auto; height: 100%; box-sizing: border-box; }
+body.show-kit .shell { display: none; }
+body.show-kit .kit { display: block; }
+.kit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 1.6rem; max-width: 1000px; margin: 0 auto; padding-bottom: 6rem; }
+.kit h2 { font-family: var(--serif); font-weight: 500; font-size: 1.25rem; margin: 0 0 .7rem; }
+.kit .card { padding: 1.6rem 1.5rem 1.4rem; }
+.cal-head { display: flex; justify-content: space-between; align-items: baseline; }
+.cal-head .month { font-family: var(--hand); font-size: 1.7rem; color: var(--blue-deep); line-height: 1; }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: .45rem; margin-top: .5rem; }
+.cal .dow { font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-muted); text-align: center; }
+.cal .cell { aspect-ratio: 1; display: grid; place-items: center; font-family: var(--serif); font-size: .85rem; min-width: 0; border-radius: 9px; box-shadow: inset 0 0 0 1px rgba(120,108,88,.14); }
+.cal .cell.empty { visibility: hidden; }
+.cal .cell.today { outline: 1.5px dashed var(--blue-deep); outline-offset: 2px; font-weight: 600; }
+.setting { display: flex; justify-content: space-between; align-items: center; gap: .8rem; padding: .7rem 0; border-top: 1px dashed var(--rule); }
+.setting:first-of-type { border-top: none; }
+.setting .label { font-size: .9rem; }
+.setting .hint { display: block; font-size: .75rem; color: var(--ink-muted); }
+.select, .btn { color: var(--ink); font-size: .82rem; }
+.input { font-family: var(--sans); font-size: .85rem; color: var(--ink); border: none; border-bottom: 1px dashed var(--line-ink); background: none; padding: .35rem .2rem; width: 9rem; min-width: 0; outline: none; }
+.input:focus { border-bottom-color: var(--blue-deep); }
+.input::placeholder { color: var(--ink-muted); letter-spacing: .1em; }
+.toggle { position: relative; width: 46px; height: 24px; flex: none; border: 1px dashed var(--line-ink); border-radius: 999px; background: none; cursor: pointer; padding: 0; }
+.toggle .knob { position: absolute; top: 4px; left: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--ink-muted); transition: left .2s, background .2s; }
+.toggle.on { border: 1px solid var(--blue); background: rgba(143,184,214,.25); }
+.toggle.on .knob { left: 26px; background: var(--blue-deep); }
+.chips-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .8rem; }
+
+/* ---------- mockup chrome ---------- */
+.mock-tools { position: fixed; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); z-index: 5; font-size: .75rem; display: flex; flex-direction: column; gap: .5rem; align-items: flex-start; }
+.mock-tools .tabs { display: flex; gap: .5rem; }
+.mock-tools .tab { font-size: .75rem; background: var(--desk); }
+.mock-tools .tab.on { color: var(--blue-deep); border-style: solid; border-color: var(--blue); }
+.mock-tools details { padding: .9rem 1.2rem; color: var(--ink-muted); width: 270px; }
+.mock-tools summary { cursor: pointer; user-select: none; }
+.mock-tools .dial { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .45rem; }
+.mock-tools input[type=range] { width: 105px; accent-color: var(--blue-deep); }
+.mock-tools label { display: contents; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; height: auto; min-height: 100%; }
+  .index { flex-direction: row; align-items: center; overflow-x: auto; padding-bottom: 1rem; }
+  .index ul { flex-direction: row; }
+  .entry { width: 13rem; }
+  .entry.active { transform: translateY(4px) rotate(-.5deg) !important; }
+  .wordmark, .index-foot { margin-top: auto; align-self: flex-start; font-family: var(--hand); font-size: 1.1rem; color: var(--ink-muted); padding: 0 .8rem; }
+  .sheet textarea { min-height: 40vh; }
+  .pagecol { padding: .6rem 0; }
+  .companion { padding-bottom: 7rem; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs id="filterDefs"></defs></svg>
+
+<div class="shell">
+  <nav class="index" aria-label="Entries">
+    <p class="wordmark">little little</p>
+    <button class="new-entry pill solid" type="button">+ New entry</button>
+    <ul>
+      <li><button type="button" class="entry slip active"><span class="date">Nov 6</span><span class="preview">First week at the new place. The office smells like</span></button></li>
+      <li><button type="button" class="entry slip"><span class="date">Nov 3</span><span class="preview">Glaze day. The bowl came out of the kiln the exact</span></button></li>
+      <li><button type="button" class="entry slip"><span class="date">Nov 1</span><span class="preview">Slow Saturday. Soup, a film, nothing to report and</span></button></li>
+      <li><button type="button" class="entry slip"><span class="date">Oct 28</span><span class="preview">Called mum after her check-up. Her voice had the old</span></button></li>
+      <li><button type="button" class="entry slip"><span class="date">Oct 25</span><span class="preview">10K done. 61:48. Legs like wet clay but I didn't</span></button></li>
+      <li><button type="button" class="entry slip"><span class="date">Oct 21</span><span class="preview">Signed the offer this morning. Sat with it for ten</span></button></li>
+    </ul>
+    <p class="index-foot">local · idle</p>
+  </nav>
+
+  <main class="pagecol">
+    <div class="sheet paper">
+      <span class="tape" aria-hidden="true"></span>
+      <span class="date-line">Thursday, November 6</span>
+      <textarea id="editor" spellcheck="false" placeholder="Write a little…">First week at the new place. The office smells like coffee and cardboard — half the team is still unpacking from the move. I keep reaching for dread out of habit and finding it isn't there.</textarea>
+      <div class="tags"><span class="tag pill static">work</span><span class="tag pill">+ tag</span></div>
+    </div>
+  </main>
+
+  <aside class="companion" aria-label="Companion">
+    <div class="sky" id="sky">
+      <p class="thinking">remembering with you…</p>
+      <div class="reflection paper blue" id="reflection">
+        <span class="tape" aria-hidden="true" style="transform:translateX(-50%) rotate(1.8deg)"></span>
+        <p id="reflectionBody">In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.</p>
+        <p class="sources">from Jun 2 · Sep 30 · Oct 21</p>
+        <div class="reflection-actions">
+          <button type="button" id="regen">again</button>
+          <button type="button" id="dismiss">let it go</button>
+        </div>
+      </div>
+      <button class="recall" id="recall" type="button" title="Bring the reflection back">
+        <svg viewBox="0 0 28 16" fill="currentColor" aria-hidden="true"><path d="M8 15a5 5 0 0 1-.8-9.94A7 7 0 0 1 20.8 6.1 4.5 4.5 0 0 1 20 15H8z" opacity=".6"/></svg>
+        bring it back
+      </button>
+    </div>
+
+    <div class="mem" id="mem">
+      <button class="mem-icon pill" id="memIcon" type="button" aria-expanded="false" aria-controls="scraps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        3 memories
+      </button>
+      <div class="scraps" id="scraps">
+        <button class="scrap slip" type="button"><span class="date">Oct 21</span><span class="snippet">Signed the offer this morning. Sat with it for ten minutes before telling anyone.</span></button>
+        <button class="scrap slip" type="button"><span class="date">Sep 30</span><span class="snippet">Panel interview tomorrow. Rehearsed answers at the sink until the water went cold.</span></button>
+        <button class="scrap slip" type="button"><span class="date">Jun 2</span><span class="snippet">Another Sunday dreading Monday. I don't remember when that became normal.</span></button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<section class="kit" aria-label="Component kit">
+  <div class="kit-grid">
+    <div class="card paper v2">
+      <span class="tape" aria-hidden="true"></span>
+      <div class="cal-head"><span class="month">November</span><span class="pill static">mood calendar</span></div>
+      <div class="cal" id="cal"></div>
+    </div>
+    <div class="card paper v3">
+      <h2>Settings</h2>
+      <div class="setting"><span class="label">Where thinking happens<span class="hint">Reflections run on this device</span></span><button class="select pill solid" type="button">Ollama ▾</button></div>
+      <div class="setting"><span class="label">Chat model</span><button class="select pill solid" type="button">qwen3:4b ▾</button></div>
+      <div class="setting"><span class="label">Gentle dissolve<span class="hint">Let reflections drift away</span></span><button class="toggle on" type="button" aria-pressed="true" id="tg"><span class="knob"></span></button></div>
+      <div class="setting"><span class="label">Backup</span><span style="display:flex;gap:.6rem"><button class="btn pill solid" type="button">Export</button><button class="btn pill primary" type="button">Restore</button></span></div>
+      <div class="setting"><span class="label">Passphrase</span><input class="input" id="pp" type="password" placeholder="••••••••"></div>
+      <div class="chips-row"><span class="pill static">local</span><span class="pill static">57 entries</span><span class="pill static">memory idle</span></div>
+    </div>
+  </div>
+</section>
+
+<span class="badge">Local — nothing leaves this device</span>
+
+<div class="mock-tools">
+  <div class="tabs">
+    <button class="tab pill on" id="tabHome" type="button">homepage</button>
+    <button class="tab pill" id="tabKit" type="button">calendar + settings</button>
+  </div>
+  <details class="paper">
+    <summary>design dials</summary>
+    <div class="dial"><label>edge roughness <input type="range" id="dRough" min="1" max="14" value="6" step="0.5"></label><span id="vRough">6</span></div>
+    <div class="dial"><label>aged edges <input type="range" id="dAge" min="0" max="80" value="34" step="5"></label><span id="vAge">34%</span></div>
+    <div class="dial"><label>linger <input type="range" id="dLinger" min="1" max="60" value="14" step="1"></label><span id="vLinger">14 keys</span></div>
+    <div class="dial"><label>drift in <input type="range" id="dDrift" min="150" max="2000" value="800" step="50"></label><span id="vDrift">800ms</span></div>
+    <div class="dial"><label>dissolve <input type="range" id="dDiss" min="150" max="2500" value="1100" step="50"></label><span id="vDiss">1100ms</span></div>
+  </details>
+</div>
+
+<script>
+(function () {
+  // ---- Paper filters: built once, three seeds each so no two pieces share an edge ----
+  var NS = "http://www.w3.org/2000/svg";
+  var defs = document.getElementById("filterDefs");
+  function make(id, seed, o) {
+    var f = o.rim ? "0.03 0.035" : "0.022 0.026";
+    var hi = o.rim ? 0.28 : 0.38;
+    var out = '<filter id="' + id + '" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="' + f + '" numOctaves="2" seed="' + seed + '" result="lo"/>' +
+      '<feTurbulence type="fractalNoise" baseFrequency="' + hi + '" numOctaves="3" seed="' + (seed + 3) + '" result="hi"/>' +
+      '<feComposite in="lo" in2="hi" operator="arithmetic" k1="0" k2="0.55" k3="0.45" k4="0" result="warp"/>' +
+      '<feDisplacementMap class="torn' + (o.rim ? ' rimk' : '') + '" in="SourceGraphic" in2="warp" scale="' + o.rough + '" xChannelSelector="R" yChannelSelector="G" result="torn"/>';
+    if (!o.rim) {
+      out += '<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="' + (seed + 5) + '" result="gr"/>' +
+        '<feColorMatrix in="gr" type="matrix" values="0 0 0 0 .42  0 0 0 0 .34  0 0 0 0 .2  .22 0 0 0 -.045" result="grA"/>' +
+        '<feComposite in="grA" in2="torn" operator="in" result="grain"/>' +
+        '<feMerge><feMergeNode in="torn"/><feMergeNode in="grain"/></feMerge>';
+    }
+    return out + '</filter>';
+  }
+  var html = "";
+  ["a", "b", "c"].forEach(function (k, i) {
+    var seed = 4 + i * 17;
+    html += make("paper-" + k, seed, { rough: 6 });
+    html += make("rim-" + k, seed + 40, { rough: 6, rim: true });
+    html += make("slip-" + k, seed + 80, { rough: 4.5 });
+    html += make("srim-" + k, seed + 120, { rough: 6, rim: true });
+  });
+  defs.innerHTML = html;
+
+  // Distribute variants so neighbours differ
+  var n = 0;
+  Array.prototype.forEach.call(document.querySelectorAll(".paper, .slip"), function (el) {
+    var v = n++ % 3;
+    if (v === 1 && !el.classList.contains("v3")) el.classList.add("v2");
+    if (v === 2 && !el.classList.contains("v2")) el.classList.add("v3");
+  });
+
+  // ---- Reflection lifecycle ----
+  var sky = document.getElementById("sky");
+  var reflection = document.getElementById("reflection");
+  var body = document.getElementById("reflectionBody");
+  var editor = document.getElementById("editor");
+  var phase = "present", settleTimer = null, fallbackTimer = null, keys = 0, linger = 14, rIdx = 0;
+  var reflections = [
+    "In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.",
+    "The cardboard smell you noticed is the same detail you wrote about when you moved flats in May — beginnings seem to reach you through your nose first.",
+    "Three entries this autumn end mid-sentence when work comes up. This one doesn't. You finished the thought."
+  ];
+  function ms(v) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v)) || 800; }
+  function setPhase(p) {
+    phase = p; clearTimeout(fallbackTimer);
+    if (p === "arriving") keys = 0;
+    sky.classList.toggle("tucked", p === "tucked");
+    sky.classList.toggle("thinking-state", p === "thinking");
+    reflection.classList.toggle("arriving", p === "arriving");
+    reflection.classList.toggle("dissolving", p === "dissolving");
+    if (p === "arriving" || p === "dissolving") fallbackTimer = setTimeout(onEnd, ms(p === "arriving" ? "--drift-ms" : "--dissolve-ms") + 150);
+  }
+  function onEnd() { if (phase === "arriving") setPhase("present"); else if (phase === "dissolving") setPhase("tucked"); }
+  reflection.addEventListener("animationend", onEnd);
+  function newReflection() {
+    setPhase("thinking");
+    setTimeout(function () { rIdx = (rIdx + 1) % reflections.length; body.textContent = reflections[rIdx]; setPhase("arriving"); }, 900);
+  }
+  editor.addEventListener("input", function () {
+    if (phase === "present" || phase === "arriving") { keys++; if (keys >= linger) setPhase("dissolving"); }
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(newReflection, 2200);
+  });
+  document.getElementById("recall").addEventListener("click", function () { setPhase("arriving"); });
+  document.getElementById("regen").addEventListener("click", newReflection);
+  document.getElementById("dismiss").addEventListener("click", function () { setPhase("tucked"); });
+
+  // ---- Memories ----
+  var mem = document.getElementById("mem"), memIcon = document.getElementById("memIcon");
+  function setMem(o) { mem.classList.toggle("open", o); memIcon.setAttribute("aria-expanded", String(o)); }
+  mem.addEventListener("mouseenter", function () { setMem(true); });
+  mem.addEventListener("mouseleave", function () { setMem(false); });
+  memIcon.addEventListener("focus", function () { setMem(true); });
+  memIcon.addEventListener("click", function () { setMem(!mem.classList.contains("open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && mem.classList.contains("open")) { setMem(false); memIcon.focus(); } });
+
+  // ---- Kit view: calendar + toggle ----
+  var cal = document.getElementById("cal"), h = "";
+  ["M","T","W","T","F","S","S"].forEach(function (d) { h += '<span class="dow">' + d + '</span>'; });
+  var tints = [null,"#eef5fa","#dcebf6","#c9e0f1","#b4d3ea","#fbf1d9","#f6e6bf"];
+  var pattern = [3,0,4,2,5,0,1,4,3,2,0,5,3,4,2,1,0,3,4,5,2,3,1,0,4,3,2,5,3,0];
+  for (var e = 0; e < 5; e++) h += '<span class="cell empty"></span>';
+  for (var d = 1; d <= 30; d++) {
+    var t = tints[pattern[d - 1] + 1] || tints[0];
+    h += '<span class="cell' + (d === 6 ? ' today' : '') + '"' + (t ? ' style="background:' + t + '"' : '') + '>' + d + '</span>';
+  }
+  cal.innerHTML = h;
+  var tg = document.getElementById("tg");
+  tg.addEventListener("click", function () { var on = tg.classList.toggle("on"); tg.setAttribute("aria-pressed", String(on)); });
+
+  function view() {
+    var kit = location.hash === "#kit";
+    document.body.classList.toggle("show-kit", kit);
+    document.getElementById("tabHome").classList.toggle("on", !kit);
+    document.getElementById("tabKit").classList.toggle("on", kit);
+  }
+  document.getElementById("tabHome").addEventListener("click", function () { location.hash = "home"; });
+  document.getElementById("tabKit").addEventListener("click", function () { location.hash = "kit"; });
+  window.addEventListener("hashchange", view); view();
+
+  // ---- Dials ----
+  function dial(id, out, fn, fmt) {
+    var el = document.getElementById(id), lab = document.getElementById(out);
+    el.addEventListener("input", function () { fn(+el.value); lab.textContent = fmt(+el.value); });
+  }
+  dial("dRough", "vRough", function (v) {
+    Array.prototype.forEach.call(document.querySelectorAll("feDisplacementMap.torn"), function (m) {
+      var rim = m.classList.contains("rimk");
+      var slipish = m.closest("filter").id.indexOf("slip") > -1 || m.closest("filter").id.indexOf("srim") > -1;
+      m.setAttribute("scale", String((slipish ? v * 0.75 : v) * (rim ? 1.3 : 1)));
+    });
+  }, function (v) { return v; });
+  dial("dAge", "vAge", function (v) {
+    document.documentElement.style.setProperty("--age", String(v / 100));
+    Array.prototype.forEach.call(document.querySelectorAll(".paper, .slip"), function (el) { el.style.setProperty("--age", String(el.classList.contains("slip") ? v / 100 * 0.65 : v / 100)); });
+  }, function (v) { return v + "%"; });
+  dial("dLinger", "vLinger", function (v) { linger = v; }, function (v) { return v + " keys"; });
+  dial("dDrift", "vDrift", function (v) { document.documentElement.style.setProperty("--drift-ms", v + "ms"); }, function (v) { return v + "ms"; });
+  dial("dDiss", "vDiss", function (v) { document.documentElement.style.setProperty("--dissolve-ms", v + "ms"); }, function (v) { return v + "ms"; });
+})();
+</script>

@@ -11,6 +11,15 @@ pub struct DayMood {
     pub date: String, // local YYYY-MM-DD
     pub level: Option<i64>,
     pub count: i64,
+    /// Latest painted mark of the day (paint-marks D-4); None → the UI shows the mood mark.
+    pub mark: Option<DayMark>,
+}
+
+/// A day's painted mark plus the mood level of the entry that carries it (drives the mark's colour).
+#[derive(Debug, Clone, Serialize)]
+pub struct DayMark {
+    pub mark: String,
+    pub level: Option<i64>,
 }
 
 impl Storage {
@@ -20,17 +29,19 @@ impl Storage {
             created_at: String,
             level: Option<i64>,
             source: Option<String>,
+            mark: Option<String>,
         }
         let rows: Vec<Row> = {
             let conn = self.conn.lock().unwrap();
             let mut stmt = conn.prepare(
-                "SELECT created_at, mood_level, mood_source FROM entries ORDER BY created_at ASC",
+                "SELECT created_at, mood_level, mood_source, mark FROM entries ORDER BY created_at ASC",
             )?;
             stmt.query_map([], |r| {
                 Ok(Row {
                     created_at: r.get(0)?,
                     level: r.get(1)?,
                     source: r.get(2)?,
+                    mark: r.get(3)?,
                 })
             })?
             .collect::<rusqlite::Result<Vec<_>>>()?
@@ -40,6 +51,7 @@ impl Storage {
         struct Day {
             manual: Option<i64>, // latest manual (ascending order ⇒ last write wins)
             ai: Option<i64>,
+            mark: Option<DayMark>, // latest painted entry of the day (ascending order)
             count: i64,
         }
         let mut days: BTreeMap<String, Day> = BTreeMap::new();
@@ -54,6 +66,9 @@ impl Storage {
             }
             let day = days.entry(local_day).or_default();
             day.count += 1;
+            if let Some(m) = row.mark {
+                day.mark = Some(DayMark { mark: m, level: row.level });
+            }
             match (row.source.as_deref(), row.level) {
                 (Some("manual"), Some(l)) => day.manual = Some(l),
                 (Some("ai"), Some(l)) => day.ai = Some(l),
@@ -66,6 +81,7 @@ impl Storage {
                 date,
                 level: d.manual.or(d.ai),
                 count: d.count,
+                mark: d.mark,
             })
             .collect())
     }
@@ -129,5 +145,44 @@ mod tests {
         assert_eq!(get("-10").level, Some(4));
         assert_eq!(get("-20").level, None);
         assert!(days.iter().all(|x| x.date.starts_with("2026-11-")));
+    }
+
+    /// paint-marks TC-12 (D-4): Given a day with entry A (manual mood 5, no mark), B (AI mood 2, painted,
+    /// earlier) and C (no mood, painted, latest); When calendar_month runs; Then the day's mark is C's mark
+    /// with C's level (None), the day's mood level is still 5 (manual first), and a day without a painted
+    /// entry has no mark.
+    #[test]
+    fn pm_tc12_day_carries_latest_painted_mark() {
+        let dir = tempfile::tempdir().unwrap();
+        let s = Storage::open(&dir.path().join("j.db"), "p").unwrap();
+        let hm = |d: u32, h: u32| Local.with_ymd_and_hms(2026, 11, d, h, 0, 0).unwrap().to_rfc3339();
+        let m1 = r#"{"v":1,"strokes":[[10,10,200,200]]}"#;
+        let m2 = r#"{"v":1,"strokes":[[300,10,20,400]]}"#;
+
+        let a = entry_at(&s, &hm(5, 8), "plain morning");
+        s.set_mood(&a, 5, None).unwrap();
+        let b = entry_at(&s, &hm(5, 10), "painted midday");
+        s.set_mood_ai(&b, 2, None).unwrap();
+        s.set_mark(&b, m1).unwrap();
+        let c = entry_at(&s, &hm(5, 18), "painted evening");
+        s.set_mark(&c, m2).unwrap();
+
+        // Day 8: one painted entry with a mood; day 9: no painted entry at all.
+        let d = entry_at(&s, &hm(8, 12), "one painted");
+        s.set_mood(&d, 3, None).unwrap();
+        s.set_mark(&d, m1).unwrap();
+        let e = entry_at(&s, &hm(9, 12), "unpainted");
+        s.set_mood(&e, 4, None).unwrap();
+
+        let days = s.calendar_month(2026, 11).unwrap();
+        let get = |d: &str| days.iter().find(|x| x.date.ends_with(d)).unwrap();
+        let d5 = get("-05");
+        assert_eq!(d5.level, Some(5), "mood rule unchanged: manual first");
+        let mk = d5.mark.as_ref().expect("day has a painted mark");
+        assert_eq!(mk.mark, m2, "latest painted entry wins");
+        assert_eq!(mk.level, None, "mark carries its own entry's mood level");
+        let d8 = get("-08").mark.as_ref().unwrap();
+        assert_eq!((d8.mark.as_str(), d8.level), (m1, Some(3)));
+        assert!(get("-09").mark.is_none());
     }
 }

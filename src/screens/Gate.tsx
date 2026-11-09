@@ -1,5 +1,6 @@
 // First-run and unlock screens (F-1). One component, two modes.
 import { useState } from "react";
+import { MoodMark } from "../components/MoodMark";
 
 export function Gate(props: {
   mode: "first-run" | "locked";
@@ -26,6 +27,9 @@ export function Gate(props: {
 
   return (
     <form className="gate" onSubmit={submit}>
+      <div className="gate-ring">
+        <MoodMark level={null} size={110} />
+      </div>
       <h1>Little Little</h1>
       {firstRun ? (
         <>
@@ -42,13 +46,16 @@ export function Gate(props: {
         Passphrase
         <input
           type="password"
+          className="gate-line"
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           autoFocus
         />
       </label>
-      {error && <p className="error">{error}</p>}
-      <button type="submit" disabled={busy || !pass}>
+      {error && <p className="error" role="alert">
+          {error}
+        </p>}
+      <button type="submit" className="gate-open" disabled={busy || !pass}>
         {firstRun ? "Create journal" : "Unlock"}
       </button>
     </form>

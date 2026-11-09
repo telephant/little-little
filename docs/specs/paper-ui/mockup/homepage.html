@@ -1,0 +1,545 @@
+<title>Little Little Homepage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* v10 — gesture, not cartoon. White page, a serif voice, and abstract brush marks
+   that are generated per entry and tinted by mood. Pigments come from the reference
+   sketchbook, used with restraint; the AI's reflection is a loose watercolour wash. */
+:root {
+  --white: #ffffff;
+  --ink: #1b1a1f;
+  --ink-soft: #57535c;
+  --ink-muted: #8e8993;
+  --hair: rgba(27,26,31,.16);
+  /* pigments */
+  --ochre: #d2b548;  --green: #4a9b72;  --sky: #7fb0e2;  --lav: #a08ad3;
+  --coral: #e57a6b;  --orange: #eb9a3b; --slate: #6f87a8; --cobalt: #2f6fc4;
+  --m1: var(--coral); --m2: var(--lav); --m3: var(--sky); --m4: var(--green); --m5: var(--ochre);
+  --wash-sky: rgba(127,176,226,.42); --wash-lav: rgba(160,138,211,.26);
+  --display: "Walter Turncoat", "Marker Felt", cursive; --dstyle: normal; --dweight: 400; --ds: .8; --dcase: uppercase; --dtrack: .14em;
+  --serif: "Spectral", Georgia, serif;
+  --sans: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --drift-ms: 800ms;
+  --dissolve-ms: 1100ms;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body { margin: 0; background: var(--white); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; }
+
+/* small caps label voice */
+.caps { font-family: var(--sans); font-size: .68rem; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; color: var(--ink-soft); }
+
+/* text buttons: a label with a brushed underline */
+.tbtn { position: relative; isolation: isolate; background: none; border: none; cursor: pointer; padding: .3rem .1rem .45rem; font-family: var(--sans); font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 600; color: var(--ink); display: inline-flex; align-items: center; gap: .5rem; }
+.tbtn::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: -1; background: var(--u, var(--coral)); opacity: .8; filter: url(#paint-b); border-radius: 3px; transform: rotate(-.6deg); transition: transform .25s, opacity .25s; }
+.tbtn:hover::after, .tbtn:focus-visible::after { opacity: 1; transform: rotate(-.6deg) scaleY(1.6); }
+.tbtn:focus-visible { outline: none; }
+.tbtn.cool { --u: var(--sky); }
+.tbtn.plain::after { opacity: 0; }
+.tbtn.on { color: var(--cobalt); }
+.tbtn.on::after { background: var(--cobalt); opacity: .85; }
+.tbtn.solid { background: var(--ink); color: var(--white); padding: .75rem 1.7rem; border-radius: 1px; letter-spacing: .24em; }
+.tbtn.solid::after { display: none; }
+.tbtn.solid:hover { background: #000; }
+
+/* generated brush marks */
+.mk { display: block; overflow: visible; }
+.mkwrap { position: relative; display: block; width: 48px; height: 48px; flex: none; }
+.mkwrap .mk { width: 100%; height: 100%; }
+
+/* ---------- layout ---------- */
+.app { display: grid; grid-template-columns: minmax(250px, 310px) 4px minmax(0, 1fr) 4px minmax(290px, 390px); grid-template-rows: auto minmax(0, 1fr); height: 100%; box-sizing: border-box; }
+.top { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2rem .8rem; gap: 1rem; padding-left: max(2rem, env(safe-area-inset-left, 0px)); padding-right: max(2rem, env(safe-area-inset-right, 0px)); }
+.wordmark { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(2.3rem * var(--ds)); line-height: 1; margin: 0;  display: flex; align-items: baseline; gap: .5rem; }
+.wordmark i { width: 9px; height: 9px; border-radius: 50%; background: var(--coral); display: inline-block; transform: translateY(-.15rem); filter: url(#paint-s); }
+.localnote { display: inline-flex; align-items: center; gap: .6rem; }
+.localnote i { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; }
+.vrule { position: relative; isolation: isolate; width: 4px; }
+.vrule::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--c, var(--ink)); filter: url(#linev); border-radius: 3px; }
+.left, .center, .right { min-height: 0; min-width: 0; overflow-y: auto; }
+
+/* ---------- entries ---------- */
+.left { padding: 1rem 1rem 5rem 2rem; display: flex; flex-direction: column; gap: 1.1rem; padding-left: max(2rem, env(safe-area-inset-left, 0px)); }
+.newbtn { align-self: flex-start; margin: .2rem 0 .4rem; }
+.entries { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .15rem; }
+.entry { position: relative; isolation: isolate; width: 100%; display: grid; grid-template-columns: 48px 1fr; gap: .9rem; align-items: center; text-align: left; background: none; border: none; cursor: pointer; padding: .5rem .6rem; color: var(--ink); }
+.entry .mkwrap { transition: transform .45s cubic-bezier(.3,1.5,.5,1); }
+.entry:hover .mkwrap { transform: scale(1.08) rotate(3deg); }
+.entry .txt { min-width: 0; }
+.entry .date { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-weight: 400; font-size: calc(1.4rem * var(--ds)); line-height: 1.1; display: block; }
+.entry .preview { font-family: var(--serif); font-size: .84rem; color: var(--ink-soft); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry::before { content: ""; position: absolute; inset: 1px -6px; z-index: -1; background: var(--wash-sky); opacity: 0; filter: url(#paint-c); border-radius: 18px 10px 20px 8px; transition: opacity .25s; }
+.entry:hover::before { opacity: .35; }
+.entry.active::before { opacity: .75; }
+@keyframes brush-in { from { clip-path: inset(-14px 100% -14px -14px); opacity: .3; } to { clip-path: inset(-14px -14px -14px -14px); opacity: 1; } }
+.entries li { animation: brush-in .8s cubic-bezier(.3,.7,.3,1) both; animation-delay: calc(var(--i, 0) * 90ms); }
+
+/* ---------- the page ---------- */
+.center { padding: 1.6rem 3.4rem 5rem; }
+.sheet { max-width: 680px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: .4rem; min-height: 100%; }
+.head { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.daydate { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-weight: 400; font-size: calc(3.4rem * var(--ds)); line-height: 1; margin: .35rem 0 0;  }
+.sheet textarea { flex: 1; min-height: 16rem; width: 100%; box-sizing: border-box; margin-top: 1.1rem; font-family: var(--serif); font-size: 1.22rem; line-height: 2.05rem; background: transparent; color: var(--ink); border: none; outline: none; resize: none; padding: 0; }
+.sheet textarea::placeholder { color: var(--ink-muted); opacity: .7; font-style: italic; }
+.tags { display: flex; gap: 1.4rem; flex-wrap: wrap; align-items: center; padding-top: .5rem; }
+.tag { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.3rem * var(--ds)); color: var(--ink-soft); background: none; border: none; padding: 0; cursor: default; }
+.tag::before { content: "#"; color: var(--ink-muted); margin-right: .1rem; font-style: normal; }
+.tag.add { cursor: pointer; color: var(--ink-muted); }
+.tag.add::before { content: ""; }
+.tag.add:hover { color: var(--ink); }
+
+
+/* ---------- companion: a watercolour wash ---------- */
+.right { padding: 1.2rem 2rem 5rem 1.7rem; display: flex; flex-direction: column; gap: 1.6rem; padding-right: max(2rem, env(safe-area-inset-right, 0px)); }
+.sky { display: flex; flex-direction: column; gap: .6rem; }
+.bloom { position: relative; isolation: isolate; padding: 2.4rem 2.5rem 2rem; font-family: var(--serif); font-size: 1rem; line-height: 1.72; color: var(--ink); }
+.bloom::before, .bloom::after { content: ""; position: absolute; z-index: -1; pointer-events: none; }
+.bloom::before { inset: -6px -10px; background: var(--wash-sky); filter: url(#wash); border-radius: 46% 54% 50% 50% / 56% 46% 54% 44%; }
+.bloom::after { inset: 14px -2px -8px 18px; background: var(--wash-lav); filter: url(#wash2); border-radius: 52% 48% 46% 54% / 46% 56% 44% 54%; mix-blend-mode: multiply; }
+.bloom p { margin: 0; }
+.bloom .sources { margin-top: .9rem; color: var(--cobalt); }
+.bloom-actions { display: flex; gap: 1.4rem; margin-top: .7rem; }
+@keyframes drift-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes dissolve { to { opacity: 0; transform: translateY(-20px); } }
+.bloom.arriving { animation: drift-in var(--drift-ms) cubic-bezier(.25,.1,.25,1) both; }
+.bloom.dissolving { animation: dissolve var(--dissolve-ms) ease-in both; }
+@media (prefers-reduced-motion: reduce) { .bloom.arriving { animation: none; opacity: 1; } .bloom.dissolving { animation: dissolve 150ms linear both; } .entries li, .mem.open .note { animation: none; } .entry .mkwrap, .markbtn .mkwrap { transition: none; } }
+.recall { display: none; align-self: flex-start; }
+.sky.tucked .recall { display: inline-flex; }
+.sky.tucked .bloom { display: none; }
+.thinking { display: none; font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.4rem * var(--ds)); color: var(--ink-muted); margin: 0; }
+.sky.thinking-state .thinking { display: block; }
+.sky.thinking-state .bloom, .sky.thinking-state .recall { display: none; }
+
+.mem { display: flex; flex-direction: column; gap: 1.2rem; align-items: flex-start; }
+.notes { display: none; flex-direction: column; gap: 1.5rem; width: 100%; }
+.mem.open .notes { display: flex; }
+.note { position: relative; isolation: isolate; cursor: pointer; border: none; background: none; text-align: left; padding: .1rem 0 .1rem 1.3rem; color: var(--ink); width: 100%; display: flex; flex-direction: column; gap: .15rem; }
+.note::before { content: ""; position: absolute; left: 0; top: .1rem; bottom: .1rem; width: 6px; z-index: -1; background: var(--c, var(--sky)); filter: url(#paint-a); border-radius: 4px; opacity: .9; }
+.note .date { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-weight: 400; font-size: calc(1.25rem * var(--ds)); line-height: 1.1; }
+.note .snippet { font-family: var(--serif); font-size: .88rem; line-height: 1.55; color: var(--ink-soft); }
+.note:hover .snippet { color: var(--ink); }
+.mem.open .note { animation: pop .45s cubic-bezier(.3,1.4,.5,1) both; }
+.mem.open .note:nth-child(2) { animation-delay: .07s; } .mem.open .note:nth-child(3) { animation-delay: .14s; }
+
+/* ---------- other views ---------- */
+.view { display: none; }
+body[data-view]:not([data-view="home"]) .app { display: none; }
+body[data-view="kit"] .kit, body[data-view="search"] .v-search, body[data-view="welcome"] .v-welcome, body[data-view="lock"] .v-lock { display: block; min-height: 100%; box-sizing: border-box; padding-bottom: 6rem; }
+.kit-grid { display: grid; grid-template-columns: minmax(0, 1fr) 4px minmax(0, 1fr); gap: 3.4rem; max-width: 1080px; margin: .8rem auto 0; padding: 0 2rem; }
+.kit h2, .v-search h2 { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-weight: 400; font-size: calc(2.8rem * var(--ds)); line-height: 1; margin: 0 0 .7rem;  }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: .4rem .2rem; margin-top: 1rem; }
+.cal .dowh { text-align: center; font-size: .6rem; }
+.cal .cell { position: relative; height: 3.5rem; display: grid; place-items: center; min-width: 0; }
+.cal .cell .mkwrap { width: 38px; height: 38px; }
+.cal .cell .n { position: absolute; top: 0; left: .2rem; font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1rem * var(--ds)); line-height: 1; color: var(--ink-muted); }
+.cal .cell.empty { visibility: hidden; }
+.cal .cell.today .n { color: var(--ink); font-weight: 700; }
+.cal .cell.today::after { content: ""; position: absolute; left: 22%; right: 22%; bottom: -1px; height: 2px; background: var(--ink); filter: url(#line); }
+.legend { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 1.3rem; }
+.legend span { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.2rem * var(--ds)); color: var(--ink-soft); }
+.legend .mkwrap { width: 26px; height: 26px; }
+.setting { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.05rem 0; border-top: 1px solid var(--hair); }
+.setting:first-of-type { border-top: none; }
+.setting .label { font-family: var(--serif); font-size: 1rem; }
+.setting .hint { display: block; font-family: var(--sans); font-size: .75rem; color: var(--ink-muted); }
+.input { font-family: var(--serif); font-size: 1rem; color: var(--ink); border: none; border-bottom: 1px solid var(--ink-muted); background: none; padding: .3rem .1rem; width: 9rem; min-width: 0; outline: none; border-radius: 0; }
+.input:focus { border-bottom-color: var(--cobalt); box-shadow: 0 1px 0 var(--cobalt); }
+.input::placeholder { color: var(--ink-muted); letter-spacing: .12em; }
+.toggle { position: relative; width: 46px; height: 24px; flex: none; border: 1px solid var(--ink-muted); border-radius: 999px; background: none; cursor: pointer; padding: 0; transition: background .25s, border-color .25s; }
+.toggle .knob { position: absolute; top: 4px; left: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--ink); transition: left .25s, background .25s; filter: url(#paint-s); }
+.toggle.on { border-color: var(--cobalt); background: rgba(127,176,226,.22); }
+.toggle.on .knob { left: 26px; background: var(--cobalt); }
+.chips-row { display: flex; gap: 1.4rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.narrow { max-width: 680px; margin: .8rem auto 0; padding: 0 2rem; }
+.searchbar { border-bottom: 1px solid var(--ink-soft); padding: .3rem 0 .4rem; margin: .8rem 0 .5rem; }
+.searchbar input { width: 100%; border: none; outline: none; background: none; font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(2rem * var(--ds)); color: var(--ink); }
+.answer { margin: 1.6rem 0 2.2rem; }
+.results { display: flex; flex-direction: column; gap: 1.7rem; }
+.results .note { max-width: 560px; }
+.centered { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.1rem; padding: 3rem 2rem 6rem; box-sizing: border-box; }
+.v-welcome h1, .v-lock h1 { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-weight: 400; font-size: calc(3.6rem * var(--ds)); line-height: 1; margin: 0;  }
+.lead { max-width: 30rem; font-family: var(--serif); font-size: 1.1rem; color: var(--ink-soft); margin: 0; }
+.choices { display: flex; gap: 2.8rem; flex-wrap: wrap; justify-content: center; margin: 1.3rem 0 1rem; }
+.choice { position: relative; isolation: isolate; width: 17rem; text-align: left; border: none; background: none; cursor: pointer; padding: .2rem 0 .2rem 1.5rem; color: var(--ink); display: flex; flex-direction: column; gap: .25rem; }
+.choice::before { content: ""; position: absolute; left: 0; top: .15rem; bottom: .15rem; width: 6px; z-index: -1; background: var(--c); filter: url(#paint-a); border-radius: 4px; opacity: .45; transition: opacity .25s; }
+.choice:nth-of-type(1) { --c: var(--sky); } .choice:nth-of-type(2) { --c: var(--ochre); }
+.choice.on::before { opacity: 1; }
+.choice .t { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.75rem * var(--ds)); line-height: 1.1; }
+.choice .d { font-family: var(--serif); font-size: .92rem; line-height: 1.5; color: var(--ink-soft); }
+.lockfield { width: min(18rem, 80vw); text-align: center; font-size: 1.15rem; margin: .6rem 0 .6rem; }
+
+/* brush lettering for the small notes too */
+.localnote.caps { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.2rem * var(--ds));   font-weight: 400; color: var(--ink-soft); }
+.bloom .sources.caps { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-style: var(--dstyle); font-weight: var(--dweight); font-size: calc(1.2rem * var(--ds));   font-weight: 400; }
+
+.bloom .sources.caps { letter-spacing: .05em; }
+.localnote.caps { letter-spacing: .1em; }
+
+@keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; } }
+/* mood marks: the fixed default mark for each mood (1-5) and for "no mood" (open ring) */
+.bigmark { width: 84px; height: 84px; flex: none; }
+.bigmark .mk { width: 100%; height: 100%; }
+.foot { margin-top: auto; display: flex; flex-direction: column; gap: .9rem; padding-top: 1rem; }
+.moodrow { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+.moodrow .lab { margin-right: .7rem; }
+.moodbtn { position: relative; isolation: isolate; width: 40px; height: 40px; border: none; background: none; cursor: pointer; padding: 3px; }
+.moodbtn .mk { width: 100%; height: 100%; opacity: .5; transition: opacity .2s, transform .35s cubic-bezier(.3,1.6,.5,1); }
+.moodbtn:hover .mk, .moodbtn:focus-visible .mk { opacity: .85; transform: scale(1.1) rotate(3deg); }
+.moodbtn.on .mk { opacity: 1; }
+.moodbtn.on::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -2px; height: 3px; background: var(--cobalt); filter: url(#line); border-radius: 2px; }
+.moodbtn:focus-visible { outline: none; }
+.moodname { font-family: var(--display); text-transform: var(--dcase); letter-spacing: var(--dtrack); font-size: calc(1.1rem * var(--ds)); margin-left: .8rem; color: var(--ink); }
+.moodhint { font-family: var(--serif); font-style: italic; font-size: .82rem; color: var(--ink-muted); margin-left: .7rem; }
+.heroes { display: flex; gap: .4rem; justify-content: center; margin-bottom: .4rem; }
+.heroes .mkwrap { width: 64px; height: 64px; }
+.heroes.one .mkwrap { width: 110px; height: 110px; }
+
+.steps { width: min(640px, 100%); text-align: left; margin: .6rem 0 .4rem; }
+.steps .setting { border-top: 1px solid var(--hair); }
+.steps .setting:first-child { border-top: none; }
+.steps .label .hint { margin-top: .15rem; }
+.pull { margin-top: .6rem; display: flex; flex-direction: column; gap: .5rem; }
+.pull .bar { display: block; height: 8px; position: relative; }
+.pull .bar::before { content: ""; position: absolute; inset: 0; background: var(--hair); border-radius: 4px; }
+.pull .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--cobalt); border-radius: 4px; filter: url(#paint-b); }
+.acts { display: flex; gap: 2rem; align-items: center; margin-top: 1rem; }
+.choices, .choice { display: none; }
+
+/* ---------- mockup chrome ---------- */
+.mock-tools { position: fixed; right: max(22px, env(safe-area-inset-right, 0px)); bottom: 16px; z-index: 5; display: flex; flex-direction: column; gap: .6rem; align-items: flex-end; max-width: 400px; }
+.mock-tools .tabs { display: flex; gap: .3rem 1rem; flex-wrap: wrap; justify-content: flex-end; background: rgba(255,255,255,.92); padding: .3rem .5rem; }
+.mock-tools .tbtn { font-size: .6rem; }
+.mock-tools details { background: var(--white); padding: .6rem 1rem; width: 270px; color: var(--ink-soft); box-shadow: 0 0 0 1px var(--hair), 0 10px 30px rgba(0,0,0,.07); font-size: .75rem; }
+.mock-tools summary { cursor: pointer; user-select: none; }
+.mock-tools .dial { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .45rem; }
+.mock-tools input[type=range] { width: 105px; accent-color: var(--cobalt); }
+.mock-tools select { font: inherit; font-size: .75rem; border: 1px solid var(--hair); background: var(--white); padding: .15rem .3rem; }
+.mock-tools label { display: contents; }
+
+@media (max-width: 960px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto; height: auto; min-height: 100%; }
+  .vrule { display: none; }
+  .left, .center, .right { overflow: visible; padding-left: 16px; padding-right: 16px; }
+  .center { padding-top: .5rem; }
+  .entries { max-height: 16rem; overflow-y: auto; }
+  .kit-grid { grid-template-columns: 1fr; gap: 2.4rem; padding: 0 16px; }
+  .kit-grid .vrule { display: none; }
+  .top { padding-left: 16px; padding-right: 16px; }
+  .sheet textarea { min-height: 40vh; }
+  .daydate { font-size: 2.9rem; }
+  .narrow { padding: 0 16px; }
+}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Walter+Turncoat&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- brush mark: displaced edge + streaky alpha so white shows through unevenly -->
+    <filter id="paint-s" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="w"/>
+      <feDisplacementMap class="edge" in="SourceGraphic" in2="w" scale="3.4" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.5" numOctaves="2" seed="9" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .3" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-a" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="5" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.2" numOctaves="2" seed="7" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 .38" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-b" x="-12%" y="-60%" width="124%" height="220%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.1" numOctaves="2" seed="19" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="4" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.2 0.02" numOctaves="2" seed="11" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 .4" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-c" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="2" seed="31" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="9" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="3" seed="5" result="st"/>
+      <feColorMatrix class="streak" in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .95 0 0 0 .42" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <!-- loose watercolour wash: big soft displacement, blurred edge, blotchy density -->
+    <filter id="wash" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="3" seed="4" result="w"/>
+      <feDisplacementMap class="loose" in="SourceGraphic" in2="w" scale="34" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.4" result="b"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.045" numOctaves="3" seed="9" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .22" result="m"/>
+      <feComposite in="b" in2="m" operator="in"/>
+    </filter>
+    <filter id="wash2" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="21" result="w"/>
+      <feDisplacementMap class="loose" in="SourceGraphic" in2="w" scale="34" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.4" result="b"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.012" numOctaves="3" seed="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .18" result="m"/>
+      <feComposite in="b" in2="m" operator="in"/>
+    </filter>
+    <filter id="linev" x="-400%" y="-2%" width="900%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="12" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="4.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.3" numOctaves="2" seed="2" result="st"/>
+      <feColorMatrix in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .8 0 0 0 .55" result="m"/>
+      <feComposite in="d" in2="m" operator="in"/>
+    </filter>
+    <filter id="ink" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="6" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="line" x="-10%" y="-200%" width="120%" height="500%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="12" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <p class="wordmark">little little<i></i></p>
+    <span class="localnote caps"><i></i>Local · nothing leaves this device</span>
+  </header>
+
+  <nav class="left" aria-label="Entries">
+    <button class="tbtn newbtn" type="button">New page</button>
+    <ul class="entries" id="entries"></ul>
+  </nav>
+
+  <div class="vrule" style="--c:var(--ink)"></div>
+
+  <main class="center">
+    <div class="sheet">
+      <div class="head">
+        <div><div class="caps" style="margin-top:.7rem">Thursday</div><h1 class="daydate">November 6</h1></div>
+        <div class="bigmark" id="bigMark" aria-hidden="true"></div>
+      </div>
+      <textarea id="editor" spellcheck="false" placeholder="Write a little…">First week at the new place. The office smells like coffee and cardboard — half the team is still unpacking from the move. I keep reaching for dread out of habit and finding it isn't there.</textarea>
+      <div class="foot">
+        <div class="moodrow" id="moodRow" role="radiogroup" aria-label="Mood"></div>
+        <div class="tags"><span class="tag">work</span><button class="tag add" type="button">+ tag</button></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="vrule" style="--c:var(--cobalt)"></div>
+
+  <aside class="right" aria-label="Companion">
+    <div class="sky" id="sky">
+      <p class="thinking">remembering with you…</p>
+      <div class="bloom" id="reflection">
+        <p id="reflectionBody">In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.</p>
+        <p class="sources caps">from Jun 2 · Sep 30 · Oct 21</p>
+        <div class="bloom-actions"><button class="tbtn cool plain" type="button" id="regen">Again</button><button class="tbtn plain" type="button" id="dismiss">Let it go</button></div>
+      </div>
+      <button class="tbtn cool recall" id="recall" type="button">Bring it back</button>
+    </div>
+
+    <div class="mem" id="mem">
+      <button class="tbtn cool" id="memIcon" type="button" aria-expanded="false" aria-controls="notes">3 memories</button>
+      <div class="notes" id="notes">
+        <button class="note" type="button" style="--c:var(--ochre)"><span class="date">October 21</span><span class="snippet">Signed the offer this morning. Sat with it for ten minutes before telling anyone.</span></button>
+        <button class="note" type="button" style="--c:var(--lav)"><span class="date">September 30</span><span class="snippet">Panel interview tomorrow. Rehearsed answers at the sink until the water went cold.</span></button>
+        <button class="note" type="button" style="--c:var(--coral)"><span class="date">June 2</span><span class="snippet">Another Sunday dreading Monday. I don't remember when that became normal.</span></button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<section class="view kit" aria-label="Calendar and settings">
+  <header class="top"><p class="wordmark">little little<i></i></p><span class="localnote caps"><i></i>Local · nothing leaves this device</span></header>
+  <div class="kit-grid">
+    <section>
+      <h2>November</h2>
+      <div class="cal" id="cal"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <div class="vrule" style="--c:var(--ink)"></div>
+    <section>
+      <h2>Settings</h2>
+      <div class="setting"><span class="label">Where thinking happens<span class="hint">Reflections run on this device</span></span><button class="tbtn cool" type="button">Ollama ▾</button></div>
+      <div class="setting"><span class="label">Chat model</span><button class="tbtn cool" type="button">qwen3:4b ▾</button></div>
+      <div class="setting"><span class="label">Gentle dissolve<span class="hint">Let reflections drift away</span></span><button class="toggle on" type="button" aria-pressed="true" id="tg"><span class="knob"></span></button></div>
+      <div class="setting"><span class="label">Backup</span><span style="display:flex;gap:1.4rem"><button class="tbtn cool" type="button">Export</button><button class="tbtn" type="button">Restore</button></span></div>
+      <div class="setting"><span class="label">Passphrase</span><input class="input" id="pp" type="password" placeholder="••••••••"></div>
+      <div class="chips-row caps"><span>local</span><span>57 entries</span><span>memory idle</span></div>
+    </section>
+  </div>
+</section>
+
+<section class="view v-search" aria-label="Search">
+  <header class="top"><p class="wordmark">little little<i></i></p><span class="localnote caps"><i></i>Local · nothing leaves this device</span></header>
+  <div class="narrow">
+    <h2>Search</h2>
+    <div class="searchbar"><input id="q" type="text" value="when did I decide to leave my job" aria-label="Search your journal"></div>
+    <p class="caps" style="color:var(--ink-muted)">found in a moment · the answer follows</p>
+    <div class="bloom answer">
+      <p>You decided on <b>October 21</b>, when you signed the offer. The doubts started back in June, and by late September you were rehearsing the interview at the sink.</p>
+      <p class="sources caps">from Oct 21 · Sep 30 · Jun 2</p>
+    </div>
+    <div class="results">
+      <button class="note" type="button" style="--c:var(--ochre)"><span class="date">October 21</span><span class="snippet">Signed the offer this morning. Sat with it for ten minutes before telling anyone.</span></button>
+      <button class="note" type="button" style="--c:var(--lav)"><span class="date">September 30</span><span class="snippet">Panel interview tomorrow. Rehearsed answers at the sink until the water went cold.</span></button>
+      <button class="note" type="button" style="--c:var(--coral)"><span class="date">June 2</span><span class="snippet">Another Sunday dreading Monday. I don't remember when that became normal.</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="view v-welcome" aria-label="Set up your companion">
+  <div class="centered">
+    <div class="heroes" id="heroW" aria-hidden="true"></div>
+    <h1>Set up your companion</h1>
+    <p class="lead">Nothing is chosen for you. Pick the models that remember and reflect, or download the suggested ones. Everything runs on this device.</p>
+    <div class="steps">
+      <div class="setting"><span class="label"><span class="caps">1 · Memory</span><span class="hint">Finds related entries when you write</span></span><span style="display:flex;gap:1.2rem"><button class="tbtn cool" type="button">Choose a model ▾</button><button class="tbtn" type="button">Download nomic-embed-text</button></span></div>
+      <div class="setting"><span class="label"><span class="caps">2 · Voice</span><span class="hint">Writes the reflections</span></span><span style="display:flex;gap:1.2rem"><button class="tbtn cool" type="button">Choose a model ▾</button><button class="tbtn" type="button">Download qwen3:4b-instruct</button></span></div>
+      <div class="pull" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"><span class="caps">Downloading nomic-embed-text · 42%</span><span class="bar"><i style="width:42%"></i></span></div>
+    </div>
+    <div class="acts"><button class="tbtn cool" type="button">Skip for now</button><button class="tbtn solid" type="button">Done</button></div>
+  </div>
+</section>
+
+<section class="view v-lock" aria-label="Locked">
+  <div class="centered">
+    <div class="heroes" id="heroL" aria-hidden="true"></div>
+    <h1>little little</h1>
+    <p class="lead">Your journal is locked on this device.</p>
+    <input class="input lockfield" id="lockpw" type="password" placeholder="passphrase" aria-label="Passphrase">
+    <button class="tbtn solid" type="button">Open</button>
+  </div>
+</section>
+
+<div class="mock-tools">
+  <div class="tabs">
+    <button class="tbtn plain on" id="tabHome" type="button">homepage</button>
+    <button class="tbtn plain" id="tabKit" type="button">calendar + settings</button>
+    <button class="tbtn plain" id="tabSearch" type="button">search</button>
+    <button class="tbtn plain" id="tabWelcome" type="button">welcome</button>
+    <button class="tbtn plain" id="tabLock" type="button">lock</button>
+  </div>
+  <details>
+    <summary>design dials</summary>
+    <div class="dial"><label>stroke unevenness <input type="range" id="dUneven" min="0" max="100" value="55" step="5"></label><span id="vUneven">55%</span></div>
+    <div class="dial"><label>wash looseness <input type="range" id="dLoose" min="0" max="70" value="34" step="2"></label><span id="vLoose">34</span></div>
+    <div class="dial"><label>linger <input type="range" id="dLinger" min="1" max="60" value="14" step="1"></label><span id="vLinger">14 keys</span></div>
+    <div class="dial"><label>drift in <input type="range" id="dDrift" min="150" max="2000" value="800" step="50"></label><span id="vDrift">800ms</span></div>
+    <div class="dial"><label>dissolve <input type="range" id="dDiss" min="150" max="2500" value="1100" step="50"></label><span id="vDiss">1100ms</span></div>
+  </details>
+</div>
+
+<script>
+(function () {
+  // ---- default marks: one fixed brush mark per mood level, plus an open ring for "no mood" ----
+  var MOOD = {
+    1: { name: "rough", col: "var(--m1)", strokes: [["M9 11 Q22 26 39 38", 11, .95], ["M11 38 Q26 24 37 10", 9, .62]], dot: [14, 14] },
+    2: { name: "low", col: "var(--m2)", strokes: [["M8 17 Q24 44 40 19", 11, .95], ["M14 11 Q24 16 34 11", 7, .6]], line: "M16 37 q8 3 16 0" },
+    3: { name: "okay", col: "var(--m3)", strokes: [["M8 20 Q24 15 40 20", 10, .95], ["M8 31 Q24 36 40 31", 10, .62]], dot: [37, 25.5] },
+    4: { name: "good", col: "var(--m4)", strokes: [["M9 38 Q20 37 38 12", 11, .95], ["M10 28 Q16 26 25 16", 7, .6]], dot: [36, 31] },
+    5: { name: "great", col: "var(--m5)", strokes: [["M24 40 Q23 24 25 8", 11, .95], ["M13 38 Q10 26 8 14", 8, .72], ["M35 38 Q38 26 40 14", 8, .72]], dot: [24, 5] },
+    0: { name: "no mood" }
+  };
+  function mood(level) {
+    var m = MOOD[level == null ? 0 : level], g = "";
+    if (!level) return '<svg class="mk" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 9 A15 15 0 1 1 19.5 9.7" stroke="var(--ink)" stroke-width="3.2" fill="none" stroke-linecap="round" filter="url(#ink)"/></svg>';
+    m.strokes.forEach(function (st) { g += '<path d="' + st[0] + '" stroke="' + m.col + '" stroke-width="' + st[1] + '" stroke-linecap="round" fill="none" opacity="' + st[2] + '"/>'; });
+    if (m.dot) g += '<circle cx="' + m.dot[0] + '" cy="' + m.dot[1] + '" r="2.1" fill="var(--ink)"/>';
+    if (m.line) g += '<path d="' + m.line + '" stroke="var(--ink)" stroke-width="1.6" fill="none" stroke-linecap="round"/>';
+    return '<svg class="mk" viewBox="0 0 48 48" aria-hidden="true"><g filter="url(#paint-s)">' + g + '</g></svg>';
+  }
+
+  // ---- entries ----
+  var data = [["6 Nov", 4, "ai", "First week at the new place. The office smells like"], ["3 Nov", 5, "manual", "Glaze day. The bowl came out of the kiln the exact"], ["1 Nov", 3, "ai", "Slow Saturday. Soup, a film, nothing to report and"], ["28 Oct", 1, "manual", "Called mum after her check-up. Her voice had the old"], ["25 Oct", 5, "ai", "10K done. 61:48. Legs like wet clay but I didn't"], ["21 Oct", 4, "manual", "Signed the offer this morning. Sat with it for ten"], ["19 Oct", 2, "ai", "Couldn't sleep. Walked the long way home instead"], ["17 Oct", null, null, "Wrote this on the train, not sure how it felt yet"]];
+  var list = document.getElementById("entries"), active = 0, h = "";
+  data.forEach(function (d, i) { h += '<li style="--i:' + i + '"><button class="entry' + (i === 0 ? " active" : "") + '" type="button" data-i="' + i + '"><span class="mkwrap">' + mood(d[1]) + '</span><span class="txt"><span class="date">' + d[0] + '</span><span class="preview">' + d[3] + '</span></span></button></li>'; });
+  list.innerHTML = h;
+
+  // ---- mood picker (five marks; the open ring shows when no mood is set) ----
+  var row = document.getElementById("moodRow"), bigMark = document.getElementById("bigMark");
+  function drawRow() {
+    var d = data[active], r = '<span class="caps lab">Mood</span>';
+    [1, 2, 3, 4, 5].forEach(function (l) { r += '<button class="moodbtn' + (d[1] === l ? " on" : "") + '" type="button" role="radio" aria-checked="' + (d[1] === l) + '" aria-label="mood ' + MOOD[l].name + '" title="' + MOOD[l].name + '" data-l="' + l + '">' + mood(l) + '</button>'; });
+    r += '<span class="moodname">' + (d[1] ? MOOD[d[1]].name : "no mood yet") + '</span>';
+    if (d[2] === "ai") r += '<span class="moodhint">AI guess. Pick a mark to set your own.</span>';
+    row.innerHTML = r; bigMark.innerHTML = mood(d[1]);
+    list.querySelectorAll(".entry")[active].querySelector(".mkwrap").innerHTML = mood(d[1]);
+  }
+  row.addEventListener("click", function (e) { var b = e.target.closest(".moodbtn"); if (!b) return; data[active][1] = +b.getAttribute("data-l"); data[active][2] = "manual"; drawRow(); });
+  list.addEventListener("click", function (e) {
+    var b = e.target.closest(".entry"); if (!b) return; active = +b.getAttribute("data-i");
+    Array.prototype.forEach.call(list.querySelectorAll(".entry"), function (x) { x.classList.toggle("active", x === b); }); drawRow();
+  });
+  drawRow();
+
+  // ---- calendar: one default mark per day (null = no entry, 0 = entry without a mood) ----
+  var pat = [4,5,5,3,null,4,2,3,1,4,null,5,3,4,2,1,null,4,5,3,0,4,null,3,5,4,2,null,3,4], c = "", cal = document.getElementById("cal");
+  ["M","T","W","T","F","S","S"].forEach(function (d) { c += '<span class="dowh caps">' + d + '</span>'; });
+  for (var e = 0; e < 5; e++) c += '<span class="cell empty"></span>';
+  for (var d = 1; d <= 30; d++) { var v = pat[d - 1]; c += '<span class="cell' + (d === 6 ? " today" : "") + '"><span class="n">' + d + '</span>' + (v === null ? "" : '<span class="mkwrap">' + mood(v) + '</span>') + '</span>'; }
+  cal.innerHTML = c;
+  var lg = ""; [1, 2, 3, 4, 5, 0].forEach(function (l) { lg += '<span><span class="mkwrap">' + mood(l) + '</span>' + MOOD[l].name + '</span>'; });
+  document.getElementById("legend").innerHTML = lg;
+  var heroW = ""; [1, 2, 3, 4, 5].forEach(function (l) { heroW += '<span class="mkwrap">' + mood(l) + '</span>'; });
+  document.getElementById("heroW").innerHTML = heroW;
+  var heroL = document.getElementById("heroL"); heroL.classList.add("one"); heroL.innerHTML = '<span class="mkwrap">' + mood(0) + '</span>';
+
+  // ---- reflection lifecycle ----
+  var sky = document.getElementById("sky"), reflection = document.getElementById("reflection"), body = document.getElementById("reflectionBody"), editor = document.getElementById("editor");
+  var phase = "present", settleTimer = null, fallbackTimer = null, keys = 0, linger = 14, rIdx = 0;
+  var reflections = [
+    "In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.",
+    "The cardboard smell you noticed is the same detail you wrote about when you moved flats in May — beginnings seem to reach you through your nose first.",
+    "Three entries this autumn end mid-sentence when work comes up. This one doesn't. You finished the thought."
+  ];
+  function ms(v) { return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v)) || 800; }
+  function setPhase(p) {
+    phase = p; clearTimeout(fallbackTimer);
+    if (p === "arriving") keys = 0;
+    sky.classList.toggle("tucked", p === "tucked");
+    sky.classList.toggle("thinking-state", p === "thinking");
+    reflection.classList.toggle("arriving", p === "arriving");
+    reflection.classList.toggle("dissolving", p === "dissolving");
+    if (p === "arriving" || p === "dissolving") fallbackTimer = setTimeout(onEnd, ms(p === "arriving" ? "--drift-ms" : "--dissolve-ms") + 150);
+  }
+  function onEnd() { if (phase === "arriving") setPhase("present"); else if (phase === "dissolving") setPhase("tucked"); }
+  reflection.addEventListener("animationend", onEnd);
+  function fresh() { setPhase("thinking"); setTimeout(function () { rIdx = (rIdx + 1) % reflections.length; body.textContent = reflections[rIdx]; setPhase("arriving"); }, 900); }
+  editor.addEventListener("input", function () {
+    if (phase === "present" || phase === "arriving") { keys++; if (keys >= linger) setPhase("dissolving"); }
+    clearTimeout(settleTimer); settleTimer = setTimeout(fresh, 2200);
+  });
+  document.getElementById("recall").addEventListener("click", function () { setPhase("arriving"); });
+  document.getElementById("regen").addEventListener("click", fresh);
+  document.getElementById("dismiss").addEventListener("click", function () { setPhase("tucked"); });
+
+  // ---- memories ----
+  var mem = document.getElementById("mem"), memIcon = document.getElementById("memIcon");
+  function setMem(o) { mem.classList.toggle("open", o); memIcon.setAttribute("aria-expanded", String(o)); }
+  mem.addEventListener("mouseenter", function () { setMem(true); });
+  mem.addEventListener("mouseleave", function () { setMem(false); });
+  memIcon.addEventListener("focus", function () { setMem(true); });
+  memIcon.addEventListener("click", function () { setMem(!mem.classList.contains("open")); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && mem.classList.contains("open")) { setMem(false); memIcon.focus(); } });
+  if (/[?&]mem/.test(location.search)) setMem(true);
+
+  // ---- misc ----
+  var tg = document.getElementById("tg");
+  tg.addEventListener("click", function () { var on = tg.classList.toggle("on"); tg.setAttribute("aria-pressed", String(on)); });
+  Array.prototype.forEach.call(list.querySelectorAll("li"), function (li, i) { li.style.setProperty("--i", i); });
+
+  var views = { "": "home", "#home": "home", "#kit": "kit", "#search": "search", "#welcome": "welcome", "#lock": "lock" };
+  var tabs = { home: "tabHome", kit: "tabKit", search: "tabSearch", welcome: "tabWelcome", lock: "tabLock" };
+  function view() { var v = views[location.hash] || "home"; document.body.setAttribute("data-view", v); Object.keys(tabs).forEach(function (k) { document.getElementById(tabs[k]).classList.toggle("on", k === v); }); }
+  Object.keys(tabs).forEach(function (k) { document.getElementById(tabs[k]).addEventListener("click", function () { location.hash = k; }); });
+  window.addEventListener("hashchange", view); view();
+
+  function dial(id, out, fn, fmt) { var el = document.getElementById(id), lab = document.getElementById(out); el.addEventListener("input", function () { fn(+el.value); lab.textContent = fmt(+el.value); }); }
+  dial("dUneven", "vUneven", function (v) { var u = v / 100, a = (1.8 * u).toFixed(3), b = (0.92 - 0.5 * 1.8 * u).toFixed(3); Array.prototype.forEach.call(document.querySelectorAll("feColorMatrix.streak"), function (f) { f.setAttribute("values", "0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  " + a + " 0 0 0 " + b); }); }, function (v) { return v + "%"; });
+  dial("dLoose", "vLoose", function (v) { Array.prototype.forEach.call(document.querySelectorAll("feDisplacementMap.loose"), function (f) { f.setAttribute("scale", String(v)); }); }, function (v) { return v; });
+  dial("dLinger", "vLinger", function (v) { linger = v; }, function (v) { return v + " keys"; });
+  dial("dDrift", "vDrift", function (v) { document.documentElement.style.setProperty("--drift-ms", v + "ms"); }, function (v) { return v + "ms"; });
+  dial("dDiss", "vDiss", function (v) { document.documentElement.style.setProperty("--dissolve-ms", v + "ms"); }, function (v) { return v + "ms"; });
+})();
+</script>

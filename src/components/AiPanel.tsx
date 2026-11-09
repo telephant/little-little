@@ -1,5 +1,53 @@
 // AI panel (C-2): renders exactly the typed backend states — never raw errors.
-import type { PanelState } from "../lib/types";
+import { useState } from "react";
+import type { PanelState, RelatedEntry } from "../lib/types";
+import type { ReflectionPhase } from "../hooks/useReflectionPhase";
+
+/** "N memories" control: notes appear on hover, focus or click; leave, blur-out or Esc hides them.
+ *  Its state is independent of the reflection phase (spec AC-12). */
+function Memories(props: { related: RelatedEntry[]; onOpenEntry: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const n = props.related.length;
+  if (n === 0) return null;
+  return (
+    <div
+      className="memories"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") setOpen(false);
+      }}
+    >
+      <button
+        className="memories-toggle"
+        aria-expanded={open}
+        onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
+      >
+        {n} {n === 1 ? "memory" : "memories"}
+      </button>
+      {open && (
+        <ul className="memory-list">
+          {props.related.map((r) => (
+            <li key={r.entry_id}>
+              <button
+                data-testid="memory-card"
+                className="memory-card"
+                onClick={() => props.onOpenEntry(r.entry_id)}
+              >
+                <span className="date">{r.created_at.slice(0, 10)}</span>
+                <span className="snippet">{r.snippet}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export function AiPanel(props: {
   state: PanelState | null;
@@ -7,7 +55,12 @@ export function AiPanel(props: {
   onRegenerate: () => void;
   onDismiss: (responseId: string) => void;
   onOpenSettings: () => void;
+  phase?: ReflectionPhase;
+  motion?: "drift" | "fade";
+  onAnimationEnd?: () => void;
+  onRecall?: () => void;
 }) {
+  const phase = props.phase ?? "none";
   const s = props.state;
   if (!s) {
     return <p className="placeholder">Your memories will appear here.</p>;
@@ -38,31 +91,29 @@ export function AiPanel(props: {
     case "ready":
       return (
         <div className="panel-ready">
-          <h3>From your past</h3>
-          <ul className="memory-list">
-            {s.related.map((r) => (
-              <li key={r.entry_id}>
-                <button
-                  data-testid="memory-card"
-                  className="memory-card"
-                  onClick={() => props.onOpenEntry(r.entry_id)}
-                >
-                  <span className="date">{r.created_at.slice(0, 10)}</span>
-                  <span className="snippet">{r.snippet}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="reflection">
-            <p data-testid="reflection-body">{s.reflection.body}</p>
-            <p data-testid="reflection-sources" className="sources">
-              based on {s.related.map((r) => r.created_at.slice(0, 10)).join(", ")}
-            </p>
-            <div className="reflection-actions">
-              <button onClick={props.onRegenerate}>Regenerate</button>
-              <button onClick={() => props.onDismiss(s.reflection.id)}>Dismiss</button>
+          <Memories related={s.related} onOpenEntry={props.onOpenEntry} />
+          {phase === "tucked" ? (
+            <button className="recall" onClick={props.onRecall}>
+              bring it back
+            </button>
+          ) : (
+            <div
+              className={`reflection phase-${phase === "none" ? "present" : phase} motion-${props.motion ?? "drift"}`}
+              data-testid="reflection"
+              onAnimationEnd={(e) => {
+                if (e.target === e.currentTarget) props.onAnimationEnd?.();
+              }}
+            >
+              <p data-testid="reflection-body">{s.reflection.body}</p>
+              <p data-testid="reflection-sources" className="sources">
+                based on {s.related.map((r) => r.created_at.slice(0, 10)).join(", ")}
+              </p>
+              <div className="reflection-actions">
+                <button onClick={props.onRegenerate}>Regenerate</button>
+                <button onClick={() => props.onDismiss(s.reflection.id)}>Dismiss</button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       );
   }

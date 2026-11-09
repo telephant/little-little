@@ -3,6 +3,7 @@
 
 mod calendar;
 mod entries;
+pub mod mark;
 mod migrations;
 mod responses;
 mod settings;
@@ -38,6 +39,9 @@ pub enum StorageError {
     /// Switching to a cloud provider before the one-time confirmation (D-5).
     #[error("cloud-not-confirmed")]
     CloudNotConfirmed,
+    /// A painted mark failed validation (ADR-0006).
+    #[error("invalid mark: {0}")]
+    InvalidMark(String),
 }
 
 pub type Result<T> = std::result::Result<T, StorageError>;
@@ -162,7 +166,7 @@ mod tests {
         assert_eq!(e.body, "old text");
         assert_eq!((e.mood_level, e.mood_source), (None, None));
         let v = s.get_setting("schema_version").unwrap().unwrap();
-        assert_eq!(v, "2");
+        assert_eq!(v, "3");
     }
 
     /// TC-24 (storage half): Given an entry with AI mood; When set_mood(2) then
@@ -205,5 +209,115 @@ mod tests {
         s.delete_entry(&id).unwrap();
         assert!(matches!(s.get_entry(&id), Err(StorageError::NotFound)));
         assert!(s.list_entries().unwrap().is_empty());
+    }
+
+    // ---- paint-marks T-02 ----
+
+    /// TC-1: Given a v2 journal with entries, tags and moods; When opened by the new version;
+    /// Then everything is intact, every mark is null and the schema is v3.
+    #[test]
+    fn pm_tc1_v2_journal_migrates_to_v3() {
+        let (_dir, path) = tmp();
+        {
+            register_vec_extension();
+            let conn = Connection::open(&path).unwrap();
+            conn.pragma_update(None, "key", "pass").unwrap();
+            conn.execute_batch(super::migrations::MIGRATION_V1).unwrap();
+            conn.execute_batch(super::migrations::MIGRATION_V2).unwrap();
+            conn.execute(
+                "INSERT INTO settings (key, value) VALUES ('schema_version', '2')",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO entries (id, body, created_at, updated_at, mood_level, mood_label, mood_source)
+                 VALUES ('e1','a v2 entry','t','t',3,'okay','manual')",
+                [],
+            )
+            .unwrap();
+            conn.execute("INSERT INTO entry_tags (entry_id, tag) VALUES ('e1','garden')", []).unwrap();
+        }
+        let s = Storage::open(&path, "pass").unwrap();
+        let e = s.get_entry("e1").unwrap();
+        assert_eq!(e.body, "a v2 entry");
+        assert_eq!((e.mood_level, e.mood_source.as_deref()), (Some(3), Some("manual")));
+        assert_eq!(e.tags, vec!["garden".to_string()]);
+        assert_eq!(e.mark, None);
+        assert_eq!(s.list_entries().unwrap()[0].mark, None);
+        assert_eq!(s.get_setting("schema_version").unwrap().unwrap(), "3");
+    }
+
+    /// TC-2: Given a v3 journal with a painted mark; When closed and reopened;
+    /// Then the schema stays 3 and the mark is unchanged.
+    #[test]
+    fn pm_tc2_v3_journal_reopens_unchanged() {
+        let (_dir, path) = tmp();
+        let id;
+        {
+            let s = Storage::open(&path, "pass").unwrap();
+            id = s.create_entry().unwrap().id;
+            s.set_mark(&id, mark::VALID).unwrap();
+        }
+        let s = Storage::open(&path, "pass").unwrap();
+        assert_eq!(s.get_setting("schema_version").unwrap().unwrap(), "3");
+        assert_eq!(s.get_entry(&id).unwrap().mark.as_deref(), Some(mark::VALID));
+    }
+
+    /// TC-3: Given an entry; When set_mark then get/list/save_entry; Then the mark is returned and survives a body save.
+    #[test]
+    fn pm_tc3_save_and_read_a_mark() {
+        let (_dir, path) = tmp();
+        let s = Storage::open(&path, "p").unwrap();
+        let id = s.create_entry().unwrap().id;
+        s.set_mark(&id, mark::VALID).unwrap();
+        assert_eq!(s.get_entry(&id).unwrap().mark.as_deref(), Some(mark::VALID));
+        assert_eq!(s.list_entries().unwrap()[0].mark.as_deref(), Some(mark::VALID));
+        s.save_entry(&id, "new body text").unwrap();
+        assert_eq!(s.get_entry(&id).unwrap().mark.as_deref(), Some(mark::VALID));
+        assert!(matches!(s.set_mark("missing", mark::VALID), Err(StorageError::NotFound)));
+    }
+
+    /// TC-4: Given an entry with mood, body, updated_at and embed_status; When set_mark; Then none of them change.
+    #[test]
+    fn pm_tc4_a_mark_is_not_text() {
+        let (_dir, path) = tmp();
+        let s = Storage::open(&path, "p").unwrap();
+        let id = s.create_entry().unwrap().id;
+        s.save_entry(&id, "some words").unwrap();
+        s.set_mood(&id, 4, Some("good")).unwrap();
+        let before = s.get_entry(&id).unwrap();
+        s.set_mark(&id, mark::VALID).unwrap();
+        let after = s.get_entry(&id).unwrap();
+        assert_eq!(
+            (before.body, before.updated_at, before.embed_status, before.mood_level, before.mood_label, before.mood_source),
+            (after.body, after.updated_at, after.embed_status, after.mood_level, after.mood_label, after.mood_source)
+        );
+    }
+
+    /// TC-5 (storage half): Given an invalid mark; When set_mark; Then it fails and the stored mark is unchanged.
+    #[test]
+    fn pm_tc5_invalid_mark_is_rejected_and_stored_mark_kept() {
+        let (_dir, path) = tmp();
+        let s = Storage::open(&path, "p").unwrap();
+        let id = s.create_entry().unwrap().id;
+        s.set_mark(&id, mark::VALID).unwrap();
+        let err = s.set_mark(&id, r#"{"v":1,"strokes":[[1,2,481,4]]}"#).unwrap_err();
+        assert!(matches!(err, StorageError::InvalidMark(_)), "got {err:?}");
+        assert_eq!(s.get_entry(&id).unwrap().mark.as_deref(), Some(mark::VALID));
+    }
+
+    /// TC-6: Given an entry with a mark and a mood; When clear_mark; Then the mark is null and the mood unchanged.
+    #[test]
+    fn pm_tc6_clear_a_mark() {
+        let (_dir, path) = tmp();
+        let s = Storage::open(&path, "p").unwrap();
+        let id = s.create_entry().unwrap().id;
+        s.set_mood(&id, 2, None).unwrap();
+        s.set_mark(&id, mark::VALID).unwrap();
+        s.clear_mark(&id).unwrap();
+        let e = s.get_entry(&id).unwrap();
+        assert_eq!(e.mark, None);
+        assert_eq!(e.mood_level, Some(2));
+        assert!(matches!(s.clear_mark("missing"), Err(StorageError::NotFound)));
     }
 }

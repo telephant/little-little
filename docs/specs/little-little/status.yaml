@@ -30,7 +30,7 @@ acs:
   AC-22: {status: passing}  # TC-28 backend + async answer UI with cited dates green
   AC-23: {status: passing}      # TC-29 green (flagged hidden under cloud, hidden_count correct)
   AC-24: {status: passing}  # TC-30 green (frontmatter, verbatim body, filename collision fixed)
-  AC-25: {status: passing}  # TC-31 green (round-trip identical, empty-journal guard, re-embed)
+  AC-25: {status: passing}  # TC-31 green (round-trip identical, empty-journal guard, re-embed); T-21: TC-44 pins the fresh-journal path (blank auto-draft discarded, V2-3)
   AC-26: {status: passing}  # TC-32 green (pick-installed path + skip path)
   AC-27: {status: passing}  # TC-33 green (parser w/ real recorded shape + live UI progress); real pull = manual M-3
   AC-28: {status: passing}  # TC-34 green (guidance when claude missing)

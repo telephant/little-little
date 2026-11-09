@@ -2,6 +2,7 @@
 // suggestions, never auto-selected (D-6). Fully skippable (AC-26).
 import { useEffect, useState } from "react";
 import { ipc } from "../lib/ipc";
+import { MoodMark } from "../components/MoodMark";
 import type { AvailableModels, PullProgress, SettingsView } from "../lib/types";
 
 const SUGGESTED_EMBED = "nomic-embed-text";
@@ -55,6 +56,11 @@ export function Onboarding(props: {
 
   return (
     <div className="onboarding" data-testid="onboarding">
+      <div className="onboarding-marks" aria-hidden="true">
+        {([1, 2, 3, 4, 5] as const).map((l) => (
+          <MoodMark key={l} level={l} size={64} />
+        ))}
+      </div>
       <h1>Set up your companion</h1>
       <p className="hint">
         Little Little runs its AI on your computer. Pick (or download) two small models —
@@ -65,7 +71,7 @@ export function Onboarding(props: {
         <p className="warning">Ollama isn't running — start it to list or download models.</p>
       )}
 
-      <section>
+      <section className="onboarding-step">
         <h2>1 · Memory</h2>
         <label>
           Memory model
@@ -83,7 +89,7 @@ export function Onboarding(props: {
         )}
       </section>
 
-      <section>
+      <section className="onboarding-step">
         <h2>2 · Voice (reflections)</h2>
         <label>
           Reflection model
@@ -112,7 +118,13 @@ export function Onboarding(props: {
             {pull.model}: {pull.progress?.status ?? "starting…"}
             {pull.progress?.pct != null && ` — ${Math.round(pull.progress.pct)}%`}
           </p>
-          <progress max={100} value={pull.progress?.pct ?? 0} />
+          <progress
+            className="brushed-progress"
+            max={100}
+            value={pull.progress?.pct ?? 0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(pull.progress?.pct ?? 0)}
+          />
         </div>
       )}
 

@@ -65,6 +65,8 @@ Verdict: **GO**. Known risk, contained: Tauri `ipc::Channel` + /api/pull NDJSON 
 | T-18 ✅ 2026-11-05 | Onboarding flow + status chips + dialog copy | AC-26, AC-28, AC-29 (UI) | H |
 | T-19 ✅ 2026-11-05 | Verify-pass fix: "Reflection model" copy replaces "chat" in Settings/Onboarding/chips (V2-1, TC-38..40) | AC-29 (clarity) | H |
 | T-20 ✅ 2026-11-05 | Verify-pass fix: plain words ("Memory model", no dimension jargon) + provider cascade hides reflection picker under Cloud (V2-2, TC-41..43) | AC-29 (clarity) | H |
+| T-21 ✅ 2026-11-05 | Verify-pass fix: restore discards the editor's blank auto-draft so restore works on a fresh journal (V2-3, TC-44) | AC-25 (real-app path) | G |
+| T-22 ✅ 2026-11-05 | Verify-pass fix: successful restore refreshes the entry list and opens the newest entry (V2-4, TC-45) | AC-25 (real-app path) | G |
 
 M2 tasks all done 2026-11-05. Full check green: 23 vitest + 48 cargo tests, tsc, vite build, clippy. Watch item: TC-36 polls real timers (2s interval, 5–6s waitFor) — flaked once under load, then passed 6 straight full runs.
 

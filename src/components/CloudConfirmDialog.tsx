@@ -2,7 +2,7 @@
 export function CloudConfirmDialog(props: { onAccept: () => void; onCancel: () => void }) {
   return (
     <div className="dialog-backdrop">
-      <div role="dialog" aria-modal="true" className="dialog">
+      <div role="dialog" aria-modal="true" className="dialog painted-frame">
         <h2>Send entries to Claude?</h2>
         <p>
           With the Cloud provider, the text of your entries (except ones marked

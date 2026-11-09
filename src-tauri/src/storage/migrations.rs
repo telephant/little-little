@@ -45,10 +45,16 @@ const MIGRATIONS: &[&str] = &[
     ALTER TABLE entries ADD COLUMN mood_source TEXT;
     ALTER TABLE entries ADD COLUMN mood_status TEXT NOT NULL DEFAULT 'pending';
     ",
+    // v3 — painted marks (paint-marks ADR-0006): numbers-only JSON strokes, null = no painted mark.
+    "
+    ALTER TABLE entries ADD COLUMN mark TEXT;
+    ",
 ];
 
 #[cfg(test)]
 pub(crate) const MIGRATION_V1: &str = MIGRATIONS[0];
+#[cfg(test)]
+pub(crate) const MIGRATION_V2: &str = MIGRATIONS[1];
 
 pub fn run(conn: &Connection) -> rusqlite::Result<()> {
     let version: i64 = conn

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painted UI — design diagrams</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1f27; --muted: #5b6470;
+    --card: #f6f8fa; --border: #d8dee5; --accent: #2563eb;
+    --check-bg: #fff7e6; --check-border: #e8c15a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151a; --fg: #e6e9ee; --muted: #9aa4b1;
+      --card: #1a2029; --border: #2c3542; --accent: #7aa2ff;
+      --check-bg: #2a2412; --check-border: #8a6d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  header h1 { font-size: 17px; margin: 0 0 6px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; }
+  section { margin-top: 36px; }
+  h2 {
+    font-size: 20px; margin: 0 0 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  p { margin: 10px 0; color: var(--muted); }
+  .diagram {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; overflow: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .diagram pre.plain {
+    margin: 0; overflow-x: auto; color: var(--fg);
+    font: 15px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .diagram:fullscreen {
+    background: var(--bg); border: none; border-radius: 0; padding: 40px;
+  }
+  .dtools {
+    position: sticky; top: 0; z-index: 5;
+    float: right; display: flex; gap: 6px;
+  }
+  .dtools button {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .dtools button:hover { border-color: var(--accent); color: var(--accent); }
+  .check {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--check-bg); border: 1px solid var(--check-border);
+    border-radius: 8px; font-size: 14.5px;
+  }
+  .check strong { display: block; margin-bottom: 4px; }
+  .check ul { margin: 0; padding-left: 20px; }
+  .check li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Painted UI — design diagrams</h1>
+  <nav><a href="#product-flow">Product flow</a>
+<a href="#component-diagram">Component diagram</a>
+<a href="#mood-marks-state">Mood marks (state)</a>
+<a href="#reflection-lifecycle-state">Reflection lifecycle (state)</a>
+<a href="#sequence-write-dissolve-recall">Sequence — write, dissolve, recall</a></nav>
+</header>
+<main>
+<section id="product-flow">
+<h2>Product flow</h2>
+<div class="diagram"><pre class="plain">1  Open the app --&gt; the lock screen: an open ring, the wordmark, an underlined passphrase line
+2  First time only --&gt; set up your companion: pick or download the memory and voice models
+3  Journal opens --&gt; entries on the left, each with its mood mark; today&#x27;s page in the middle
+4  Write --&gt; the big marker date, Spectral text, the mood row and tags at the foot
+5  Pause --&gt; a watercolour reflection drifts in on the right; &quot;3 memories&quot; waits underneath
+6  Keep writing --&gt; after a dozen or so keystrokes the reflection dissolves; &quot;bring it back&quot; stays
+7  Pick a mood mark --&gt; your choice replaces the AI guess everywhere, at once
+8  Open the calendar --&gt; every day shows its mood&#x27;s mark; days with entries but no mood show a ring
+9  Search --&gt; an underlined line, the answer as a wash, results as notes with a mood-coloured bar</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is the lock screen the right first impression, or should it show the five mood marks?</li><li>Does anything in the flow need a screen that is not in the replacement map (spec §5)?</li><li>Is &quot;no mood&quot; understood at a glance as an open ring?</li></ul></div>
+</section>
+<section id="component-diagram">
+<h2>Component diagram</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+  TK[C-1 Tokens] --&gt; SH[C-8 Shell + screens]
+  FN[C-2 Fonts] --&gt; SH
+  PF[C-3 Paint filters] --&gt; MM[C-4 Mood marks]
+  PF --&gt; SH
+  MM --&gt; EL[Entry list]
+  MM --&gt; CAL[Calendar]
+  MM --&gt; MP[Mood picker]
+  MM --&gt; ED[Editor header]
+  LC[C-5 Reflection lifecycle] --&gt; AP[AI panel]
+  MO[C-6 Motion] --&gt; AP
+  MO --&gt; EL
+  MEM[C-7 Memories control] --&gt; AP
+  SH --&gt; EL
+  SH --&gt; CAL
+  SH --&gt; AP
+  PS[(PanelState + mood fields, unchanged)] --&gt; LC
+  PS --&gt; MM</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is C-4 the only place a mood becomes a picture (no screen draws its own)?</li><li>Does anything here need a backend change? (it must not)</li></ul></div>
+</section>
+<section id="mood-marks-state">
+<h2>Mood marks (state)</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+  [*] --&gt; none
+  none --&gt; ai_level: classifier sets level 1-5
+  ai_level --&gt; manual_level: user picks a mark
+  none --&gt; manual_level: user picks a mark
+  manual_level --&gt; manual_level: user picks another</pre></div>
+<p>`none` shows the open ring; `ai_level` shows the level&#x27;s mark plus an &quot;AI guess&quot; hint; `manual_level`</p>
+<p>shows the mark with no hint and is never overwritten by the classifier.</p>
+<div class="check"><strong>Check</strong><ul><li>Is there any way back to `none` once a mood is set? (not today, and not added here)</li><li>Does a free-text `mood_label` with no level show the ring?</li></ul></div>
+</section>
+<section id="reflection-lifecycle-state">
+<h2>Reflection lifecycle (state)</h2>
+<div class="diagram"><pre class="mermaid">stateDiagram-v2
+  [*] --&gt; none
+  none --&gt; arriving: ready, editor idle
+  none --&gt; tucked: ready, editor hot
+  arriving --&gt; present: animationend
+  arriving --&gt; dissolving: keystrokes reach linger
+  present --&gt; dissolving: keystrokes reach linger
+  dissolving --&gt; tucked: animationend or timeout
+  tucked --&gt; arriving: recall (same text)
+  tucked --&gt; arriving: new ready
+  present --&gt; arriving: new ready
+  present --&gt; none: dismiss
+  tucked --&gt; none: dismiss</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Can the reflection get stuck in `dissolving`? (timeout fallback prevents it)</li><li>Is ~14 keystrokes the right linger?</li></ul></div>
+</section>
+<section id="sequence-write-dissolve-recall">
+<h2>Sequence — write, dissolve, recall</h2>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+  participant U as User
+  participant E as Editor
+  participant A as App state (C-5)
+  participant P as AI panel
+  U-&gt;&gt;E: types, then pauses
+  E-&gt;&gt;A: save-settle, loadPanel
+  A-&gt;&gt;P: ready + phase arriving
+  P--&gt;&gt;U: reflection drifts in
+  U-&gt;&gt;E: keeps writing
+  E-&gt;&gt;A: keystrokes reach linger
+  A-&gt;&gt;P: phase dissolving
+  P--&gt;&gt;U: reflection dissolves, &quot;bring it back&quot; appears
+  U-&gt;&gt;P: bring it back
+  P-&gt;&gt;A: recall()
+  A-&gt;&gt;P: phase arriving (same text, no IPC)</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Does the keystroke path do anything beyond a counter before the editor re-renders?</li><li>Is the recalled reflection clearly dated by its &quot;from ...&quot; line?</li></ul></div>
+<p>No ER diagram: nothing is stored. No deployment diagram: it ships inside the existing app bundle.</p>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js"></script>
+<script>
+(async () => {
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "strict",
+    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
+    themeVariables: { fontSize: "18px" },
+    // useMaxWidth:false = render at natural size instead of shrinking to the card
+    flowchart: { useMaxWidth: false, nodeSpacing: 55, rankSpacing: 65, padding: 10 },
+    sequence:  { useMaxWidth: false, actorMargin: 100, messageMargin: 46, width: 185, height: 60 },
+    er:        { useMaxWidth: false, minEntityWidth: 120, entityPadding: 18 },
+    state:     { useMaxWidth: false },
+    gantt:     { useMaxWidth: false }
+  });
+  await mermaid.run({ querySelector: ".mermaid" });
+
+  document.querySelectorAll(".diagram").forEach(card => {
+    const svg = card.querySelector("svg");
+    if (!svg) return;
+    const natural = svg.getBoundingClientRect().width || 600;
+    let scale = 1;
+    const apply = () => {
+      svg.style.width = Math.round(natural * scale) + "px";
+      svg.style.height = "auto";
+    };
+    const fit = () => {
+      const avail = card.clientWidth - 34;
+      scale = Math.min(1.6, Math.max(0.55, avail / natural));
+      apply();
+    };
+
+    const tools = document.createElement("div");
+    tools.className = "dtools";
+    const btn = (label, title, fn) => {
+      const b = document.createElement("button");
+      b.textContent = label; b.title = title;
+      b.addEventListener("click", fn);
+      tools.appendChild(b);
+    };
+    btn("−", "Zoom out", () => { scale = Math.max(0.3, scale / 1.25); apply(); });
+    btn("+", "Zoom in",  () => { scale = Math.min(4, scale * 1.25); apply(); });
+    btn("⊡", "Fit to card", fit);
+    btn("⤢", "Fullscreen", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().then(() => { scale = 1; apply(); });
+    });
+    card.prepend(tools);
+    card.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) fit(); });
+
+    fit(); // start fitted to the card; zoom in from there
+  });
+})();
+</script>
+</body>
+</html>

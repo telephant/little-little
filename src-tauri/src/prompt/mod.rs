@@ -323,4 +323,30 @@ mod tests {
         // Entry untouched by dismiss.
         assert!(s.get_entry(fx12).unwrap().body.contains("interview"));
     }
+
+    /// paint-marks TC-17: Given entries with painted marks; When the reflection, mood-read and
+    /// search-answer prompts are built for the local and the cloud provider; Then no request sent to
+    /// a provider contains the mark string or the word "strokes".
+    #[tokio::test]
+    async fn pm_tc17_marks_never_reach_prompts() {
+        use crate::memory::{mood::process_pending_moods, search::search_answer};
+        for cloud in [false, true] {
+            let (_d, s, ids, provider) = fixture_world(cloud).await;
+            for id in &ids {
+                s.set_mark(id, crate::storage::mark::VALID).unwrap();
+            }
+            let last = ids.last().unwrap();
+            let _ = build_ai_panel(&s, &provider, last, true).await.unwrap();
+            let _ = process_pending_moods(&s, &provider, None).await;
+            let _ = search_answer(&s, &provider, "interview", &ids).await;
+
+            let reqs = fake_requests(&provider);
+            assert!(reqs.len() >= 2, "expected reflection + search (+ mood) requests, got {}", reqs.len());
+            for r in &reqs {
+                let all = format!("{}\n{}", r.system, r.user);
+                assert!(!all.contains(crate::storage::mark::VALID), "mark JSON leaked (cloud={cloud})");
+                assert!(!all.contains("strokes"), "word 'strokes' leaked (cloud={cloud})");
+            }
+        }
+    }
 }

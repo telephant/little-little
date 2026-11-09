@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>journal-fixtures — design diagrams</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1f27; --muted: #5b6470;
+    --card: #f6f8fa; --border: #d8dee5; --accent: #2563eb;
+    --check-bg: #fff7e6; --check-border: #e8c15a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #11151a; --fg: #e6e9ee; --muted: #9aa4b1;
+      --card: #1a2029; --border: #2c3542; --accent: #7aa2ff;
+      --check-bg: #2a2412; --check-border: #8a6d1f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.55 -apple-system, "Segoe UI", system-ui, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+  header h1 { font-size: 17px; margin: 0 0 6px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav a { color: var(--accent); text-decoration: none; font-size: 14px; }
+  nav a:hover { text-decoration: underline; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 64px; }
+  section { margin-top: 36px; }
+  h2 {
+    font-size: 20px; margin: 0 0 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  p { margin: 10px 0; color: var(--muted); }
+  .diagram {
+    position: relative;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; overflow: auto;
+  }
+  .diagram svg { display: block; margin: 0 auto; }
+  .diagram pre.plain {
+    margin: 0; overflow-x: auto; color: var(--fg);
+    font: 15px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  .diagram:fullscreen {
+    background: var(--bg); border: none; border-radius: 0; padding: 40px;
+  }
+  .dtools {
+    position: sticky; top: 0; z-index: 5;
+    float: right; display: flex; gap: 6px;
+  }
+  .dtools button {
+    width: 30px; height: 30px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--fg);
+    font-size: 15px; line-height: 1; cursor: pointer;
+  }
+  .dtools button:hover { border-color: var(--accent); color: var(--accent); }
+  .check {
+    margin-top: 10px; padding: 10px 14px;
+    background: var(--check-bg); border: 1px solid var(--check-border);
+    border-radius: 8px; font-size: 14.5px;
+  }
+  .check strong { display: block; margin-bottom: 4px; }
+  .check ul { margin: 0; padding-left: 20px; }
+  .check li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>journal-fixtures — design diagrams</h1>
+  <nav><a href="#product-flow">Product flow</a>
+<a href="#components">Components</a>
+<a href="#regen-and-sync-sequence">Regen and sync sequence</a>
+<a href="#source-data-model">Source data model</a></nav>
+</header>
+<main>
+<section id="product-flow">
+<h2>Product flow</h2>
+<div class="diagram"><pre class="plain">1  --&gt; developer wipes the dev journal (fresh passphrase)
+2  --&gt; onboarding: pick memory + reflection models
+3  --&gt; Settings -&gt; Restore backup... -&gt; journal-backup.json
+4  --&gt; &quot;60 entries restored — re-indexing in the background&quot;
+5  --&gt; chips: indexing n of 60, then moods fill the calendar
+6  --&gt; calendar shows 6 believable months; search &quot;when did I decide to leave my job&quot; cites the right dates
+7  --&gt; a new entry about work gets a reflection calling back to the arc</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Does step 3 need anything beyond the existing Restore button (it must not)?</li><li>Is &quot;restore only into an empty journal&quot; acceptable friction for repeated test runs?</li><li>Will 60 entries index + classify fast enough to be usable right after restore (~0.43s/entry mood → ~30s)?</li></ul></div>
+</section>
+<section id="components">
+<h2>Components</h2>
+<div class="diagram"><pre class="mermaid">flowchart LR
+    SRC[C-1 journal-dataset.json\nsource: entries+arcs+probes]
+    GEN[C-2 generator\ncargo test regen_fixtures]
+    BAK[C-3 journal-backup.json\nExportFile v1]
+    FIX[C-4 journal60.json\ncargo fixture]
+    VAL[C-5 validate + sync tests]
+    RT[C-6 restore round-trip test]
+    LIVE[C-7 live probe test\nOLLAMA_TEST=1]
+    APP[Little Little app\nSettings -&gt; Restore]
+
+    SRC --&gt; GEN --&gt; BAK &amp; FIX
+    SRC --&gt; VAL
+    BAK --&gt; VAL
+    FIX --&gt; VAL
+    BAK --&gt; RT
+    BAK --&gt; APP
+    FIX --&gt; LIVE</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Is every file consumed by at least one test (nothing write-only)?</li><li>Should C-7 read C-4 or C-1? (C-4: it tests what tests use.)</li></ul></div>
+</section>
+<section id="regen-and-sync-sequence">
+<h2>Regen and sync sequence</h2>
+<div class="diagram"><pre class="mermaid">sequenceDiagram
+    actor Dev
+    participant SRC as journal-dataset.json
+    participant GEN as regen_fixtures (ignored test)
+    participant OUT as journal-backup.json / journal60.json
+    participant SYNC as outputs_in_sync (always-on test)
+
+    Dev-&gt;&gt;SRC: edit entries/probes
+    Dev-&gt;&gt;GEN: cargo test regen_fixtures -- --ignored
+    GEN-&gt;&gt;SRC: parse + validate
+    GEN-&gt;&gt;OUT: write both outputs (deterministic)
+    Dev-&gt;&gt;SYNC: cargo test
+    SYNC-&gt;&gt;SRC: regenerate in memory
+    SYNC-&gt;&gt;OUT: byte-compare
+    SYNC--&gt;&gt;Dev: green (or red if drift)</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Can any path write the outputs other than the regen test?</li><li>Is byte-identity achievable (one serializer, fixed exported_at, stable sort)?</li></ul></div>
+</section>
+<section id="source-data-model">
+<h2>Source data model</h2>
+<div class="diagram"><pre class="mermaid">erDiagram
+    DATASET ||--o{ ENTRY : contains
+    DATASET ||--o{ PROBE : defines
+    DATASET ||--o{ ARC : names
+    ARC ||--o{ ENTRY : &quot;threads (via arc key)&quot;
+    PROBE }o--o{ ENTRY : &quot;expects (ids)&quot;
+
+    DATASET { string schema &quot;jf-1&quot; string exported_at }
+    ENTRY { string id &quot;jf-NNN&quot; string created_at string-array tags bool no_cloud string arc &quot;nullable&quot; string edge &quot;nullable&quot; bool distress string body }
+    PROBE { string id &quot;P-n&quot; string query string-array expect }
+    ARC { string key string summary }</pre></div>
+<div class="check"><strong>Check</strong><ul><li>Are the test-only fields (arc, edge, distress) clearly separated from what reaches the outputs?</li><li>Do probes referencing entry ids survive regeneration (ids are stable by rule)?</li></ul></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.min.js"></script>
+<script>
+(async () => {
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: dark ? "dark" : "neutral",
+    securityLevel: "strict",
+    fontFamily: '-apple-system, "Segoe UI", system-ui, sans-serif',
+    themeVariables: { fontSize: "18px" },
+    // useMaxWidth:false = render at natural size instead of shrinking to the card
+    flowchart: { useMaxWidth: false, nodeSpacing: 55, rankSpacing: 65, padding: 10 },
+    sequence:  { useMaxWidth: false, actorMargin: 100, messageMargin: 46, width: 185, height: 60 },
+    er:        { useMaxWidth: false, minEntityWidth: 120, entityPadding: 18 },
+    state:     { useMaxWidth: false },
+    gantt:     { useMaxWidth: false }
+  });
+  await mermaid.run({ querySelector: ".mermaid" });
+
+  document.querySelectorAll(".diagram").forEach(card => {
+    const svg = card.querySelector("svg");
+    if (!svg) return;
+    const natural = svg.getBoundingClientRect().width || 600;
+    let scale = 1;
+    const apply = () => {
+      svg.style.width = Math.round(natural * scale) + "px";
+      svg.style.height = "auto";
+    };
+    const fit = () => {
+      const avail = card.clientWidth - 34;
+      scale = Math.min(1.6, Math.max(0.55, avail / natural));
+      apply();
+    };
+
+    const tools = document.createElement("div");
+    tools.className = "dtools";
+    const btn = (label, title, fn) => {
+      const b = document.createElement("button");
+      b.textContent = label; b.title = title;
+      b.addEventListener("click", fn);
+      tools.appendChild(b);
+    };
+    btn("−", "Zoom out", () => { scale = Math.max(0.3, scale / 1.25); apply(); });
+    btn("+", "Zoom in",  () => { scale = Math.min(4, scale * 1.25); apply(); });
+    btn("⊡", "Fit to card", fit);
+    btn("⤢", "Fullscreen", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else card.requestFullscreen().then(() => { scale = 1; apply(); });
+    });
+    card.prepend(tools);
+    card.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement) fit(); });
+
+    fit(); // start fitted to the card; zoom in from there
+  });
+})();
+</script>
+</body>
+</html>

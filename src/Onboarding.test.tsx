@@ -152,3 +152,49 @@ describe("onboarding (T-18)", () => {
     expect(dialog).toHaveTextContent(/mood/i);
   });
 });
+
+describe("painted gate and onboarding (paper-ui T-11)", () => {
+  /** TC-21 (gate part): lock screen = ring, wordmark, underlined passphrase, solid Open; error stays visible. */
+  it("TC-21: first-run gate shows the ring, wordmark and underlined passphrase; errors are announced", async () => {
+    render(<App />);
+    const pass = await screen.findByLabelText(/passphrase/i);
+    const gate = pass.closest("form")!;
+    expect(gate).toHaveClass("gate");
+    expect(gate.querySelector('svg.mood-mark[data-mood="none"]')).not.toBeNull();
+    expect(gate.querySelector("h1")).toHaveTextContent("Little Little");
+    expect(pass).toHaveClass("gate-line");
+    expect(screen.getByRole("button", { name: /create journal/i })).toHaveClass("gate-open");
+    expect(gate).toHaveTextContent(/no recovery/i);
+  });
+
+  it("TC-21: locked gate with a wrong passphrase shows a role=alert error", async () => {
+    await createJournal();
+    await screen.findByTestId("onboarding");
+    document.body.innerHTML = "";
+    render(<App />);
+    const pass = await screen.findByLabelText(/passphrase/i);
+    fireEvent.change(pass, { target: { value: "wrong" } });
+    fireEvent.click(screen.getByRole("button", { name: /unlock/i }));
+    const err = await screen.findByRole("alert");
+    expect(err).toHaveClass("error");
+  });
+
+  /** TC-21 (onboarding part): the five marks as art, steps as painted sections, brushed progress. */
+  it("TC-21: onboarding shows the five default marks and numbered steps", async () => {
+    await createJournal();
+    const onboarding = await screen.findByTestId("onboarding");
+    const marks = [...onboarding.querySelectorAll(".onboarding-marks svg.mood-mark")].map((m) => m.getAttribute("data-mood"));
+    expect(marks).toEqual(["1", "2", "3", "4", "5"]);
+    expect(onboarding.querySelectorAll("section.onboarding-step")).toHaveLength(2);
+  });
+
+  it("TC-21: a download shows a brushed progress bar with an accessible value", async () => {
+    setFakeModels({ ollama_running: true, ollama_models: ["qwen3:4b-instruct"], claude_available: true });
+    await createJournal();
+    const onboarding = await screen.findByTestId("onboarding");
+    fireEvent.click(within(onboarding).getByRole("button", { name: /download nomic-embed-text/i }));
+    const bar = await within(onboarding).findByRole("progressbar");
+    expect(bar).toHaveClass("brushed-progress");
+    expect(bar).toHaveAttribute("aria-valuemax", "100");
+  });
+});

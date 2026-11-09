@@ -16,6 +16,8 @@ pub struct Entry {
     pub mood_level: Option<i64>,
     pub mood_label: Option<String>,
     pub mood_source: Option<String>, // 'ai' | 'manual'
+    /// Painted mark: numbers-only JSON strokes (ADR-0006); None = use the default mood mark.
+    pub mark: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -28,6 +30,7 @@ pub struct EntrySummary {
     pub tags: Vec<String>,
     pub mood_level: Option<i64>,
     pub mood_label: Option<String>,
+    pub mark: Option<String>,
 }
 
 fn now() -> String {
@@ -54,6 +57,7 @@ impl Storage {
             mood_level: None,
             mood_label: None,
             mood_source: None,
+            mark: None,
         })
     }
 
@@ -90,6 +94,28 @@ impl Storage {
         Ok(())
     }
 
+    /// Save a painted mark. Validated here so every caller (command, restore) gets the same rules.
+    /// A mark is not text: body, updated_at, embedding and mood are untouched.
+    pub fn set_mark(&self, id: &str, mark: &str) -> Result<()> {
+        super::mark::validate_mark(mark).map_err(StorageError::InvalidMark)?;
+        let conn = self.conn.lock().unwrap();
+        let n = conn.execute("UPDATE entries SET mark=?2 WHERE id=?1", params![id, mark])?;
+        if n == 0 {
+            return Err(StorageError::NotFound);
+        }
+        Ok(())
+    }
+
+    /// Back to the default mood mark.
+    pub fn clear_mark(&self, id: &str) -> Result<()> {
+        let conn = self.conn.lock().unwrap();
+        let n = conn.execute("UPDATE entries SET mark=NULL WHERE id=?1", params![id])?;
+        if n == 0 {
+            return Err(StorageError::NotFound);
+        }
+        Ok(())
+    }
+
     /// AI mood write: respects the manual-wins SQL guard.
     #[allow(dead_code)] // consumed by the mood engine in T-12 (next task)
     pub fn set_mood_ai(&self, id: &str, level: i64, label: Option<&str>) -> Result<()> {
@@ -107,7 +133,7 @@ impl Storage {
         let row = conn
             .query_row(
                 "SELECT id, body, created_at, updated_at, no_cloud, embed_status,
-                        mood_level, mood_label, mood_source
+                        mood_level, mood_label, mood_source, mark
                  FROM entries WHERE id=?1",
                 [id],
                 |r| {
@@ -122,6 +148,7 @@ impl Storage {
                         mood_level: r.get(6)?,
                         mood_label: r.get(7)?,
                         mood_source: r.get(8)?,
+                        mark: r.get(9)?,
                     })
                 },
             )
@@ -135,7 +162,7 @@ impl Storage {
     pub fn list_entries(&self) -> Result<Vec<EntrySummary>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
-            "SELECT id, substr(body, 1, 120), created_at, updated_at, no_cloud, mood_level, mood_label
+            "SELECT id, substr(body, 1, 120), created_at, updated_at, no_cloud, mood_level, mood_label, mark
              FROM entries ORDER BY created_at DESC",
         )?;
         let rows = stmt
@@ -149,6 +176,7 @@ impl Storage {
                     tags: vec![],
                     mood_level: r.get(5)?,
                     mood_label: r.get(6)?,
+                    mark: r.get(7)?,
                 })
             })?
             .collect::<rusqlite::Result<Vec<_>>>()?;

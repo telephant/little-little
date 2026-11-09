@@ -1,0 +1,713 @@
+{
+  "version": 1,
+  "exported_at": "2026-11-05T00:00:00Z",
+  "entries": [
+    {
+      "id": "jf-001",
+      "body": "Monday again and the same knot in my chest walking into the office. Priya asked if I was okay in the kitchen and I said tired, which is only half a lie. I keep drafting a resignation letter in my head during standup. Maybe it is the season. Maybe it is not.",
+      "created_at": "2026-05-04T20:15:00Z",
+      "updated_at": "2026-05-04T20:15:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-002",
+      "body": "Decided. I am leaving Harlow & Price. Said it out loud to the empty kitchen and it sounded true. Not storming out — a plan: update the portfolio, three applications a week, out by autumn. Writing it here so I can't pretend I never meant it.",
+      "created_at": "2026-05-09T21:40:00Z",
+      "updated_at": "2026-05-09T21:40:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-003",
+      "body": "Walked the long way home under the last of the cherry blossom. The pavement outside the library looked like confetti after a wedding nobody attended. Bought bread from the good bakery as a small act of optimism.",
+      "created_at": "2026-05-12T18:20:00Z",
+      "updated_at": "2026-05-12T18:20:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-004",
+      "body": "Went for a run. Two kilometres, if we are being generous, with a walk in the middle that lasted longer than either running part. A man twice my age glided past like a heron. Humiliating. Going again Tuesday.",
+      "created_at": "2026-05-16T09:05:00Z",
+      "updated_at": "2026-05-16T09:05:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-005",
+      "body": "Signed up for the beginners' pottery class at the arts centre on a complete impulse. Six Tuesdays, clay included. I have wanted to try since that documentary about the Korean moon jars. Worst case I make six terrible ashtrays.",
+      "created_at": "2026-05-19T22:00:00Z",
+      "updated_at": "2026-05-19T22:00:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-006",
+      "body": "Spent the afternoon at Cafe Lumen rebuilding my portfolio. Cutting the old agency work I never liked was frightening and then suddenly freeing — what is left actually looks like me. Flat white count: three. Progress: real.",
+      "created_at": "2026-05-23T15:30:00Z",
+      "updated_at": "2026-05-23T15:30:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-007",
+      "body": "First pottery class. The wheel is a liar — it looks serene and behaves like a centrifuge. My 'cylinder' came out as a sad lumpy volcano and I was absurdly proud of it anyway. Ana the teacher says everyone's first pot is a volcano.",
+      "created_at": "2026-05-26T21:50:00Z",
+      "updated_at": "2026-05-26T21:50:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-008",
+      "body": "Made ramen completely from scratch — broth simmered since morning, noodles rolled and cut by hand, eggs marinated overnight. Took seven hours and the kitchen looks like a crime scene, but that first spoonful was worth every dish I now have to wash.",
+      "created_at": "2026-05-30T20:10:00Z",
+      "updated_at": "2026-05-30T20:10:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-009",
+      "body": "Three kilometres without stopping. Nobody clapped, which feels like an oversight. The trick seems to be running slower than feels respectable and ignoring my own ego at every corner.",
+      "created_at": "2026-05-31T08:40:00Z",
+      "updated_at": "2026-05-31T08:40:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-010",
+      "body": "Mum mentioned on the phone, far too casually, that she has been having dizzy spells and the GP wants tests. She changed the subject to the neighbour's extension within one breath. I know that move — it is where I learned it from.",
+      "created_at": "2026-06-02T19:45:00Z",
+      "updated_at": "2026-06-02T19:45:00Z",
+      "no_cloud": false,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-011",
+      "body": "Three applications out: Fernwood, Alder Studio, and a startup whose website is one animated blob. Fernwood is the one I actually want — their casebook on the transit app redesign is the best thing I read all year. Refreshing my inbox like a lab rat.",
+      "created_at": "2026-06-06T17:25:00Z",
+      "updated_at": "2026-06-06T17:25:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-012",
+      "body": "Rain all day. Soup weather.",
+      "created_at": "2026-06-09T08:05:00Z",
+      "updated_at": "2026-06-09T08:05:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-013",
+      "body": "Five kilometres! Slow as continental drift, but five. Left knee made a small comment around the fourth kilometre that I have chosen to interpret as encouragement. Stretching properly from now on, I promise to no one.",
+      "created_at": "2026-06-13T09:10:00Z",
+      "updated_at": "2026-06-13T09:10:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-014",
+      "body": "Centering finally clicked tonight. Ana kept saying 'stop fighting the clay, it can tell' and I kept privately rolling my eyes — and then my hands went quiet and the clay just... stood up straight. Best thirty seconds of the month.",
+      "created_at": "2026-06-14T21:35:00Z",
+      "updated_at": "2026-06-14T21:35:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-015",
+      "body": "Rejection from Alder Studio, two polite sentences. It stung more than I expected given I didn't even want them most. Allowed myself one evening of dramatic staring out the window, then updated the spreadsheet. Fernwood still silent.",
+      "created_at": "2026-06-18T18:55:00Z",
+      "updated_at": "2026-06-18T18:55:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-016",
+      "body": "Solstice picnic in the park with Priya and Tom 🌞🧺 — strawberries, bad wine, that card game with the geese rules nobody fully understands. Stayed until the light went gold and the bats came out 🦇. Ten out of ten day, no notes.",
+      "created_at": "2026-06-21T19:15:00Z",
+      "updated_at": "2026-06-21T19:15:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-017",
+      "body": "Keeping this one off any cloud. Mum called about the test results and her voice had that careful flatness she uses when she is scared. There is a growth near the inner ear — benign most likely, they say, but it needs to come out. I am not ready to write more words about it yet. Booked a train home for Friday.",
+      "created_at": "2026-06-25T21:05:00Z",
+      "updated_at": "2026-06-25T21:05:00Z",
+      "no_cloud": true,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-018",
+      "body": "Film night: rewatched In the Mood for Love — 花樣年華. That hallway scene with the noodles still wrecks me. Spent an hour afterwards reading about the title; apparently it means something like 'the flowery years', the bloom of youth. Going to sit with that one a while.",
+      "created_at": "2026-06-28T23:10:00Z",
+      "updated_at": "2026-06-28T23:10:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-019",
+      "body": "Did the thing: signed up for the Riverside 10K on October 18th. Paid actual money, so now it is real. Sixteen weeks. Found a training plan that promises to be 'gentle on beginners', which I do not believe for a second.",
+      "created_at": "2026-07-02T12:30:00Z",
+      "updated_at": "2026-07-02T12:30:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-020",
+      "body": "Fernwood phone screen! Forty minutes that felt like ten. Mara from their design team asked about the portfolio piece I almost cut — the community garden app — and we ended up trading composting disasters. Humans! In hiring! Next round is a take-home.",
+      "created_at": "2026-07-05T17:40:00Z",
+      "updated_at": "2026-07-05T17:40:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-021",
+      "body": "Private. Went with mum to the consultant. Surgery scheduled for the 3rd of August. He drew a little diagram and used the word 'routine' four times, which somehow made it sound less routine each time. Mum made a joke about finally getting a lie-in. I held it together until the car park.",
+      "created_at": "2026-07-08T22:20:00Z",
+      "updated_at": "2026-07-08T22:20:00Z",
+      "no_cloud": true,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-022",
+      "body": "Saturday market morning: tomatoes that actually smell of tomato, a ridiculous quantity of basil, and the honey man remembered me. Made a tart. The crust shattered in the correct, buttery way. Small competent joys.",
+      "created_at": "2026-07-11T10:25:00Z",
+      "updated_at": "2026-07-11T10:25:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-023",
+      "body": "Same day, opposite end of it. Can't sleep. Brain is running the full carousel: mum's surgery, the Fernwood take-home, whether I can afford the gap if I quit before the offer. Wrote the worries down in a list and they look smaller on paper. Not small. Smaller.",
+      "created_at": "2026-07-11T23:45:00Z",
+      "updated_at": "2026-07-11T23:45:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-024",
+      "body": "My first bowl came out of the kiln and it survived! It is heavier on one side and the rim wanders like a country road, but it rings when you flick it and it holds cereal. Ana says the wobble is 'evidence of a human hand'. Keeping it forever, obviously.",
+      "created_at": "2026-07-15T21:30:00Z",
+      "updated_at": "2026-07-15T21:30:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-025",
+      "body": "Fernwood take-home: redesign a neighbourhood tool-library flow. Honestly fun — I had to stop myself at the time cap because I wanted to keep going, which tells me something after two years of dreading Monday briefs. Submitted. Now the refresh-inbox vigil resumes.",
+      "created_at": "2026-07-19T16:50:00Z",
+      "updated_at": "2026-07-19T16:50:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-026",
+      "body": "Heatwave day three. The flat is a terracotta oven and I am the loaf. Survived on iced coffee, cold noodles, and sitting very still near the fan like a lizard on a favourable rock. The city smells of hot dust and sun cream.",
+      "created_at": "2026-07-22T21:55:00Z",
+      "updated_at": "2026-07-22T21:55:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-027",
+      "body": "Switched to six a.m. runs to beat the heat and accidentally joined the secret society of dawn people: the swimmer with the towel cape, the dog that owns the bench, the baker unloading trays. Six kilometres before the city wakes up. I get it now.",
+      "created_at": "2026-07-26T07:15:00Z",
+      "updated_at": "2026-07-26T07:15:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-028",
+      "body": "Night before mum's surgery and I am writing this because I don't know what else to do with my hands. Everyone keeps saying routine and all I can hear is the other word underneath it. I keep thinking about the house without her voice in it and the thought goes somewhere very dark and empty, like what would even be the point of any of it. I can't say this to her, or to anyone, so it goes here. It is 2 a.m. and the ceiling has no answers. I just have to get to nine o'clock tomorrow.",
+      "created_at": "2026-08-01T23:55:00Z",
+      "updated_at": "2026-08-01T23:55:00Z",
+      "no_cloud": true,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-029",
+      "body": "Private still. The surgery went fine. FINE. The surgeon came out at 2:40 and said 'textbook' and I cried in the corridor by the vending machine, big ugly relieved sobs while a stranger silently handed me a napkin. Mum was awake by evening asking whether the nurses ever sit down. Textbook. I will be hearing that word in my sleep, gratefully.",
+      "created_at": "2026-08-03T19:30:00Z",
+      "updated_at": "2026-08-03T19:30:00Z",
+      "no_cloud": true,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-030",
+      "body": "Email from Fernwood while I was on the train back: they liked the take-home, onsite interview on the 20th. Read it three times on the platform grinning like a fool. Told mum; she immediately started planning what I should wear, from a hospital bed. Unstoppable woman.",
+      "created_at": "2026-08-07T18:35:00Z",
+      "updated_at": "2026-08-07T18:35:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-031",
+      "body": "First run in almost two weeks — training plan says I am 'behind', but the plan did not have a week of hospital corridors in it. Legs felt like borrowed furniture for the first kilometre, then remembered themselves. Four gentle k. Being behind is fine. Still moving.",
+      "created_at": "2026-08-12T07:30:00Z",
+      "updated_at": "2026-08-12T07:30:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-032",
+      "body": "Long overdue brain-dump because the last month has been three months long and I have been journaling in fragments, so here is the whole weather system in one go. The summer split into two tracks that refused to acknowledge each other. On one track: mum. The phone call in June, the careful consultant with his biro diagram, the waiting room with the fish tank where one orange fish kept bumping the glass like it had somewhere to be, the surgery, the word textbook, the vending-machine corridor, and now her at home complaining magnificently about daytime television. I have never felt relief like that corridor moment — it arrived physically, like weather, like the pressure dropping after a storm. I keep revisiting it on purpose just to feel the air change again. On the other track: the slow jailbreak from Harlow & Price. Portfolio rebuilt in May at Cafe Lumen, the applications in June, the Alder rejection that stung exactly one evening's worth, the Fernwood phone screen where Mara and I talked composting like old allotment rivals, the take-home I enjoyed so much it frightened me. Two years of assuming I had simply gone off design, when apparently I had only gone off doing it in a place that sands the edges off every idea by committee. The onsite is Thursday after next and I am — not calm, but something adjacent to calm. Prepared-nervous. Rehearsed-nervous. And stitched through both tracks, the small constant threads that held the sewing together: the dawn runs with the towel-cape swimmer and the proprietary dog, kilometre by kilometre turning from punishment into the one hour a day my head goes quiet; the pottery wheel on Tuesdays where I have produced one noble volcano, one wandering bowl, and lately two objects that a generous stranger might call cups; the ramen day; the solstice picnic; the market tomatoes. I read somewhere that you build a life out of the days, not the milestones, and this summer I finally believe it — the milestones were enormous and terrifying, but it is the six a.m. baker and the celadon glaze and the honey man remembering my name that kept the whole contraption upright. Autumn plan, written here so it becomes slightly more real: finish the race on October 18th even if I crawl, take whatever Fernwood decides with my spine straight, teach mum to video call without filming the ceiling, and make a full matching set of bowls before the year ends. That is the whole list. It feels like enough.",
+      "created_at": "2026-08-16T22:40:00Z",
+      "updated_at": "2026-08-16T22:40:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-033",
+      "body": "Fernwood onsite went long, which everyone says is a good sign. The design exercise was actually fun — first time in months I lost track of time doing work-shaped things in a room with strangers. Walking out I realised I was smiling at the bus stop like a lunatic. Now we wait.",
+      "created_at": "2026-08-20T22:10:00Z",
+      "updated_at": "2026-08-20T22:10:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-034",
+      "body": "Glazing day. Agonised between the speckled white and the celadon like it was a mortgage decision, chose celadon. Ana showed us her seconds shelf — twenty years of potting and she still keeps her failures where she can see them. There is a lesson there I am choosing to absorb slowly.",
+      "created_at": "2026-08-23T20:45:00Z",
+      "updated_at": "2026-08-23T20:45:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-035",
+      "body": "Weekend at mum's. She is moving slowly and hating it, so we played cards at the kitchen table like the old days and I let her win exactly as much as she earned, which was entirely. Made her laugh so hard at my impression of the consultant that she had to hold her bandage. Worth the train fare, worth everything.",
+      "created_at": "2026-08-27T19:20:00Z",
+      "updated_at": "2026-08-27T19:20:00Z",
+      "no_cloud": false,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-036",
+      "body": "Keeping this off the cloud because it is half mine at most. Proper argument with Priya tonight — it started about the holiday plans and was obviously never about the holiday plans. She said I have been 'performing fine' since June instead of actually talking, and I said some things back that were sharper than she deserved. We both went quiet in the bad way. I hate that she might be right.",
+      "created_at": "2026-08-30T23:25:00Z",
+      "updated_at": "2026-08-30T23:25:00Z",
+      "no_cloud": true,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-037",
+      "body": "THE OFFER CAME. Fernwood called at lunch — senior product designer, starting late October. I did a silent scream in the stairwell, phoned mum, who cried, then Priya, who also cried, argument apparently suspended by joy. Four months ago this was a sentence in this journal and now it is a start date.",
+      "created_at": "2026-09-02T14:05:00Z",
+      "updated_at": "2026-09-02T14:05:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-038",
+      "body": "Money details stay private: they opened at 58, I asked for 64 based on the band I found in their public pay framework, we landed on 62 plus the learning budget. My palms were damp the whole call but my voice, I am told, sounded calm. Highest number anyone has ever agreed to pay me. Writing it down so future me remembers negotiating works.",
+      "created_at": "2026-09-05T21:15:00Z",
+      "updated_at": "2026-09-05T21:15:00Z",
+      "no_cloud": true,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-039",
+      "body": "The light has gone properly autumnal — low and gold and nostalgic for things that haven't even ended yet. Wore the big cardigan for the first time since April. Bought new notebooks I do not need. September makes a student of everyone.",
+      "created_at": "2026-09-09T18:30:00Z",
+      "updated_at": "2026-09-09T18:30:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-040",
+      "body": "Eight kilometres, the longest yet. The plan calls this 'peak week' which explains the sensation of being a phone at four percent. Mapped the race route on the kitchen table afterwards like a general. Five weeks to go and the impossible distance now just looks like a long Sunday.",
+      "created_at": "2026-09-12T10:50:00Z",
+      "updated_at": "2026-09-12T10:50:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-041",
+      "body": "Plate week at the studio, and plates are a conspiracy. Threw four; the kiln gods warped three into gentle Pringles. Ana says plates humble everyone and to go back to bowls until I forgive the clay. Took the surviving plate home out of spite. It wobbles. I love it.",
+      "created_at": "2026-09-14T21:40:00Z",
+      "updated_at": "2026-09-14T21:40:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-042",
+      "body": "Handed in my notice at Harlow & Price today. Printed the letter I started drafting in my head back in May. David took it better than I expected — half a sigh, then 'honestly, good for you'. Walking out of his office my shoulders dropped two centimetres I didn't know they were holding. Six weeks and out.",
+      "created_at": "2026-09-16T17:55:00Z",
+      "updated_at": "2026-09-16T17:55:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-043",
+      "body": "Lunch with Priya at the dumpling place, first proper one since the argument. She apologised for the ambush, I apologised for the armour, and we split the last pork bun in the traditional display of peace. Told her the salary story; she made me re-enact the phone call with voices.",
+      "created_at": "2026-09-20T13:10:00Z",
+      "updated_at": "2026-09-20T13:10:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-044",
+      "body": "Second entry today because the evening earned its own. Walked home the long way past the old office after dark and felt precisely nothing — no dread, no nostalgia, just a building where I used to be tired. Leaving is already working, and I haven't even left yet.",
+      "created_at": "2026-09-20T22:50:00Z",
+      "updated_at": "2026-09-20T22:50:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-045",
+      "body": "Mum's follow-up scan came back clear. CLEAR. She celebrated by complaining that the hospital coffee has not improved since August, which is how I know she is fully herself. We are doing a proper dinner at hers on Sunday — she is already threatening the good tablecloth.",
+      "created_at": "2026-09-24T18:05:00Z",
+      "updated_at": "2026-09-24T18:05:00Z",
+      "no_cloud": false,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-046",
+      "body": "Last day at Harlow & Price. Cake in the kitchen, a card with signatures I mostly couldn't read, and Priya's team sent a gif parade. Odd grief by the lifts at six — two years is two years, even the heavy ones. Handed over my pass and the door clicked shut with great indifference. Free.",
+      "created_at": "2026-10-01T19:40:00Z",
+      "updated_at": "2026-10-01T19:40:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-047",
+      "body": "First weekend of the in-between. Deep-cleaned the flat, re-potted the monstera that has been judging me since spring, and cooked a stew of genuinely medieval proportions. Nesting, Priya calls it. The flat smells of thyme and lemon polish and possibility.",
+      "created_at": "2026-10-04T16:15:00Z",
+      "updated_at": "2026-10-04T16:15:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-048",
+      "body": "Taper week, which means short 'shakeout' runs and an unreasonable amount of nervous energy with nowhere to put it. Three easy kilometres this morning, then spent twenty minutes researching whether my shoelaces are a race-day liability. They are not. Probably.",
+      "created_at": "2026-10-08T07:45:00Z",
+      "updated_at": "2026-10-08T07:45:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-049",
+      "body": "Final class of the course and the kiln delivered: a full set of four celadon bowls, matching if you squint, each one truer than the last. Gave the best one to mum — she immediately declared it 'too good to use' and put fruit in it anyway. Signed up for the improvers' course before I could talk myself out of it.",
+      "created_at": "2026-10-12T21:20:00Z",
+      "updated_at": "2026-10-12T21:20:00Z",
+      "no_cloud": false,
+      "tags": [
+        "pottery"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-050",
+      "body": "Week-off treat: a whole Wednesday at the museum, moving at my own pace, reading every single label like a sommelier. The room with the Korean moon jars again — round, imperfect, luminous. Eighteen months ago they made me want to touch clay. Now I have bowls. Funny how a life assembles itself.",
+      "created_at": "2026-10-15T17:35:00Z",
+      "updated_at": "2026-10-15T17:35:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-051",
+      "body": "RACE DAY. Riverside 10K: 58 minutes 41 seconds. Rained for the first three k, sun for the last two, cried a little at the eighth for no reason the textbooks would recognise. Mum was at the finish with a hand-lettered sign reading RUN LIKE THE KETTLE IS ON. From the sofa in May to this. Medal is going on the bookshelf, centre position.",
+      "created_at": "2026-10-18T13:25:00Z",
+      "updated_at": "2026-10-18T13:25:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-052",
+      "body": "First day at Fernwood. New pass, new desk by the window, a plant from Mara 'to raise alongside the onboarding docs'. Spent the afternoon in the research archive genuinely excited, like a kid left overnight in a library. My calendar has thinking time blocked in it. On purpose. By policy. I may weep.",
+      "created_at": "2026-10-22T20:30:00Z",
+      "updated_at": "2026-10-22T20:30:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-053",
+      "body": "Grey drizzly Sunday of the best kind. Made the white bean soup, read half a novel in one sitting, fell asleep at four p.m. like a house cat and woke up unrepentant. Some days are for building the life; some days are for living in it.",
+      "created_at": "2026-10-26T19:50:00Z",
+      "updated_at": "2026-10-26T19:50:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-054",
+      "body": "Mum sent a photo from the top of the hill behind the house — she walked the whole long loop for the first time since the surgery, bobble hat triumphant against the sky. Three months from the fish-tank waiting room to this. I showed the photo to approximately everyone at work.",
+      "created_at": "2026-10-29T18:10:00Z",
+      "updated_at": "2026-10-29T18:10:00Z",
+      "no_cloud": false,
+      "tags": [
+        "family"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-055",
+      "body": "First Sunday of November. Cleaned the flat properly, lit the fig candle, made a list of small things that went right this year. It is much longer than I expected: the bowls, the race, the textbook corridor, the stairwell scream, the dumpling peace treaty. Keeping the list where I can see it.",
+      "created_at": "2026-11-01T18:45:00Z",
+      "updated_at": "2026-11-01T18:45:00Z",
+      "no_cloud": false,
+      "tags": [],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-056",
+      "body": "Week two at Fernwood. The imposter feeling flickered on in the design crit — new room, new shorthand, everyone fluent — and then Mara asked for my read and took notes while I talked. Notes! The flicker didn't vanish but it dimmed. I think this is what being in the right place feels like: still nervous, no longer braced.",
+      "created_at": "2026-11-02T21:25:00Z",
+      "updated_at": "2026-11-02T21:25:00Z",
+      "no_cloud": false,
+      "tags": [
+        "work"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    },
+    {
+      "id": "jf-057",
+      "body": "First easy run since the race, no watch, no plan, just the dawn crew and the cold air like a clean page. Legs felt like mine again. Thinking about a spring half marathon but not telling the journal yet, except I just did. Classic.",
+      "created_at": "2026-11-03T07:20:00Z",
+      "updated_at": "2026-11-03T07:20:00Z",
+      "no_cloud": false,
+      "tags": [
+        "running"
+      ],
+      "mood_level": null,
+      "mood_label": null,
+      "mood_source": null
+    }
+  ]
+}

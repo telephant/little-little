@@ -10,6 +10,8 @@ export interface Entry {
   mood_level: number | null;
   mood_label: string | null;
   mood_source: "ai" | "manual" | null;
+  /** Painted mark: numbers-only JSON strokes (see src/lib/mark.ts); null = use the default mood mark. */
+  mark: string | null;
 }
 
 export interface SettingsView {
@@ -93,6 +95,8 @@ export interface DayMood {
   date: string; // local YYYY-MM-DD
   level: number | null;
   count: number;
+  /** The day's latest painted mark with its own entry's mood level; null = show the mood mark. */
+  mark: { mark: string; level: number | null } | null;
 }
 
 export interface EntrySummary {
@@ -104,4 +108,5 @@ export interface EntrySummary {
   tags: string[];
   mood_level: number | null;
   mood_label: string | null;
+  mark: string | null;
 }

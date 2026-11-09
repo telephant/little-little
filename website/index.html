@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Little — a private journal that remembers with you</title>
+<meta name="description" content="Little Little is a private, on-device journal. Write a little every day; it quietly reflects your own past entries back, colours a calendar by mood, and answers plain questions about your life. Nothing leaves your device.">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:title" content="Little Little — write a little every day">
+<meta property="og:description" content="A private, local-first journal that reflects your own words back. Encrypted, on-device, yours.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<script>document.documentElement.classList.add("js")</script>
+<link rel="preload" href="fonts/WalterTurncoat-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Spectral-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- brush filters and mood marks, same artwork as the app (src/components/MoodMark.tsx) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="paint-s" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="4" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="3.4" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.5" numOctaves="2" seed="9" result="st"/>
+      <feColorMatrix in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .3" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="paint-b" x="-12%" y="-60%" width="124%" height="220%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.1" numOctaves="2" seed="19" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="4" xChannelSelector="R" yChannelSelector="G" result="shape"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.2 0.02" numOctaves="2" seed="11" result="st"/>
+      <feColorMatrix in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 .4" result="m"/>
+      <feComposite in="shape" in2="m" operator="in"/>
+    </filter>
+    <filter id="wash" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="3" seed="4" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="34" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.4" result="b"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.045" numOctaves="3" seed="9" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .22" result="m"/>
+      <feComposite in="b" in2="m" operator="in"/>
+    </filter>
+    <filter id="wash2" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014" numOctaves="3" seed="21" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="34" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.4" result="b"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.012" numOctaves="3" seed="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.1 0 0 0 .18" result="m"/>
+      <feComposite in="b" in2="m" operator="in"/>
+    </filter>
+    <filter id="linev" x="-400%" y="-2%" width="900%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="12" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="4.5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.03 0.3" numOctaves="2" seed="2" result="st"/>
+      <feColorMatrix in="st" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .8 0 0 0 .55" result="m"/>
+      <feComposite in="d" in2="m" operator="in"/>
+    </filter>
+    <filter id="ink" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="6" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="line" x="-10%" y="-200%" width="120%" height="500%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="12" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <symbol id="m1" viewBox="0 0 48 48"><g filter="url(#paint-s)" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M9 11 Q22 26 39 38" stroke-width="11" stroke-opacity=".95"/><path d="M11 38 Q26 24 37 10" stroke-width="9" stroke-opacity=".62"/><circle cx="14" cy="14" r="2.1" fill="#1b1a1f" stroke="none"/></g></symbol>
+    <symbol id="m2" viewBox="0 0 48 48"><g filter="url(#paint-s)" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M8 17 Q24 44 40 19" stroke-width="11" stroke-opacity=".95"/><path d="M14 11 Q24 16 34 11" stroke-width="7" stroke-opacity=".6"/><path d="M16 37 q8 3 16 0" stroke="#1b1a1f" stroke-width="2.2"/></g></symbol>
+    <symbol id="m3" viewBox="0 0 48 48"><g filter="url(#paint-s)" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M8 20 Q24 15 40 20" stroke-width="10" stroke-opacity=".95"/><path d="M8 31 Q24 36 40 31" stroke-width="10" stroke-opacity=".62"/><circle cx="37" cy="25.5" r="2.1" fill="#1b1a1f" stroke="none"/></g></symbol>
+    <symbol id="m4" viewBox="0 0 48 48"><g filter="url(#paint-s)" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M9 38 Q20 37 38 12" stroke-width="11" stroke-opacity=".95"/><path d="M10 28 Q16 26 25 16" stroke-width="7" stroke-opacity=".6"/><circle cx="36" cy="31" r="2.1" fill="#1b1a1f" stroke="none"/></g></symbol>
+    <symbol id="m5" viewBox="0 0 48 48"><g filter="url(#paint-s)" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M24 40 Q23 24 25 8" stroke-width="11" stroke-opacity=".95"/><path d="M13 38 Q10 26 8 14" stroke-width="8" stroke-opacity=".72"/><path d="M35 38 Q38 26 40 14" stroke-width="8" stroke-opacity=".72"/><circle cx="24" cy="5" r="2.1" fill="#1b1a1f" stroke="none"/></g></symbol>
+    <symbol id="m0" viewBox="0 0 48 48"><g filter="url(#ink)"><path d="M24 9 A15 15 0 1 1 19.5 9.7" fill="none" stroke="#1b1a1f" stroke-width="3.2" stroke-linecap="round"/></g></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/icon.svg" alt="" width="30" height="30"> Little Little</a>
+    <nav class="links caps" aria-label="Sections">
+      <a href="#benchmarks">Models</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#try">Try it</a>
+      <a href="#craft">Craft</a>
+      <a href="#download">Download</a>
+    </nav>
+    <span class="local caps"><i class="dot"></i><span class="long">On-device</span></span>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-wash a" aria-hidden="true"></div><div class="hero-wash b" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="hero-top">
+    <div class="hero-copy">
+    <span class="eyebrow caps rise">A quiet journal for Mac</span>
+    <h1 class="rise">Little Little<i class="dotmark"></i></h1>
+    <p class="lead rise" style="--d:120ms">Write a little every day, and see how far you've come.</p>
+    <div class="cta-row rise" style="--d:240ms">
+      <a class="btn" href="https://github.com/telephant/little-little/releases/latest">Download for Mac</a>
+          </div>
+    
+    </div>
+    <aside class="models pick rise" style="--d:300ms" id="models" aria-label="On-device models and how fast each reads a page's mood">
+      <p class="caps pick-head"><span>Choose your model</span><span>Reads a mood in</span></p>
+      <ul class="mlist" role="radiogroup" aria-label="Model">
+        <li><button type="button" role="radio" aria-checked="false" class="mrow-b" data-t="0.10" style="--c:var(--green);--w:42%">
+          <span class="ring"></span><span class="mname"><b>llama3.2:1b</b><small>1.3 GB</small></span>
+          <span class="bar"><i></i></span><span class="mt"><span data-count="0.10" data-dec="2">0.10</span><small>s</small></span></button></li>
+        <li><button type="button" role="radio" aria-checked="false" class="mrow-b" data-t="0.18" style="--c:var(--lav);--w:74%">
+          <span class="ring"></span><span class="mname"><b>llama3.2:3b</b><small>2.0 GB</small></span>
+          <span class="bar"><i></i></span><span class="mt"><span data-count="0.18" data-dec="2">0.18</span><small>s</small></span></button></li>
+        <li><button type="button" role="radio" aria-checked="true" class="mrow-b on" data-t="0.23" style="--c:var(--cobalt);--w:92%">
+          <span class="ring"></span><span class="mname"><b>qwen3:4b-instruct</b><small>2.5 GB</small></span>
+          <span class="bar"><i></i></span><span class="mt"><span data-count="0.23" data-dec="2">0.23</span><small>s</small></span></button></li>
+      </ul>
+      <p class="pick-sum">Each one reads a page's mood in under a quarter of a second, <b>on this Mac</b>. <a href="#benchmarks">How we measured</a></p>
+    </aside>
+  </div>
+
+    <!-- the app, drawn in HTML to match the real window -->
+    <div class="app" data-r role="img" aria-label="The Little Little window: a list of pages on the left, today's entry in the middle, and a watercolour reflection on the right.">
+      <div class="pane-list">
+        <span class="caps under" style="--c:var(--coral)">New page</span>
+        <div class="row sel"><svg class="mood-mark" id="rowMark" width="44" height="44" viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><div><b>6 Nov</b><small>First week at the new place</small></div></div>
+        <div class="row"><svg class="mood-mark" width="44" height="44" viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><div><b>3 Nov</b><small>Called Mum, long one</small></div></div>
+        <div class="row"><svg class="mood-mark" width="44" height="44" viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><div><b>30 Oct</b><small>Rain all day. Reading.</small></div></div>
+        <div class="row"><svg class="mood-mark" width="44" height="44" viewBox="0 0 48 48" style="color:var(--m2)"><use href="#m2"/></svg><div><b>28 Oct</b><small>Couldn't settle tonight</small></div></div>
+      </div>
+      <div class="vrule rule-in" style="--c:var(--ink)"></div>
+      <div class="pane-main">
+        <span class="caps day">Thursday</span>
+        <h3 class="date">November 6 <svg class="mood-mark" id="heroMark" width="64" height="64" viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg></h3>
+        <p>First week at the new place. The office smells like coffee and cardboard — half the team is still unpacking from the move. I keep reaching for dread out of habit and finding it isn't there.</p>
+        <div class="mood-row">
+          <span class="caps">Mood</span>
+          <button type="button" class="pick" data-m="1" aria-label="rough" style="color:var(--m1)"><svg width="40" height="40" viewBox="0 0 48 48"><use href="#m1"/></svg></button>
+          <button type="button" class="pick" data-m="2" aria-label="low" style="color:var(--m2)"><svg width="40" height="40" viewBox="0 0 48 48"><use href="#m2"/></svg></button>
+          <button type="button" class="pick" data-m="3" aria-label="okay" style="color:var(--m3)"><svg width="40" height="40" viewBox="0 0 48 48"><use href="#m3"/></svg></button>
+          <button type="button" class="pick on" data-m="4" aria-label="good" style="color:var(--m4)"><svg width="40" height="40" viewBox="0 0 48 48"><use href="#m4"/></svg></button>
+          <button type="button" class="pick" data-m="5" aria-label="great" style="color:var(--m5)"><svg width="40" height="40" viewBox="0 0 48 48"><use href="#m5"/></svg></button>
+          <span class="caps" id="moodName">Good</span>
+        </div>
+        <p class="tiny">AI guess. Pick a mark to set your own. <span class="try">Go on, click one.</span></p>
+      </div>
+      <div class="vrule rule-in" style="--c:var(--cobalt);--d:200ms"></div>
+      <div class="pane-side">
+        <div class="reflect cycle">
+          In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there. That's not a small week — that's the whole arc, landing.
+          <div class="from caps">From Jun 2 · Sep 30 · Oct 21</div>
+          <div class="acts caps"><button type="button" class="act" id="again">Again</button><button type="button" class="act" id="letgo">Let it go</button></div>
+        </div>
+        <span class="caps under" style="--c:var(--sky)">3 memories</span>
+        <button type="button" class="act bringback" id="bringback" hidden>Bring it back</button>
+      </div>
+    </div>
+  
+  </div>
+</section>
+
+<section id="benchmarks" class="tint">
+  <div class="wrap">
+    <div class="section-head" data-r>
+      <span class="eyebrow caps">Measured, not promised</span>
+      <h2>Your pick. Your Mac. Fast.</h2>
+      <p>Little Little doesn't choose a model for you. Install any Ollama model and pick it in the app. These three are the ones I timed.</p>
+    </div>
+    <div class="bench reveal" data-r>
+      <div class="brow bhead caps"><span>Model</span><span>Size</span><span>Reads a mood</span><span>Speed</span><span>Valid replies</span></div>
+      <div class="brow"><span class="bn">llama3.2:1b</span><span>1.3 GB</span><span class="bv" style="color:var(--green)">0.10 s</span><span>175 tokens/s</span><span>57 of 57</span></div>
+      <div class="brow"><span class="bn">llama3.2:3b</span><span>2.0 GB</span><span class="bv" style="color:var(--lav)">0.18 s</span><span>110 tokens/s</span><span>57 of 57</span></div>
+      <div class="brow"><span class="bn">qwen3:4b-instruct</span><span>2.5 GB</span><span class="bv" style="color:var(--cobalt)">0.23 s</span><span>90 tokens/s</span><span>57 of 57</span></div>
+    </div>
+    <p class="fine reveal" data-r style="margin-top:24px">57 journal entries of about 300 characters each, using the app's own mood prompt, one at a time on an Apple M5 Pro with 48 GB. Older Macs will be slower, and smaller models trade some nuance for speed. Run it yourself with <code>scripts/bench-mood.py</code>.</p>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <div class="section-head" data-r>
+      <span class="eyebrow caps">Privacy</span>
+      <h2>Yours alone</h2>
+    </div>
+    <div class="promise stag" data-r>
+      <div style="--i:0">
+        <span class="under" style="--c:var(--cobalt)"><h3>Locked</h3></span>
+        <p>Your pages live in one encrypted file, opened only by your passphrase. No account. No server.</p>
+      </div>
+      <div style="--i:1">
+        <span class="under" style="--c:var(--green)"><h3>On your Mac</h3></span>
+        <p>Reading, searching and reflecting all happen here, with a model you choose.</p>
+      </div>
+      <div style="--i:2">
+        <span class="under" style="--c:var(--coral)"><h3>Cloud, if you ask</h3></span>
+        <p>Want Claude's help? Turn it on yourself. Mark a page private and it never goes.</p>
+      </div>
+    </div>
+    <p class="fine reveal" data-r style="margin-top:34px">A lost passphrase can't be recovered, so keep it safe and back up now and then.</p>
+  </div>
+</section>
+
+<section id="reflection" class="tint">
+  <div class="wrap split">
+    <div class="wash-card reveal" data-r>
+      <p>In June you wrote that dreading Monday had become normal. Tonight you reached for the dread and it wasn't there.</p>
+      <p class="caps from" style="margin:0">From Jun 2 · Sep 30 · Oct 21</p>
+    </div>
+    <div class="reveal" data-r style="--d:150ms">
+      <span class="eyebrow caps">Reflection</span>
+      <h2 style="margin-bottom:22px">It remembers, so you don't have to</h2>
+      <p>Write, then rest a moment. Little Little reads your page beside everything you've written before, and offers a few quiet words, with the dates it drew from.</p>
+      <p>Nothing appears while you're mid-thought. When you've had enough, <b>let it go</b> and it fades like a wash. <b>Bring it back</b> whenever you like.</p>
+      <p>Related pages wait under <i>memories</i>, from earlier and later.</p>
+    </div>
+  </div>
+</section>
+
+<section id="looking-back">
+  <div class="wrap">
+    <div class="section-head" data-r>
+      <span class="eyebrow caps">Looking back</span>
+      <h2>See how far you've come</h2>
+    </div>
+
+    <div class="split" style="margin-bottom:80px">
+      <div class="reveal" data-r>
+        <h3 style="margin-bottom:14px">A mark for every mood</h3>
+        <p style="color:var(--ink-soft)">Each page gets a mood, guessed gently and yours to change. Or paint a mark of your own.</p>
+        <div class="marks stag">
+          <figure style="--i:0"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48" style="color:var(--m1)"><use href="#m1"/></svg><figcaption class="caps">Rough</figcaption></figure>
+          <figure style="--i:1"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48" style="color:var(--m2)"><use href="#m2"/></svg><figcaption class="caps">Low</figcaption></figure>
+          <figure style="--i:2"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><figcaption class="caps">Okay</figcaption></figure>
+          <figure style="--i:3"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><figcaption class="caps">Good</figcaption></figure>
+          <figure style="--i:4"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><figcaption class="caps">Great</figcaption></figure>
+          <figure style="--i:5"><svg class="mood-mark" width="56" height="56" viewBox="0 0 48 48"><use href="#m0"/></svg><figcaption class="caps">None</figcaption></figure>
+        </div>
+      </div>
+      <div class="reveal" data-r style="--d:150ms">
+        <p class="caps" style="margin-bottom:14px;color:var(--ink-soft)">November</p>
+        <div class="cal stag" aria-label="A month calendar coloured by mood">
+<span class="h caps">M</span>
+<span class="h caps">T</span>
+<span class="h caps">W</span>
+<span class="h caps">T</span>
+<span class="h caps">F</span>
+<span class="h caps">S</span>
+<span class="h caps">S</span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span></span>
+<span class="d has" style="--i:0"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>1</span></span>
+<span class="d has" style="--i:1"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>2</span></span>
+<span class="d has" style="--i:2"><svg viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><span>3</span></span>
+<span class="d has" style="--i:3"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>4</span></span>
+<span class="d has" style="--i:4"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>5</span></span>
+<span class="d has" style="--i:5"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>6</span></span>
+<span class="d"><span>7</span></span>
+<span class="d has" style="--i:6"><svg viewBox="0 0 48 48" style="color:var(--m2)"><use href="#m2"/></svg><span>8</span></span>
+<span class="d has" style="--i:7"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>9</span></span>
+<span class="d has" style="--i:8"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>10</span></span>
+<span class="d has" style="--i:9"><svg viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><span>11</span></span>
+<span class="d has" style="--i:10"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>12</span></span>
+<span class="d has" style="--i:11"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>13</span></span>
+<span class="d"><span>14</span></span>
+<span class="d has" style="--i:12"><svg viewBox="0 0 48 48" style="color:var(--m1)"><use href="#m1"/></svg><span>15</span></span>
+<span class="d has" style="--i:13"><svg viewBox="0 0 48 48" style="color:var(--m2)"><use href="#m2"/></svg><span>16</span></span>
+<span class="d has" style="--i:14"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>17</span></span>
+<span class="d has" style="--i:15"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>18</span></span>
+<span class="d has" style="--i:16"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>19</span></span>
+<span class="d has" style="--i:17"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>20</span></span>
+<span class="d"><span>21</span></span>
+<span class="d has" style="--i:18"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>22</span></span>
+<span class="d has" style="--i:19"><svg viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><span>23</span></span>
+<span class="d has" style="--i:20"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>24</span></span>
+<span class="d has" style="--i:21"><svg viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>25</span></span>
+<span class="d"><span>26</span></span>
+<span class="d has" style="--i:22"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>27</span></span>
+<span class="d has" style="--i:23"><svg viewBox="0 0 48 48" style="color:var(--m5)"><use href="#m5"/></svg><span>28</span></span>
+<span class="d has" style="--i:24"><svg viewBox="0 0 48 48" style="color:var(--m4)"><use href="#m4"/></svg><span>29</span></span>
+<span class="d"><span>30</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="split flip">
+      <div data-r class="searchdemo">
+        <div class="search-box reveal">when did I last feel anxious about work?</div>
+        <div class="answer reveal" style="--d:500ms">Early March, before the Northwind interview. It went well.</div>
+        <div class="hit reveal" style="--d:800ms"><b>6 Mar</b><span>Couldn't stop rehearsing answers. Told myself it's just a conversation…</span></div>
+        <div class="hit reveal" style="--d:950ms"><b>2 Mar</b><span>Stomach in knots about Thursday. Went for a long walk instead.</span></div>
+        <div class="hit reveal" style="--d:1100ms"><b>19 Feb</b><span>Another Sunday of dread. I wonder when that stopped being unusual.</span></div>
+      </div>
+      <div class="reveal" data-r>
+        <h3 style="margin-bottom:14px">Ask your journal</h3>
+        <p style="color:var(--ink-soft)">Ask in plain words. You get the pages that fit, and one line that says where the answer came from.</p>
+        <p style="color:var(--ink-soft)">Pages you've marked private stay out of it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="try">
+  <div class="wrap">
+    <div class="section-head" data-r>
+      <span class="eyebrow caps">Try it</span>
+      <h2>Paint a mark of your own</h2>
+      <p>This is the real feature. Draw anything, in any colour. In the app, your mark takes the place of the default one on the list and in the calendar.</p>
+    </div>
+    <div class="painter reveal" data-r>
+      <div class="board">
+        <div class="canvas-wrap">
+          <svg id="paint" viewBox="0 0 48 48" role="img" aria-label="Drawing area. Draw with your pointer or finger.">
+            <g id="paintStrokes" filter="url(#paint-s)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"></g>
+          </svg>
+          <span class="hint caps" id="paintHint">Draw here</span>
+        </div>
+        <div class="tools">
+          <div class="swatches" role="radiogroup" aria-label="Colour">
+            <button type="button" class="sw on" data-c="var(--ink)" style="--s:var(--ink)" aria-label="ink"></button>
+            <button type="button" class="sw" data-c="var(--coral)" style="--s:var(--coral)" aria-label="coral"></button>
+            <button type="button" class="sw" data-c="var(--lav)" style="--s:var(--lav)" aria-label="lavender"></button>
+            <button type="button" class="sw" data-c="var(--sky)" style="--s:var(--sky)" aria-label="sky"></button>
+            <button type="button" class="sw" data-c="var(--green)" style="--s:var(--green)" aria-label="green"></button>
+            <button type="button" class="sw" data-c="var(--ochre)" style="--s:var(--ochre)" aria-label="ochre"></button>
+            <button type="button" class="sw" data-c="var(--cobalt)" style="--s:var(--cobalt)" aria-label="blue"></button>
+          </div>
+          <span class="tool-acts caps"><button type="button" class="act" id="undo">Undo</button><button type="button" class="act" id="clear">Clear</button></span>
+        </div>
+      </div>
+      <div class="where">
+        <p class="caps" style="color:var(--ink-muted);margin-bottom:16px">Where it appears</p>
+        <div class="pv-row"><svg data-prev width="44" height="44" viewBox="0 0 48 48"></svg><div><b>6 Nov</b><small>First week at the new place</small></div></div>
+        <div class="pv-cal"><div class="pv-day"><svg data-prev width="30" height="30" viewBox="0 0 48 48"></svg><span>6</span></div><div class="pv-day dim"><span>7</span></div><div class="pv-day"><svg width="30" height="30" viewBox="0 0 48 48" style="color:var(--m3)"><use href="#m3"/></svg><span>8</span></div></div>
+        <div class="pv-big"><svg data-prev width="84" height="84" viewBox="0 0 48 48"></svg></div>
+        <p class="fine" style="margin-top:14px">Stored as plain numbers, so it stays small, safe and restorable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="tint">
+  <div class="wrap split">
+    <div class="reveal" data-r>
+      <span class="eyebrow caps">Yours to keep</span>
+      <h2 style="margin-bottom:22px">Take it with you</h2>
+      <p style="color:var(--ink-soft)">Export every page as Markdown, or save one backup and restore it anywhere.</p>
+      <ul class="checks">
+        <li style="--c:var(--cobalt)"><b>Markdown.</b> One file per page, with date, tags and mood.</li>
+        <li style="--c:var(--green)"><b>One backup.</b> Your painted marks come too.</li>
+        <li style="--c:var(--coral)"><b>A gentle start.</b> Choose a passphrase, pick your models, begin.</li>
+      </ul>
+    </div>
+    <div class="reveal" data-r style="--d:150ms">
+      <span class="eyebrow caps">Plainly</span>
+      <h3 style="margin-bottom:14px">Always clear what's happening</h3>
+      <p style="color:var(--ink-soft)">Small chips show when a model is ready, loading or catching up. Nothing works in secret.</p>
+    </div>
+  </div>
+</section>
+
+
+<section id="craft" class="craft">
+  <div class="wrap">
+    <div class="section-head" data-r>
+      <span class="eyebrow caps">Under the paint</span>
+      <h2>Quiet on the outside. Careful underneath.</h2>
+      <p>The interface is hand-painted and gentle. Behind it, every promise is enforced in code, and every choice was written down.</p>
+    </div>
+
+
+    <div class="stats stag" data-r>
+      <div style="--i:0"><b class="n"><span data-count="5">5</span></b><span>days from first commit to seven closed specs</span></div>
+      <div style="--i:1"><b class="n"><span data-count="89" data-plus>89</span></b><span>written acceptance criteria, each one verified</span></div>
+      <div style="--i:2"><b class="n"><span data-count="235" data-plus>235</span></b><span>automated tests, in Rust and TypeScript</span></div>
+      <div style="--i:3"><b class="n"><span data-count="6">6</span></b><span>decision records, with the options weighed</span></div>
+      <div style="--i:4"><b class="n"><span data-count="5" data-suffix="k">5</span><small>k</small></b><span>lines of Rust, for the lock, the search and the cage</span></div>
+      <div style="--i:5"><b class="n"><span data-count="2.6" data-dec="1">2.6</span><small>k</small></b><span>lines of TypeScript, for the painted interface</span></div>
+    </div>
+
+    <h3 class="sub" data-r style="margin-top:64px">How it works</h3>
+    <div class="flow stag" data-r>
+      <div class="node" style="--i:0;--c:var(--coral)"><span class="caps">1 · Write</span><p>You write. Autosave catches every pause.</p></div>
+      <svg class="arr" viewBox="0 0 34 24" aria-hidden="true"><path d="M2 12 H30 M22 5 L30 12 L22 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#line)"/></svg>
+      <div class="node" style="--i:1;--c:var(--cobalt)"><span class="caps">2 · Lock</span><p>One SQLCipher file holds everything, passphrase only.</p></div>
+      <svg class="arr" viewBox="0 0 34 24" aria-hidden="true"><path d="M2 12 H30 M22 5 L30 12 L22 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#line)"/></svg>
+      <div class="node" style="--i:2;--c:var(--green)"><span class="caps">3 · Embed</span><p>A local model turns the page into a vector, under a second.</p></div>
+      <svg class="arr" viewBox="0 0 34 24" aria-hidden="true"><path d="M2 12 H30 M22 5 L30 12 L22 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#line)"/></svg>
+      <div class="node" style="--i:3;--c:var(--lav)"><span class="caps">4 · Remember</span><p>sqlite-vec finds the nearest pages, inside the same file.</p></div>
+      <svg class="arr" viewBox="0 0 34 24" aria-hidden="true"><path d="M2 12 H30 M22 5 L30 12 L22 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" filter="url(#line)"/></svg>
+      <div class="node" style="--i:4;--c:var(--ochre)"><span class="caps">5 · Reflect</span><p>A few quiet words, citing the dates they came from.</p></div>
+    </div>
+    <div class="gate reveal" data-r>
+      <div class="gate-bar"><span class="caps">Private-page gate</span><span>Enforced in Rust, before any cloud call. Not a setting, a rule.</span></div>
+      <div class="providers">
+        <div><b>Ollama</b><span>On your Mac. The default path.</span></div>
+        <div><b>Claude, caged</b><span>Opt-in. Content on stdin only, every tool disallowed, a fresh empty directory each call.</span></div>
+      </div>
+    </div>
+
+    <h3 class="sub" data-r>Decisions, written down</h3>
+    <div class="decisions stag" data-r>
+      <a class="dec" style="--i:0;--c:var(--cobalt)" href="https://github.com/telephant/little-little/blob/main/docs/adr/0001-sqlcipher-via-rusqlite.md"><span class="caps">ADR 0001</span><h4>Encrypt first</h4><p>No official Tauri plugin for SQLCipher, and the community ones were young. The database layer was custom anyway, so I used rusqlite directly.</p></a>
+      <a class="dec" style="--i:1;--c:var(--green)" href="https://github.com/telephant/little-little/blob/main/docs/adr/0002-sqlite-vec-static-link.md"><span class="caps">ADR 0002</span><h4>Vectors in the same lock</h4><p>Loading an extension into a custom SQLCipher build is fragile. I compiled sqlite-vec in statically, so one file holds text and meaning.</p></a>
+      <a class="dec" style="--i:2;--c:var(--coral)" href="https://github.com/telephant/little-little/blob/main/docs/adr/0003-provider-layer-rust-traits.md"><span class="caps">ADR 0003</span><h4>Cloud, behind a cage</h4><p>Providers are Rust traits. The Claude CLI runs as a sandboxed subprocess, and the private-page filter is enforced on the server side.</p></a>
+      <a class="dec" style="--i:3;--c:var(--lav)" href="https://github.com/telephant/little-little/blob/main/docs/adr/0004-mood-provider.md"><span class="caps">ADR 0004</span><h4>Two goals in tension</h4><p>Mood could always run locally, or follow your chosen provider. I kept it consistent, then added a hard rule: private pages never reach the cloud.</p></a>
+      <a class="dec" style="--i:4;--c:var(--ochre)" href="https://github.com/telephant/little-little/blob/main/docs/adr/0006-mark-storage-format.md"><span class="caps">ADR 0006</span><h4>Drawings as numbers</h4><p>Painted marks are stored as plain numbers: cheap to validate, no executable syntax, and they survive backup and restore untouched.</p></a>
+      <a class="dec more" style="--i:5;--c:var(--sky)" href="https://github.com/telephant/little-little/tree/main/docs/adr"><span class="caps">All records</span><h4>Read the rest →</h4><p>Options considered, the choice, and what it costs.</p></a>
+    </div>
+
+    <h3 class="sub" data-r>How each feature gets made</h3>
+    <ol class="pipeline stag" data-r>
+      <li style="--i:0"><b>Spec</b><span>Acceptance criteria first.</span></li>
+      <li style="--i:1"><b>Design</b><span>Diagrams and decisions.</span></li>
+      <li style="--i:2"><b>Plan</b><span>Tests derived from the criteria.</span></li>
+      <li style="--i:3"><b>Build</b><span>One task at a time, test first.</span></li>
+      <li style="--i:4"><b>Verify</b><span>Run the real app, then close it.</span></li>
+    </ol>
+    <p class="fine reveal" data-r>Seven specs closed. Each one lives in the repo. <a href="https://github.com/telephant/little-little/tree/main/docs/specs" style="color:var(--cobalt)">Read them</a>.</p>
+
+    <h3 class="sub" data-r>Left out on purpose</h3>
+    <ul class="checks omit reveal" data-r>
+      <li style="--c:var(--cobalt)"><b>Default models.</b> You choose, so nothing runs that you didn't pick.</li>
+      <li style="--c:var(--coral)"><b>Reminders and alerts.</b> Specced and designed, then pulled back out.</li>
+      <li style="--c:var(--green)"><b>Dark mode and textures.</b> One look, done properly.</li>
+      <li style="--c:var(--lav)"><b>Web fonts from a CDN.</b> The app works fully offline.</li>
+    </ul>
+
+    <h3 class="sub" data-r>Finding the look</h3>
+    <p class="fine reveal" data-r style="margin:-6px 0 22px">Four directions drawn, judged and set aside before the painted one.</p>
+    <div class="journey stag" data-r>
+      <figure style="--i:0"><img loading="lazy" src="assets/design/v6.jpg" alt="Paper desk mockup: cream pages with tape on a blue-grey desk" width="760" height="506"><figcaption><b>Paper desk</b> Too much costume.</figcaption></figure>
+      <figure style="--i:1"><img loading="lazy" src="assets/design/v7-sketchbook.jpg" alt="Sketchbook mockup: a notebook spread" width="760" height="506"><figcaption><b>Sketchbook</b> Forget the paper, learn from the art.</figcaption></figure>
+      <figure style="--i:2"><img loading="lazy" src="assets/design/v9-doodles.jpg" alt="Doodles mockup: cartoon icons for each page" width="760" height="506"><figcaption><b>Doodles</b> Cute, and a little childish.</figcaption></figure>
+      <figure style="--i:3"><img loading="lazy" src="assets/design/v10-colorful-marks.jpg" alt="Colourful marks mockup: brush marks with bold colour" width="760" height="506"><figcaption><b>Colourful marks</b> Closer. The mark became the colour.</figcaption></figure>
+    </div>
+    <p class="fine reveal" data-r>The one that stayed is the window at the top of this page.</p>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap box">
+    <div class="reveal" data-r>
+      <span class="eyebrow caps">Download</span>
+      <h2 style="margin-bottom:24px">Begin your first page</h2>
+      <div class="cta-row" style="margin-top:0">
+        <a class="btn" href="https://github.com/telephant/little-little/releases/latest">Download for Mac</a>
+        <a class="link-quiet under" style="--c:var(--sky)" href="https://github.com/telephant/little-little">View source</a>
+      </div>
+      <p class="fine">Version 0.1.0 · macOS</p>
+      <p class="os">Windows and Linux aren't ready yet.</p>
+    </div>
+    <div class="reqs reveal" data-r style="--d:150ms">
+      <h3 class="caps">Before you open it</h3>
+      <ul>
+        <li><b>First time:</b> the app isn't signed yet. Right-click it, choose <i>Open</i>, and confirm once.</li>
+        <li><b>For private AI:</b> install <a href="https://ollama.com" style="color:var(--cobalt)">Ollama</a>. The app helps you download the models.</li>
+        <li><b>Optional:</b> Claude Code, for cloud reflections.</li>
+        <li><b>Passphrase:</b> choose one you'll remember.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="tint" id="faq">
+  <div class="wrap reveal" data-r style="max-width:780px">
+    <h2 style="margin-bottom:34px">Questions</h2>
+    <details><summary>Does anything leave my Mac?</summary><p>Not unless you turn on cloud. Even then, pages marked private never go.</p></details>
+    <details><summary>What if I forget my passphrase?</summary><p>The journal can't be opened again. That's what keeps it private. Back up now and then.</p></details>
+    <details><summary>Which AI models does it use?</summary><p>The ones you pick. Onboarding shows what Ollama already has, or helps you download one.</p></details>
+    <details><summary>Can I take my writing out?</summary><p>Yes. Export to Markdown, or save a single backup and restore it later.</p></details>
+    <details><summary>Can I write in my own language?</summary><p>Yes, including Chinese. How well moods and reflections work depends on the model you choose.</p></details>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="brand" style="font-size:18px">Little Little</span>
+    <span>Designed and built by <a href="https://github.com/telephant">telephant</a>, November 2026</span>
+    <span><a href="https://github.com/telephant/little-little">GitHub</a> &nbsp;·&nbsp; <a href="https://github.com/telephant/little-little/releases">Releases</a></span>
+    <span class="caps" style="font-weight:400">Made to be written in, quietly.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll("[data-r]"));
+  if(!("IntersectionObserver" in window)){els.forEach(function(e){e.classList.add("in")});return;}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}})},{threshold:.18,rootMargin:"0px 0px -6% 0px"});
+  els.forEach(function(e){io.observe(e)});
+  requestAnimationFrame(function(){document.documentElement.classList.add("ready")});
+})();
+</script>
+<script>
+(function(){
+  var names=["rough","low","okay","good","great"];
+  var picks=[].slice.call(document.querySelectorAll(".pick[data-m]"));
+  var hero=document.getElementById("heroMark"), row=document.getElementById("rowMark"), nm=document.getElementById("moodName");
+  picks.forEach(function(b){b.addEventListener("click",function(){
+    var m=b.getAttribute("data-m");
+    picks.forEach(function(x){x.classList.toggle("on",x===b)});
+    [hero,row].forEach(function(s){if(!s)return;s.style.color="var(--m"+m+")";s.querySelector("use").setAttribute("href","#m"+m);s.classList.remove("pop");void s.getBoundingClientRect();s.classList.add("pop");});
+    if(nm)nm.textContent=names[m-1];
+  })});
+  var refl=document.querySelector(".reflect.cycle"), gone=document.getElementById("letgo"), again=document.getElementById("again"), back=document.getElementById("bringback");
+  function manual(){refl.classList.remove("cycle");refl.classList.add("manual");}
+  function dissolve(){manual();void refl.offsetWidth;refl.classList.add("gone");back.hidden=false;}
+  function recall(){manual();refl.classList.remove("gone");back.hidden=true;}
+  if(refl){gone.addEventListener("click",dissolve);back.addEventListener("click",recall);again.addEventListener("click",function(){manual();refl.classList.add("gone");back.hidden=true;setTimeout(function(){refl.classList.remove("gone")},700);});}
+
+  var svg=document.getElementById("paint"); if(!svg)return;
+  var g=document.getElementById("paintStrokes"), hint=document.getElementById("paintHint");
+  var prevs=[].slice.call(document.querySelectorAll("[data-prev]"));
+  var strokes=[], cur=null, color="var(--ink)";
+  function pt(e){var r=svg.getBoundingClientRect();return [(e.clientX-r.left)/r.width*48,(e.clientY-r.top)/r.height*48];}
+  function f(n){return n.toFixed(1)}
+  function dpath(p){
+    if(p.length<2)return "M"+f(p[0][0])+" "+f(p[0][1])+" l0.01 0";
+    var s="M"+f(p[0][0])+" "+f(p[0][1]);
+    for(var i=1;i<p.length-1;i++){var mx=(p[i][0]+p[i+1][0])/2,my=(p[i][1]+p[i+1][1])/2;s+=" Q"+f(p[i][0])+" "+f(p[i][1])+" "+f(mx)+" "+f(my);}
+    var l=p[p.length-1];return s+" L"+f(l[0])+" "+f(l[1]);
+  }
+  function render(){
+    var h=strokes.map(function(s){return '<path d="'+dpath(s.p)+'" style="stroke:'+s.c+'"/>'}).join("");
+    g.innerHTML=h;
+    prevs.forEach(function(p){p.innerHTML=strokes.length?'<g filter="url(#paint-s)" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="5">'+h+'</g>':'<use href="#m0"/>'});
+    hint.style.opacity=strokes.length?0:1;
+  }
+  svg.addEventListener("pointerdown",function(e){e.preventDefault();svg.setPointerCapture(e.pointerId);if(strokes.length>=24)strokes.shift();cur={p:[pt(e)],c:color};strokes.push(cur);render();});
+  svg.addEventListener("pointermove",function(e){if(!cur)return;var p=pt(e),l=cur.p[cur.p.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>.8&&cur.p.length<300){cur.p.push(p);render();}});
+  ["pointerup","pointercancel"].forEach(function(t){svg.addEventListener(t,function(){cur=null})});
+  [].slice.call(document.querySelectorAll(".sw")).forEach(function(b){b.addEventListener("click",function(){color=b.getAttribute("data-c");[].slice.call(document.querySelectorAll(".sw")).forEach(function(x){x.classList.toggle("on",x===b)});})});
+  document.getElementById("undo").addEventListener("click",function(){strokes.pop();render();});
+  document.getElementById("clear").addEventListener("click",function(){strokes=[];render();});
+  render();
+})();
+(function(){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  var els=[].slice.call(document.querySelectorAll("[data-count]"));
+  function run(el){var to=parseFloat(el.getAttribute("data-count")),dec=+(el.getAttribute("data-dec")||0),plus=el.hasAttribute("data-plus"),t0=null;
+    function step(t){if(t0===null)t0=t;var k=Math.min(1,(t-t0)/1300),e=1-Math.pow(1-k,3);el.textContent=(to*e).toFixed(dec)+(k===1&&plus?"+":"");if(k<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);}
+  if(!("IntersectionObserver" in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){run(e.target);io.unobserve(e.target);}})},{threshold:.6});
+  els.forEach(function(el){el.textContent=el.hasAttribute("data-dec")?"0.00":"0";io.observe(el)});
+})();
+</script>
+<script>
+(function(){
+  var rows=[].slice.call(document.querySelectorAll(".mrow-b"));
+  rows.forEach(function(b){b.addEventListener("click",function(){
+    rows.forEach(function(x){var on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-checked",on?"true":"false");});
+  });});
+})();
+</script>
+</body>
+</html>
